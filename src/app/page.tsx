@@ -8,7 +8,10 @@ import type { Database } from '@/types/typegen'
 import { Navbar } from '@/components/Navbar'
 
 export default async function Home() {
-  const supabase = createServerComponentClient<Database>({ cookies })
+  const cookieStore = cookies()
+  const supabase = createServerComponentClient<Database>({
+    cookies: () => cookieStore,
+  })
 
   const { data } = await supabase.auth.getUser()
 

@@ -4,7 +4,8 @@ import { redirect } from 'next/navigation'
 import { Login } from './login'
 
 export default async function LoginPage() {
-  const supabase = createServerComponentClient({ cookies })
+  const cookieStore = cookies()
+  const supabase = createServerComponentClient({ cookies: () => cookieStore })
 
   const { data } = await supabase.auth.getUser()
 

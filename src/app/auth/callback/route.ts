@@ -4,7 +4,8 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies })
+  const cookieStore = cookies()
+  const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
 
   const { searchParams } = new URL(req.url)
   const error = searchParams.get('error')
