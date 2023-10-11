@@ -3,6 +3,7 @@
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Header1 } from '@/components/headers'
 import { Button } from '@/components/button'
+import { env } from '@/env.mjs'
 
 export const Login = () => {
   const supabase = createClientComponentClient()
@@ -11,7 +12,7 @@ export const Login = () => {
     supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: window.location.origin + '/auth/callback',
+        redirectTo: env.NEXT_PUBLIC_DOMAIN + '/auth/callback',
       },
     })
   }
