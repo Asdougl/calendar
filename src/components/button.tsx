@@ -11,7 +11,7 @@ const button = cva(
       intent: {
         primary: 'bg-neutral-50 text-neutral-950 border-blue-500',
         secondary: 'bg-neutral-700 text-neutral-50 border-neutral-800',
-        tertiary: 'bg-transparent text-neutral-50 border-neutral-800',
+        tertiary: 'bg-neutral-950 text-neutral-50 border-neutral-800',
         danger: 'bg-red-950 text-neutral-50 border-red-900',
       },
       size: {

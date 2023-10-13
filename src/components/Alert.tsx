@@ -9,13 +9,13 @@ import {
 import { Header3 } from './headers'
 import { cn } from '@/util/classnames'
 
-const alert = cva('rounded-md p-4 flex gap-4', {
+const alert = cva('rounded-md px-3 py-2 flex gap-4 border', {
   variants: {
     level: {
-      info: 'bg-blue-50 text-blue-900',
-      success: 'bg-green-50 text-green-900',
-      warning: 'bg-yellow-50 text-yellow-900',
-      error: 'bg-red-50 text-red-900',
+      info: 'bg-blue-950 bg-opacity-50 text-blue-50 border-blue-900',
+      success: 'bg-green-950 bg-opacity-50 text-green-50 border-green-900',
+      warning: 'bg-yellow-950 bg-opacity-50 text-yellow-50 border-yellow-900',
+      error: 'bg-red-950 bg-opacity-50 text-red-50 border-red-900',
     },
   },
 })
@@ -42,7 +42,7 @@ export const Alert: FC<
 
   return (
     <div className={cn(alert(props))}>
-      {icon}
+      <div className="py-2">{icon}</div>
       <div className="flex flex-col">
         {title && <Header3>{title}</Header3>}
         <p>{message}</p>

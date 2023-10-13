@@ -22,3 +22,13 @@ export const useMountEffect = (callback: EffectCallback) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 }
+
+export const useClientTimezone = () => {
+  const [timezone, setTimezone] =
+    useState<Intl.DateTimeFormatOptions['timeZone']>()
+  useEffect(() => {
+    console.log({ timezone: Intl.DateTimeFormat().resolvedOptions() })
+    setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone)
+  }, [])
+  return timezone
+}

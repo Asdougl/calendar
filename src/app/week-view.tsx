@@ -1,37 +1,27 @@
 'use client'
 
-import type { FC, FormEvent } from 'react'
-import { useMemo, useState } from 'react'
+import type { FC } from 'react'
+import { useMemo } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { format, getDay, getDayOfYear, setDay, startOfDay } from 'date-fns'
-import { z } from 'zod'
 import { EllipsisVerticalIcon } from '@heroicons/react/24/solid'
 import { cn } from '@/util/classnames'
 import type { Database } from '@/types/typegen'
 import { Header1 } from '@/components/headers'
-import { Alert } from '@/components/Alert'
 import { time } from '@/util/dates'
 import { EventDialog } from '@/components/EventDialog'
 import { EventItem } from '@/components/EventItem'
 import type { EventWithCategory } from '@/types/supabase'
 import { EventWithCategoryQuery } from '@/types/supabase'
+import { Debugger } from '@/components/Debugger'
 
 const DayBox: FC<{
   focusDate: Date
   dayOfWeek: number
   events: EventWithCategory[]
-  isLoading?: boolean
-  onCreate: ({
-    title,
-    datetime,
-  }: {
-    title: string
-    datetime: Date
-  }) => Promise<void>
-}> = ({ focusDate, dayOfWeek, events, isLoading, onCreate }) => {
-  const [dialogOpen, setDialogOpen] = useState(false)
-
+  isLoading: boolean
+}> = ({ focusDate, dayOfWeek, events, isLoading }) => {
   const day = useMemo(() => {
     const todayDay = getDay(new Date())
 
@@ -43,22 +33,6 @@ const DayBox: FC<{
   }, [focusDate, dayOfWeek])
 
   const distanceToToday = getDayOfYear(day) - getDayOfYear(new Date())
-
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    const formData = new FormData(e.currentTarget)
-
-    const title = z.string().parse(formData.get('event-name'))
-
-    onCreate({
-      title,
-      datetime: day,
-    })
-
-    setDialogOpen(false)
-    e.currentTarget.reset()
-  }
 
   return (
     <div
@@ -76,12 +50,7 @@ const DayBox: FC<{
           <div className="font-bold">{format(day, 'E')}</div>
           <div className="text-sm">{format(day, 'd MMM')}</div>
         </div>
-        <EventDialog
-          open={dialogOpen}
-          setOpen={setDialogOpen}
-          onSubmit={onSubmit}
-          disabled={isLoading}
-        />
+        <EventDialog initialDate={day} />
       </div>
       <ul className="py-1 flex flex-col gap-1">
         {isLoading ? (
@@ -96,7 +65,6 @@ const DayBox: FC<{
 
 export const WeekView: FC = () => {
   const supabase = createClientComponentClient<Database>()
-  const queryClient = useQueryClient()
 
   const focusDate = startOfDay(new Date())
 
@@ -120,23 +88,6 @@ export const WeekView: FC = () => {
     refetchInterval: time.minutes(10),
   })
 
-  const { mutateAsync, error } = useMutation({
-    mutationFn: async ({
-      title,
-      datetime,
-    }: {
-      title: string
-      datetime: Date
-    }) => {
-      await supabase
-        .from('events')
-        .insert([{ title, datetime: datetime.toISOString() }])
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events'] })
-    },
-  })
-
   const eventsByDay = useMemo(() => {
     if (!events?.length) return []
 
@@ -154,7 +105,9 @@ export const WeekView: FC = () => {
   return (
     <div className="max-w-2xl mx-auto w-full h-full flex flex-col">
       <header className="flex items-center justify-between px-4 py-6">
-        <div className="w-8"></div>
+        <div className="w-8">
+          <Debugger />
+        </div>
         <Header1 className="text-2xl">Inbox</Header1>
         <div className="w-8">
           <button>
@@ -162,13 +115,6 @@ export const WeekView: FC = () => {
           </button>
         </div>
       </header>
-      {error && (
-        <Alert
-          title="An Error has occurred"
-          level="error"
-          message={error.message}
-        />
-      )}
       <div className="grid grid-cols-2 max-h-screen h-full gap-2 px-1 pb-2">
         {/* weekend */}
         <div className="grid grid-rows-2 gap-2">
@@ -176,14 +122,12 @@ export const WeekView: FC = () => {
             focusDate={focusDate}
             dayOfWeek={6}
             events={eventsByDay[6] || []}
-            onCreate={mutateAsync}
             isLoading={isLoading}
           />
           <DayBox
             focusDate={focusDate}
             dayOfWeek={0}
             events={eventsByDay[0] || []}
-            onCreate={mutateAsync}
             isLoading={isLoading}
           />
         </div>
@@ -193,35 +137,30 @@ export const WeekView: FC = () => {
             focusDate={focusDate}
             dayOfWeek={5}
             events={eventsByDay[5] || []}
-            onCreate={mutateAsync}
             isLoading={isLoading}
           />
           <DayBox
             focusDate={focusDate}
             dayOfWeek={4}
             events={eventsByDay[4] || []}
-            onCreate={mutateAsync}
             isLoading={isLoading}
           />
           <DayBox
             focusDate={focusDate}
             dayOfWeek={3}
             events={eventsByDay[3] || []}
-            onCreate={mutateAsync}
             isLoading={isLoading}
           />
           <DayBox
             focusDate={focusDate}
             dayOfWeek={2}
             events={eventsByDay[2] || []}
-            onCreate={mutateAsync}
             isLoading={isLoading}
           />
           <DayBox
             focusDate={focusDate}
             dayOfWeek={1}
             events={eventsByDay[1] || []}
-            onCreate={mutateAsync}
             isLoading={isLoading}
           />
         </div>
