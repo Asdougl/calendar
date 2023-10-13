@@ -46,3 +46,22 @@ export type QuerySingleResponse<
   Table extends keyof Database['public']['Tables'],
   Query extends string,
 > = Awaited<ReturnType<typeof generateQueryResponseSingle<Table, Query>>>
+
+export type InferQueryResponse<
+  Query extends { from: keyof Database['public']['Tables']; select: string },
+> = NonNullable<
+  Awaited<
+    ReturnType<typeof generateQueryResponse<Query['from'], Query['select']>>
+  >
+>[number]
+
+// Common Queries
+
+export const EventWithCategoryQuery = {
+  from: 'events',
+  select: '*, category:categories (*)',
+} as const
+
+export type EventWithCategory = InferQueryResponse<
+  typeof EventWithCategoryQuery
+>

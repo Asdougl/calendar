@@ -3,6 +3,7 @@
 import {
   CalendarDaysIcon,
   GlobeAltIcon,
+  InboxIcon,
   Squares2X2Icon,
 } from '@heroicons/react/24/solid'
 import { usePathname } from 'next/navigation'
@@ -37,10 +38,17 @@ export const Navbar = () => {
   return (
     <footer className="pb-6">
       <nav className="md:fixed left-0 top-0 md:h-screen">
-        <ul className="grid grid-cols-3 md:flex flex-col gap-8 md:py-4">
+        <ul className="grid grid-cols-4 md:flex flex-col gap-8 md:py-4 px-4">
           <li>
             <NavBarItem
               path="/"
+              icon={<InboxIcon height={20} />}
+              label="Inbox"
+            />
+          </li>
+          <li>
+            <NavBarItem
+              path="/week"
               icon={<Squares2X2Icon height={20} />}
               label="Week"
             />
