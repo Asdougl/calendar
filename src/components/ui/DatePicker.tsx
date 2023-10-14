@@ -69,7 +69,7 @@ const MONTH_OPTIONS = [
 const stdFormat = (date: Date) => format(date, 'yyyy-MM-dd')
 const displayFormat = (date: Date) => format(date, 'd MMM yy')
 
-const getMonthDates = (year: number, month: number) => {
+export const getMonthDates = (year: number, month: number) => {
   const firstOfMonth = set(new Date(), {
     year,
     month,

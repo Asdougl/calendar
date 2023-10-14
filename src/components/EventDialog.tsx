@@ -165,7 +165,7 @@ export const EventDialog: FC<EventDialogProps> = ({
       }
 
       if (title !== props.event.title) {
-        updateParams.title = title
+        updateParams.title = title.trim()
       }
 
       if (date !== props.event.datetime) {

@@ -10,9 +10,16 @@ const hasMeaningfulTime = (date: Date) => {
 export const EventItem: FC<{ event: EventWithCategory }> = ({ event }) => {
   const eventDateTime = new Date(event.datetime)
 
+  const inThePast = eventDateTime < new Date()
+
   return (
     <EventDialog event={event}>
-      <li className="flex items-center gap-2 hover:bg-neutral-900 rounded-lg p-1">
+      <li
+        className={cn(
+          'flex items-center gap-2 hover:bg-neutral-900 rounded-lg p-1',
+          { 'opacity-50': inThePast }
+        )}
+      >
         <div
           className={cn(
             'md:flex flex-col flex-shrink-0 items-center justify-center w-8 h-8 rounded-full bg-primary-400 text-white hidden',
@@ -24,22 +31,33 @@ export const EventItem: FC<{ event: EventWithCategory }> = ({ event }) => {
           {event.category ? event.category.icon : event.title[0]}
         </div>
         <div className="flex flex-col items-start">
-          <span className="font-semibold text-left md:text-sm leading-snug">
+          <span
+            className={cn('font-semibold text-left md:text-sm leading-snug', {
+              'line-through': inThePast,
+            })}
+          >
+            {event.title}
+          </span>
+          <div className="flex gap-2 items-center">
             {event.category && (
-              <span className="text-xs text-neutral-500 mr-1">
+              <span
+                className={cn(
+                  'text-xs md:hidden px-1 rounded-sm',
+                  getCategoryColor(event.category.color, 'bg')
+                )}
+              >
                 {event.category.icon}
               </span>
             )}
-            {event.title}
-          </span>
-          {hasMeaningfulTime(eventDateTime) && (
-            <span className="text-xs text-neutral-500 leading-tight">
-              {new Date(event.datetime).toLocaleTimeString([], {
-                hour: 'numeric',
-                minute: 'numeric',
-              })}
-            </span>
-          )}
+            {hasMeaningfulTime(eventDateTime) && (
+              <span className="text-xs text-neutral-500 leading-tight">
+                {new Date(event.datetime).toLocaleTimeString([], {
+                  hour: 'numeric',
+                  minute: 'numeric',
+                })}
+              </span>
+            )}
+          </div>
         </div>
       </li>
     </EventDialog>

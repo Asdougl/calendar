@@ -1,26 +1,40 @@
 'use client'
 
 import type { FC } from 'react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useQuery } from '@tanstack/react-query'
-import { getDay, setDay, startOfDay } from 'date-fns'
-import { EllipsisVerticalIcon } from '@heroicons/react/24/solid'
+import {
+  endOfWeek,
+  format,
+  getDay,
+  getWeek,
+  setWeek,
+  startOfDay,
+  startOfWeek,
+} from 'date-fns'
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
 import type { Database } from '@/types/typegen'
 import { Header1 } from '@/components/headers'
 import { time } from '@/util/dates'
 import type { EventWithCategory } from '@/types/supabase'
 import { EventWithCategoryQuery } from '@/types/supabase'
-import { Debugger } from '@/components/Debugger'
 import { DayBox } from '@/components/DayBox'
 
 export const WeekView: FC = () => {
   const supabase = createClientComponentClient<Database>()
 
-  const focusDate = startOfDay(new Date())
+  const [focusWeek, setFocusWeek] = useState(getWeek(new Date()))
+
+  const focusDate = setWeek(
+    startOfWeek(startOfDay(new Date()), {
+      weekStartsOn: 1,
+    }),
+    focusWeek
+  )
 
   const { data: events, isLoading } = useQuery({
-    queryKey: ['events', '7-days'],
+    queryKey: ['events', 'week', focusWeek],
     queryFn: async () => {
       const { data } = await supabase
         .from(EventWithCategoryQuery.from)
@@ -28,8 +42,8 @@ export const WeekView: FC = () => {
         .gte('datetime', focusDate.toISOString())
         .lt(
           'datetime',
-          setDay(focusDate, 7, {
-            weekStartsOn: getDay(focusDate),
+          endOfWeek(focusDate, {
+            weekStartsOn: 1,
           }).toISOString()
         )
       return data || []
@@ -53,16 +67,28 @@ export const WeekView: FC = () => {
     return eventsByDay
   }, [events])
 
+  const nextWeek = () => {
+    setFocusWeek((week) => week + 1)
+  }
+
+  const prevWeek = () => {
+    setFocusWeek((week) => week - 1)
+  }
+
   return (
     <div className="max-w-2xl mx-auto w-full h-full flex flex-col">
       <header className="flex items-center justify-between px-4 py-6">
         <div className="w-8">
-          <Debugger />
+          <button onClick={prevWeek}>
+            <ArrowLeftIcon height={20} />
+          </button>
         </div>
-        <Header1 className="text-2xl">Inbox</Header1>
+        <Header1 className="text-2xl">
+          Week of {format(focusDate, 'MMM d')}
+        </Header1>
         <div className="w-8">
-          <button>
-            <EllipsisVerticalIcon height={20} />
+          <button onClick={nextWeek}>
+            <ArrowRightIcon height={20} />
           </button>
         </div>
       </header>
@@ -74,14 +100,12 @@ export const WeekView: FC = () => {
             dayOfWeek={6}
             events={eventsByDay[6] || []}
             isLoading={isLoading}
-            startToday
           />
           <DayBox
             focusDate={focusDate}
             dayOfWeek={0}
             events={eventsByDay[0] || []}
             isLoading={isLoading}
-            startToday
           />
         </div>
         {/* weekdays */}
@@ -91,35 +115,30 @@ export const WeekView: FC = () => {
             dayOfWeek={5}
             events={eventsByDay[5] || []}
             isLoading={isLoading}
-            startToday
           />
           <DayBox
             focusDate={focusDate}
             dayOfWeek={4}
             events={eventsByDay[4] || []}
             isLoading={isLoading}
-            startToday
           />
           <DayBox
             focusDate={focusDate}
             dayOfWeek={3}
             events={eventsByDay[3] || []}
             isLoading={isLoading}
-            startToday
           />
           <DayBox
             focusDate={focusDate}
             dayOfWeek={2}
             events={eventsByDay[2] || []}
             isLoading={isLoading}
-            startToday
           />
           <DayBox
             focusDate={focusDate}
             dayOfWeek={1}
             events={eventsByDay[1] || []}
             isLoading={isLoading}
-            startToday
           />
         </div>
       </div>
