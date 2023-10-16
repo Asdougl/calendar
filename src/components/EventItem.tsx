@@ -1,28 +1,28 @@
 import type { FC } from 'react'
 import { EventDialog } from './EventDialog'
-import type { EventWithCategory } from '@/types/supabase'
-import { cn, getCategoryColor } from '@/util/classnames'
+import { cn, getCategoryColor } from '~/utils/classnames'
+import { type RouterOutputs } from '~/trpc/shared'
 
 const hasMeaningfulTime = (date: Date) => {
   return date.getHours() > 0 || date.getMinutes() > 0 || date.getSeconds() > 0
 }
 
-export const EventItem: FC<{ event: EventWithCategory }> = ({ event }) => {
-  const eventDateTime = new Date(event.datetime)
-
-  const inThePast = eventDateTime < new Date()
+export const EventItem: FC<{
+  event: NonNullable<RouterOutputs['event']['range']>[number]
+}> = ({ event }) => {
+  const inThePast = event.datetime < new Date()
 
   return (
     <EventDialog event={event}>
       <li
         className={cn(
-          'flex items-center gap-2 hover:bg-neutral-900 rounded-lg p-1',
+          'flex items-center gap-2 rounded-lg p-1 hover:bg-neutral-900',
           { 'opacity-50': inThePast }
         )}
       >
         <div
           className={cn(
-            'md:flex flex-col flex-shrink-0 items-center justify-center w-8 h-8 rounded-full bg-primary-400 text-white hidden',
+            'bg-primary-400 hidden h-8 w-8 flex-shrink-0 flex-col items-center justify-center rounded-full text-white md:flex',
             event.category
               ? [getCategoryColor(event.category.color, 'bg'), 'text-sm']
               : 'bg-neutral-800'
@@ -32,25 +32,25 @@ export const EventItem: FC<{ event: EventWithCategory }> = ({ event }) => {
         </div>
         <div className="flex flex-col items-start">
           <span
-            className={cn('font-semibold text-left md:text-sm leading-snug', {
+            className={cn('text-left font-semibold leading-snug md:text-sm', {
               'line-through': inThePast,
             })}
           >
             {event.title}
           </span>
-          <div className="flex gap-2 items-center">
+          <div className="flex items-center gap-2">
             {event.category && (
               <span
                 className={cn(
-                  'text-xs md:hidden px-1 rounded-sm',
+                  'rounded-sm px-1 text-xs md:hidden',
                   getCategoryColor(event.category.color, 'bg')
                 )}
               >
                 {event.category.icon}
               </span>
             )}
-            {hasMeaningfulTime(eventDateTime) && (
-              <span className="text-xs text-neutral-500 leading-tight">
+            {hasMeaningfulTime(event.datetime) && (
+              <span className="text-xs leading-tight text-neutral-500">
                 {new Date(event.datetime).toLocaleTimeString([], {
                   hour: 'numeric',
                   minute: 'numeric',

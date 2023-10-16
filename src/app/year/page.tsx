@@ -1,26 +1,12 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-import type { Database } from '@/types/typegen'
-import { Navbar } from '@/components/Navbar'
-import { Header1 } from '@/components/headers'
-import { Paragraph } from '@/components/paragraph'
+'use client'
+import { Navbar } from '~/components/Navbar'
+import { Header1 } from '~/components/ui/headers'
+import { Paragraph } from '~/components/ui/paragraph'
 
-export default async function Home() {
-  const cookieStore = cookies()
-  const supabase = createServerComponentClient<Database>({
-    cookies: () => cookieStore,
-  })
-
-  const { data } = await supabase.auth.getUser()
-
-  if (!data.user) {
-    redirect('/login')
-  }
-
+export default function Year() {
   return (
-    <main className="h-screen flex flex-col">
-      <div className="flex-grow flex flex-col items-center pt-16">
+    <main className="flex h-screen flex-col">
+      <div className="flex flex-grow flex-col items-center pt-16">
         <Header1>Year View</Header1>
         <Paragraph>Coming soon...</Paragraph>
       </div>

@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent, type FC } from 'react'
-import { Input } from '../input'
-import { cn } from '@/util/classnames'
+import { Input } from './input'
+import { cn } from '~/utils/classnames'
 
 type TimeInputProps = {
   value: string

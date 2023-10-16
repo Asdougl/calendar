@@ -8,7 +8,7 @@ import {
 } from '@heroicons/react/24/solid'
 import { usePathname } from 'next/navigation'
 import type { FC, ReactNode } from 'react'
-import { cn } from '@/util/classnames'
+import { cn } from '~/utils/classnames'
 
 const NavBarItem: FC<{
   path: string
@@ -21,7 +21,7 @@ const NavBarItem: FC<{
     <a
       href={path}
       className={cn(
-        'flex flex-col items-center py-2 px-4 gap-1 hover:text-neutral-50',
+        'flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50',
         {
           'text-neutral-50': pathname === path,
           'text-neutral-500': pathname !== path,
@@ -37,8 +37,8 @@ const NavBarItem: FC<{
 export const Navbar = () => {
   return (
     <footer className="pb-6">
-      <nav className="md:fixed left-0 top-0 md:h-screen">
-        <ul className="grid grid-cols-4 md:flex flex-col gap-8 md:py-4 px-4">
+      <nav className="left-0 top-0 md:fixed md:h-screen">
+        <ul className="grid grid-cols-4 flex-col gap-8 px-4 md:flex md:py-4">
           <li>
             <NavBarItem
               path="/"

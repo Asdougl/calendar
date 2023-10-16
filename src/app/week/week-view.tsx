@@ -2,8 +2,6 @@
 
 import type { FC } from 'react'
 import { useMemo, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useQuery } from '@tanstack/react-query'
 import {
   endOfWeek,
   format,
@@ -14,16 +12,13 @@ import {
   startOfWeek,
 } from 'date-fns'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
-import type { Database } from '@/types/typegen'
-import { Header1 } from '@/components/headers'
-import { time } from '@/util/dates'
-import type { EventWithCategory } from '@/types/supabase'
-import { EventWithCategoryQuery } from '@/types/supabase'
-import { DayBox } from '@/components/DayBox'
+import { Header1 } from '~/components/ui/headers'
+import { time } from '~/utils/dates'
+import { DayBox } from '~/components/DayBox'
+import { api } from '~/trpc/react'
+import { type RouterOutputs } from '~/trpc/shared'
 
 export const WeekView: FC = () => {
-  const supabase = createClientComponentClient<Database>()
-
   const [focusWeek, setFocusWeek] = useState(getWeek(new Date()))
 
   const focusDate = setWeek(
@@ -33,35 +28,30 @@ export const WeekView: FC = () => {
     focusWeek
   )
 
-  const { data: events, isLoading } = useQuery({
-    queryKey: ['events', 'week', focusWeek],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from(EventWithCategoryQuery.from)
-        .select(EventWithCategoryQuery.select)
-        .gte('datetime', focusDate.toISOString())
-        .lt(
-          'datetime',
-          endOfWeek(focusDate, {
-            weekStartsOn: 1,
-          }).toISOString()
-        )
-      return data || []
+  const { data: events, isLoading } = api.event.range.useQuery(
+    {
+      start: focusDate,
+      end: endOfWeek(focusDate, {
+        weekStartsOn: 1,
+      }),
     },
-    refetchOnWindowFocus: false,
-    staleTime: time.minutes(5),
-    refetchInterval: time.minutes(10),
-  })
+    {
+      refetchOnWindowFocus: false,
+      staleTime: time.minutes(5),
+      refetchInterval: time.minutes(10),
+    }
+  )
 
   const eventsByDay = useMemo(() => {
     if (!events?.length) return []
 
-    const eventsByDay: EventWithCategory[][] = []
+    const eventsByDay: NonNullable<RouterOutputs['event']['range']>[] = []
 
     events.forEach((event) => {
       const dayOfWeek = getDay(new Date(event.datetime))
-      if (!eventsByDay[dayOfWeek]) eventsByDay[dayOfWeek] = [event]
-      else eventsByDay[dayOfWeek].push(event)
+      const thisDay = eventsByDay[dayOfWeek]
+      if (thisDay) thisDay?.push(event)
+      else eventsByDay[dayOfWeek] = [event]
     })
 
     return eventsByDay
@@ -76,7 +66,7 @@ export const WeekView: FC = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto w-full h-full flex flex-col">
+    <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
       <header className="flex items-center justify-between px-4 py-6">
         <div className="w-8">
           <button onClick={prevWeek}>
@@ -92,7 +82,7 @@ export const WeekView: FC = () => {
           </button>
         </div>
       </header>
-      <div className="grid grid-cols-2 max-h-screen h-full gap-2 px-1 pb-2">
+      <div className="grid h-full max-h-screen grid-cols-2 gap-2 px-1 pb-2">
         {/* weekend */}
         <div className="grid grid-rows-2 gap-2">
           <DayBox

@@ -3,13 +3,13 @@ import type { FC } from 'react'
 import { useMemo } from 'react'
 import { EventDialog } from './EventDialog'
 import { EventItem } from './EventItem'
-import { cn } from '@/util/classnames'
-import type { EventWithCategory } from '@/types/supabase'
+import { cn } from '~/utils/classnames'
+import { type RouterOutputs } from '~/trpc/shared'
 
 export const DayBox: FC<{
   focusDate: Date
   dayOfWeek: number
-  events: EventWithCategory[]
+  events: NonNullable<RouterOutputs['event']['range']>
   isLoading: boolean
   startToday?: boolean
 }> = ({ focusDate, dayOfWeek, events, isLoading, startToday }) => {
@@ -26,7 +26,7 @@ export const DayBox: FC<{
   return (
     <div
       className={cn(
-        'border flex-grow rounded-lg px-2 py-1 border-neutral-800',
+        'flex-grow rounded-lg border border-neutral-800 px-2 py-1',
         { 'border-neutral-400': distanceToToday === 0 },
         startToday && {
           'border-neutral-500': distanceToToday === 1,
@@ -37,7 +37,7 @@ export const DayBox: FC<{
       <div className="flex justify-between">
         <div
           className={cn(
-            'flex gap-1 items-baseline',
+            'flex items-baseline gap-1',
             startToday
               ? {
                   'opacity-40': distanceToToday === 6,
@@ -54,9 +54,9 @@ export const DayBox: FC<{
         </div>
         <EventDialog initialDate={day} />
       </div>
-      <ul className="py-1 flex flex-col gap-1">
+      <ul className="flex flex-col gap-1 py-1">
         {isLoading ? (
-          <li className="rounded-full w-3/4 bg-neutral-900 my-2 animate-pulse h-4"></li>
+          <li className="my-2 h-4 w-3/4 animate-pulse rounded-full bg-neutral-900"></li>
         ) : (
           events.map((event) => <EventItem key={event.id} event={event} />)
         )}

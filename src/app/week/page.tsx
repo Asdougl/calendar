@@ -1,24 +1,17 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { WeekView } from './week-view'
-import type { Database } from '@/types/typegen'
-import { Navbar } from '@/components/Navbar'
+import { Navbar } from '~/components/Navbar'
+import { getServerAuthSession } from '~/server/auth'
 
 export default async function Home() {
-  const cookieStore = cookies()
-  const supabase = createServerComponentClient<Database>({
-    cookies: () => cookieStore,
-  })
+  const session = await getServerAuthSession()
 
-  const { data } = await supabase.auth.getUser()
-
-  if (!data.user) {
+  if (!session) {
     redirect('/login')
   }
 
   return (
-    <main className="h-screen flex flex-col">
+    <main className="flex h-screen flex-col">
       <WeekView />
       <Navbar />
     </main>

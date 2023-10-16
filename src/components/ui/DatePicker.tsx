@@ -24,8 +24,8 @@ import {
   setYear,
   startOfWeek,
 } from 'date-fns'
-import { Button } from '../button'
-import { cn } from '@/util/classnames'
+import { Button } from './button'
+import { cn } from '~/utils/classnames'
 
 const MONTH_OPTIONS = [
   <option key={0} value={0}>
@@ -176,19 +176,19 @@ export const DatePicker: FC<DatePickerProps> = ({
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
-        <Button className={cn('flex gap-2 items-center', className)}>
+        <Button className={cn('flex items-center gap-2', className)}>
           <CalendarIcon height={20} />
           <span>{displayFormat(value)}</span>
         </Button>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content className="p-2 relative z-10 w-screen md:w-auto">
-          <div className="bg-neutral-950 p-2 border border-neutral-800 rounded-lg">
-            <div className="flex justify-between h-10">
+        <Popover.Content className="relative z-10 w-screen p-2 md:w-auto">
+          <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-2">
+            <div className="flex h-10 justify-between">
               <button
                 type="button"
                 onClick={prevMonth}
-                className="px-2 hover:bg-neutral-900 rounded-lg"
+                className="rounded-lg px-2 hover:bg-neutral-900"
               >
                 <ChevronLeftIcon height={18} />
               </button>
@@ -197,7 +197,7 @@ export const DatePicker: FC<DatePickerProps> = ({
                 onChange={(e) =>
                   setFocusMonth(setMonth(focusMonth, +e.currentTarget.value))
                 }
-                className="bg-neutral-950 text-neutral-50 hover:bg-neutral-900 rounded-lg"
+                className="rounded-lg bg-neutral-950 text-neutral-50 hover:bg-neutral-900"
               >
                 {MONTH_OPTIONS}
               </select>
@@ -209,12 +209,12 @@ export const DatePicker: FC<DatePickerProps> = ({
                 onChange={(e) =>
                   setFocusMonth(setYear(focusMonth, +e.currentTarget.value))
                 }
-                className="bg-neutral-950 text-neutral-50 hover:bg-neutral-900 rounded-lg"
+                className="rounded-lg bg-neutral-950 text-neutral-50 hover:bg-neutral-900"
               />
               <button
                 type="button"
                 onClick={nextMonth}
-                className="px-2 hover:bg-neutral-900 rounded-lg"
+                className="rounded-lg px-2 hover:bg-neutral-900"
               >
                 <ChevronRightIcon height={18} />
               </button>
@@ -223,7 +223,7 @@ export const DatePicker: FC<DatePickerProps> = ({
               {daysOfWeek.map((day) => (
                 <div
                   key={day}
-                  className="text-neutral-600 text-center lowercase text-sm font-mono"
+                  className="text-center font-mono text-sm lowercase text-neutral-600"
                 >
                   {day}
                 </div>
@@ -240,10 +240,10 @@ export const DatePicker: FC<DatePickerProps> = ({
                       key={stdFormat(date)}
                       aria-labelledby={stdFormat(date)}
                       className={cn(
-                        'h-10 w-auto md:w-10 rounded-lg disabled:opacity-10 border text-lg hover:bg-neutral-900',
+                        'h-10 w-auto rounded-lg border text-lg hover:bg-neutral-900 disabled:opacity-10 md:w-10',
                         {
                           'opacity-60': getMonth(date) !== getMonth(focusMonth),
-                          'bg-neutral-500 text-neutral-50 border-neutral-500':
+                          'border-neutral-500 bg-neutral-500 text-neutral-50':
                             current,
                           'border-neutral-500': isToday,
                           'border-transparent': !current && !isToday,

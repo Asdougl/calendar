@@ -14,21 +14,20 @@ import {
   type PropsWithChildren,
   useRef,
 } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { z } from 'zod'
 import { format, set } from 'date-fns'
-import { Header2 } from './headers'
-import { Button } from './button'
-import { Label } from './label'
-import { Input } from './input'
+import { type Event } from '@prisma/client'
+import { Header2 } from './ui/headers'
+import { Button } from './ui/button'
+import { Label } from './ui/label'
+import { Input } from './ui/input'
 import { Loader } from './ui/Loader'
 import { UncontrolledDatePicker } from './ui/DatePicker'
 import { UncontrolledTimeInput } from './ui/TimeInput'
-import { Alert } from './Alert'
-import type { Event } from '@/types/supabase'
-import type { Database } from '@/types/typegen'
-import { time } from '@/util/dates'
+import { Alert } from './ui/Alert'
+import { time } from '~/utils/dates'
+import { api } from '~/trpc/react'
+import { type RouterInputs } from '~/trpc/shared'
 
 type UpdateEventDialogProps = {
   disabled?: boolean
@@ -54,37 +53,37 @@ export const EventDialog: FC<EventDialogProps> = ({
 
   const formRef = useRef<HTMLFormElement>(null)
 
-  const supabase = createClientComponentClient<Database>()
+  const queryClient = api.useContext()
 
-  const queryClient = useQueryClient()
+  // const { data: categories, isLoading: isLoadingCategories } = useQuery({
+  //   queryKey: ['categories'],
+  //   queryFn: async () => {
+  //     const response = await supabase.from('categories').select('*')
+  //     return response.data || []
+  //   },
+  //   staleTime: time.hours(2),
+  //   refetchInterval: time.hours(3),
+  //   refetchOnMount: false,
+  //   refetchOnReconnect: false,
+  //   refetchOnWindowFocus: false,
+  // })
 
-  const { data: categories, isLoading: isLoadingCategories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const response = await supabase.from('categories').select('*')
-      return response.data || []
-    },
-    staleTime: time.hours(2),
-    refetchInterval: time.hours(3),
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-  })
+  const { data: categories, isLoading: isLoadingCategories } =
+    api.category.all.useQuery(undefined, {
+      staleTime: time.hours(2),
+      refetchInterval: time.hours(3),
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+    })
 
   const {
     mutate: insertMutate,
-    isPending: isInserting,
+    isLoading: isInserting,
     error: insertError,
-  } = useMutation({
-    mutationFn: async (params: {
-      title: string
-      datetime: string
-      category_id?: string | null
-    }) => {
-      await supabase.from('events').insert([params])
-    },
+  } = api.event.create.useMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events'] })
+      queryClient.event.invalidate().catch(console.error)
       setOpen(false)
       formRef.current?.reset()
     },
@@ -92,26 +91,11 @@ export const EventDialog: FC<EventDialogProps> = ({
 
   const {
     mutate: updateMutate,
-    isPending: isUpdating,
+    isLoading: isUpdating,
     error: updateError,
-  } = useMutation({
-    mutationFn: async ({
-      eventId,
-      ...params
-    }: {
-      eventId: string
-      title?: string
-      datetime?: string
-      category_id?: string | null
-    }) => {
-      const response = await supabase
-        .from('events')
-        .update(params)
-        .eq('id', eventId)
-      return response.data
-    },
+  } = api.event.update.useMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events'] })
+      queryClient.event.invalidate().catch(console.error)
       setOpen(false)
       formRef.current?.reset()
     },
@@ -119,15 +103,11 @@ export const EventDialog: FC<EventDialogProps> = ({
 
   const {
     mutate: deleteMutate,
-    isPending: isDeleting,
+    isLoading: isDeleting,
     error: deleteError,
-  } = useMutation({
-    mutationFn: async (eventId: string) => {
-      const response = await supabase.from('events').delete().eq('id', eventId)
-      return response.data
-    },
+  } = api.event.delete.useMutation({
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['events'] })
+      queryClient.event.invalidate().catch(console.error)
       setOpen(false)
       formRef.current?.reset()
     },
@@ -156,24 +136,25 @@ export const EventDialog: FC<EventDialogProps> = ({
       ? set(new Date(date), {
           hours: +time.slice(0, 2),
           minutes: +time.slice(2, 4),
-        }).toISOString()
-      : date
+        })
+      : new Date(date)
 
     if ('event' in props) {
-      const updateParams: Parameters<typeof updateMutate>[0] = {
-        eventId: props.event.id,
+      const updateParams: RouterInputs['event']['update'] = {
+        id: props.event.id,
       }
 
       if (title !== props.event.title) {
         updateParams.title = title.trim()
       }
 
-      if (date !== props.event.datetime) {
+      if (datetime !== props.event.datetime) {
         updateParams.datetime = datetime
       }
 
-      if (category_id && category_id !== props.event.category_id) {
-        updateParams.category_id = category_id === 'none' ? null : category_id
+      if (category_id && category_id !== props.event.categoryId) {
+        updateParams.categoryId =
+          category_id === 'none' || !category_id ? undefined : category_id
       }
 
       if (Object.keys(updateParams).length > 1) {
@@ -187,7 +168,8 @@ export const EventDialog: FC<EventDialogProps> = ({
       insertMutate({
         title,
         datetime,
-        category_id: category_id === 'none' ? null : category_id,
+        categoryId:
+          category_id === 'none' || !category_id ? undefined : category_id,
       })
     }
   }
@@ -206,14 +188,14 @@ export const EventDialog: FC<EventDialogProps> = ({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" />
-        <Dialog.Content className="fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 p-6 max-w-xl w-full">
+        <Dialog.Content className="fixed left-1/2 top-1/4 z-10 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 p-6">
           <div className="flex justify-between pb-2">
             <Dialog.Title asChild>
               <Header2>{'event' in props ? 'Edit Event' : 'Add Event'}</Header2>
             </Dialog.Title>
             <Dialog.Close asChild>
               <button
-                className="px-4 py-2 rounded hover:bg-neutral-800"
+                className="rounded px-4 py-2 hover:bg-neutral-800"
                 aria-label="close"
               >
                 <XMarkIcon height={20} />
@@ -225,7 +207,7 @@ export const EventDialog: FC<EventDialogProps> = ({
             ref={formRef}
             className="flex flex-col items-start gap-4"
           >
-            <div className="flex flex-col gap-1 w-full">
+            <div className="flex w-full flex-col gap-1">
               <Label htmlFor="event-name" className="sr-only">
                 Event name
               </Label>
@@ -237,18 +219,20 @@ export const EventDialog: FC<EventDialogProps> = ({
                 defaultValue={'event' in props ? props.event.title : undefined}
               />
             </div>
-            <div className="w-full flex justify-between flex-col gap-4">
-              <div className="flex gap-4 flex-grow flex-wrap">
+            <div className="flex w-full flex-col justify-between gap-4">
+              <div className="flex flex-grow flex-wrap gap-4">
                 <Select.Root
                   defaultValue={
-                    ('event' in props && props.event.category_id) || undefined
+                    'event' in props && props.event.categoryId
+                      ? props.event.categoryId
+                      : undefined
                   }
                   name="event-category-id"
                 >
                   <Select.Trigger asChild>
                     <Button
                       disabled={fullDisable}
-                      className="flex gap-1 flex-grow justify-between items-center w-full md:w-auto"
+                      className="flex w-full flex-grow items-center justify-between gap-1 md:w-auto"
                     >
                       {isLoadingCategories ? (
                         <Loader />
@@ -266,17 +250,17 @@ export const EventDialog: FC<EventDialogProps> = ({
                     </Button>
                   </Select.Trigger>
                   <Select.Portal>
-                    <Select.Content className="bg-neutral-950 border border-neutral-800 relative z-10 px-1 py-2 rounded-lg">
+                    <Select.Content className="relative z-10 rounded-lg border border-neutral-800 bg-neutral-950 px-1 py-2">
                       <Select.ScrollUpButton className="SelectScrollButton">
                         <ChevronUpIcon height={20} />
                       </Select.ScrollUpButton>
                       <Select.Viewport className="flex flex-col gap-1">
                         <Select.Item
                           value="none"
-                          className="pl-8 relative pr-4 hover:bg-neutral-900 hover:text-neutral-50 text-neutral-300"
+                          className="relative pl-8 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50"
                         >
                           <Select.ItemText>No Category</Select.ItemText>
-                          <Select.ItemIndicator className="absolute top-1/2 left-0 -translate-y-1/2">
+                          <Select.ItemIndicator className="absolute left-0 top-1/2 -translate-y-1/2">
                             <CheckIcon height={20} />
                           </Select.ItemIndicator>
                         </Select.Item>
@@ -284,10 +268,10 @@ export const EventDialog: FC<EventDialogProps> = ({
                           <Select.Item
                             key={category.id}
                             value={category.id}
-                            className="pl-8 relative pr-4 hover:bg-neutral-900 hover:text-neutral-50 text-neutral-300"
+                            className="relative pl-8 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50"
                           >
                             <Select.ItemText>{category.name}</Select.ItemText>
-                            <Select.ItemIndicator className="absolute top-1/2 left-0 -translate-y-1/2">
+                            <Select.ItemIndicator className="absolute left-0 top-1/2 -translate-y-1/2">
                               <CheckIcon height={20} />
                             </Select.ItemIndicator>
                           </Select.Item>
@@ -299,12 +283,12 @@ export const EventDialog: FC<EventDialogProps> = ({
                     </Select.Content>
                   </Select.Portal>
                 </Select.Root>
-                <div className="flex gap-4 w-full md:w-auto">
+                <div className="flex w-full gap-4 md:w-auto">
                   <UncontrolledDatePicker
                     name="event-date"
                     defaultValue={
                       'event' in props
-                        ? props.event.datetime
+                        ? props.event.datetime.toISOString()
                         : props.initialDate.toISOString()
                     }
                     className="flex-grow"
@@ -320,7 +304,7 @@ export const EventDialog: FC<EventDialogProps> = ({
                   />
                 </div>
               </div>
-              <div className="flex justify-between items-start">
+              <div className="flex items-start justify-between">
                 {fullError && (
                   <Alert
                     level="error"
@@ -335,12 +319,12 @@ export const EventDialog: FC<EventDialogProps> = ({
                     message={errorMsg}
                   />
                 )}
-                <div className="flex gap-4 justify-end flex-grow">
+                <div className="flex flex-grow justify-end gap-4">
                   {'event' in props && (
                     <Button
                       intent="danger"
                       type="button"
-                      onClick={() => deleteMutate(props.event.id)}
+                      onClick={() => deleteMutate({ id: props.event.id })}
                       disabled={fullDisable}
                     >
                       Delete
