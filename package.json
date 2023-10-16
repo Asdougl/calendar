@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@asdougl/eslint-config": "^1.2.3",
+    "@next/bundle-analyzer": "^13.5.4",
     "@types/eslint": "^8.44.2",
     "@types/node": "^18.16.0",
     "@types/react": "^18.2.20",

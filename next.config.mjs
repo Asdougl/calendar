@@ -1,3 +1,5 @@
+import bundleAnaylzer from '@next/bundle-analyzer'
+
 /**
  * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
  * for Docker builds.
@@ -15,7 +17,13 @@ if (env.NODE_ENV === 'development' && nextAuthPort !== String(env.PORT)) {
   )
 }
 
+// Bundle Analyzer
+const withBundleAnalyzer = bundleAnaylzer({
+  enabled: env.ANALYZE === 'true',
+  openAnalyzer: true,
+})
+
 /** @type {import("next").NextConfig} */
 const config = {}
 
-export default config
+export default withBundleAnalyzer(config)

@@ -14,7 +14,7 @@ const atkinson_hyperlegible = Atkinson_Hyperlegible({
 export const metadata = {
   title: 'Asdougl Calendar',
   description: "Asdougl's personal calendar app",
-  icons: [{ rel: 'icon', url: '/favicon.ico' }],
+  icons: [{ rel: 'icon', url: '/favicon.svg' }],
 }
 
 export default function RootLayout({

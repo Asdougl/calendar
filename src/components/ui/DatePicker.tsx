@@ -6,12 +6,8 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/24/solid'
 import {
-  add,
-  endOfWeek,
   format,
   getDate,
-  getDay,
-  getDayOfYear,
   getMonth,
   getYear,
   isAfter,
@@ -22,10 +18,10 @@ import {
   setDate,
   setMonth,
   setYear,
-  startOfWeek,
 } from 'date-fns'
 import { Button } from './button'
 import { cn } from '~/utils/classnames'
+import { getMonthDates } from '~/utils/dates'
 
 const MONTH_OPTIONS = [
   <option key={0} value={0}>
@@ -68,52 +64,6 @@ const MONTH_OPTIONS = [
 
 const stdFormat = (date: Date) => format(date, 'yyyy-MM-dd')
 const displayFormat = (date: Date) => format(date, 'd MMM yy')
-
-export const getMonthDates = (year: number, month: number) => {
-  const firstOfMonth = set(new Date(), {
-    year,
-    month,
-    date: 1,
-  })
-
-  const lastOfMonth = set(new Date(), {
-    year,
-    month: month + 1,
-    date: 0,
-  })
-
-  // number of weeks in a month when week starts on Monday
-  const weeks = Math.ceil(
-    (getDayOfYear(endOfWeek(lastOfMonth, { weekStartsOn: 1 })) -
-      getDayOfYear(startOfWeek(firstOfMonth, { weekStartsOn: 1 }))) /
-      7
-  )
-
-  let focusDay = set(new Date(), {
-    year,
-    month,
-    date: 1,
-  })
-
-  const focusDayOfWeek = getDay(focusDay)
-
-  focusDay = set(focusDay, {
-    date:
-      getDate(focusDay) -
-      (focusDayOfWeek < 1 ? focusDayOfWeek + 6 : focusDayOfWeek - 1),
-  })
-
-  const rows: Date[][] = []
-  for (let i = 0; i < weeks; i++) {
-    rows[i] = []
-    for (let j = 0; j < 7; j++) {
-      rows[i][j] = focusDay
-      focusDay = add(focusDay, { days: 1 })
-    }
-  }
-
-  return rows
-}
 
 const isDisabled = (test: Date, min?: Date, max?: Date) => {
   if (max && isAfter(test, max)) {

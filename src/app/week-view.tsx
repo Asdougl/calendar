@@ -2,7 +2,9 @@
 
 import type { FC } from 'react'
 import { useMemo } from 'react'
-import { getDay, setDay, startOfDay } from 'date-fns'
+import getDay from 'date-fns/getDay'
+import setDay from 'date-fns/setDay'
+import startOfDay from 'date-fns/startOfDay'
 import { EllipsisVerticalIcon } from '@heroicons/react/24/solid'
 import { Header1 } from '~/components/ui/headers'
 import { time } from '~/utils/dates'

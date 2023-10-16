@@ -2,41 +2,28 @@
 
 import { useState, type FC, useMemo } from 'react'
 import { endOfMonth, getMonth, getYear, set } from 'date-fns'
-import { useQuery } from '@tanstack/react-query'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Header1 } from '~/components/ui/headers'
-import type { Database } from '~/types/typegen'
-import { EventWithCategoryQuery } from '~/types/supabase'
-import { getMonthDates } from '~/components/ui/DatePicker'
 import { cn } from '~/utils/classnames'
+import { api } from '~/trpc/react'
+import { getMonthDates } from '~/utils/dates'
 
 export const MonthView: FC = () => {
-  const supabase = createClientComponentClient<Database>()
-
   const [focusMonth, setFocusMonth] = useState({
     month: getMonth(new Date()),
     year: getYear(new Date()),
   })
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['events', 'months', `${focusMonth.month}-${focusMonth.year}`],
-    queryFn: async () => {
-      const startOfMonthDate = set(new Date(), {
-        date: 1,
-        month: focusMonth.month,
-        year: focusMonth.year,
-      })
+  const startOfMonthDate = set(new Date(), {
+    date: 1,
+    month: focusMonth.month,
+    year: focusMonth.year,
+  })
 
-      const endOfMonthDate = endOfMonth(startOfMonthDate)
+  const endOfMonthDate = endOfMonth(startOfMonthDate)
 
-      const response = await supabase
-        .from(EventWithCategoryQuery.from)
-        .select(EventWithCategoryQuery.select)
-        .gte('datetime', startOfMonthDate.toISOString())
-        .lt('datetime', endOfMonthDate.toISOString())
-
-      return response.data || []
-    },
+  const { data, isLoading } = api.event.range.useQuery({
+    start: startOfMonthDate,
+    end: endOfMonthDate,
   })
 
   // eslint-disable-next-line no-console
