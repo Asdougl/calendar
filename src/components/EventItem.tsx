@@ -1,4 +1,5 @@
 import type { FC } from 'react'
+import { CheckIcon } from '@heroicons/react/24/solid'
 import { EventDialog } from './EventDialog'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
@@ -28,7 +29,19 @@ export const EventItem: FC<{
               : 'bg-neutral-800'
           )}
         >
-          {event.category ? event.category.icon : event.title[0]}
+          {event.done !== null ? (
+            <CheckIcon
+              height={16}
+              className={cn(
+                'transition-transform',
+                event.done ? 'rotate-0 scale-100' : 'rotate-90 scale-0'
+              )}
+            />
+          ) : event.category ? (
+            event.category.icon
+          ) : (
+            event.title[0]
+          )}
         </div>
         <div className="flex flex-col items-start">
           <span

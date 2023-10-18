@@ -1,7 +1,12 @@
 import type { VariantProps } from 'class-variance-authority'
 import { cva } from 'class-variance-authority'
-import { forwardRef, type ComponentProps, type ElementType } from 'react'
-import { classNameProp } from '../helpers'
+import {
+  forwardRef,
+  type ComponentProps,
+  type ElementType,
+  type FC,
+} from 'react'
+import Link from 'next/link'
 import { cn } from '~/utils/classnames'
 
 const button = cva(
@@ -28,42 +33,25 @@ const button = cva(
 )
 type ButtonVariantProps = VariantProps<typeof button>
 
-type ButtonProps<T extends ElementType> = {
-  as?: T
-} & ButtonVariantProps &
-  ComponentProps<T>
+type ButtonProps<T extends ElementType> = ButtonVariantProps & ComponentProps<T>
 
-/*
-export const Button = <T extends ElementType = 'button'>({
-  as,
+export const Button = forwardRef<HTMLButtonElement, ButtonProps<'button'>>(
+  function FwdButton({ className, ...props }, ref) {
+    return (
+      <button {...props} ref={ref} className={cn(button(props), className)} />
+    )
+  }
+)
+
+export const ButtonAnchor = forwardRef<HTMLAnchorElement, ButtonProps<'a'>>(
+  function FwdButtonLink({ className, ...props }, ref) {
+    return <a {...props} ref={ref} className={cn(button(props), className)} />
+  }
+)
+
+export const ButtonLink: FC<ButtonProps<typeof Link>> = ({
+  className,
   ...props
-}: ButtonProps<T>) => {
-  const Component = as || 'button'
-
-  return (
-    <Component {...props} className={cn(button(props), classNameProp(props))} />
-  )
+}) => {
+  return <Link {...props} className={cn(button(props), className)} />
 }
-*/
-
-export const Button = forwardRef(function FwRefButton<
-  T extends ElementType = 'button',
->({ as, ...props }: ButtonProps<T>, ref: unknown) {
-  // forgive me father for I have sinned
-  // DON'T DO THIS AT HOME
-
-  // eslint-disable-next-line
-  const Component = as || 'button'
-
-  return (
-    <Component
-      // eslint-disable-next-line
-      {...props}
-      ref={ref}
-      className={cn(button(props), classNameProp(props))}
-    />
-  )
-}) as <T extends ElementType = 'button'>({
-  as,
-  ...props
-}: ButtonProps<T>) => JSX.Element

@@ -2,7 +2,7 @@
 
 import {
   CalendarDaysIcon,
-  GlobeAltIcon,
+  CheckCircleIcon,
   InboxIcon,
   Squares2X2Icon,
 } from '@heroicons/react/24/solid'
@@ -62,9 +62,9 @@ export const Navbar = () => {
           </li>
           <li>
             <NavBarItem
-              path="/year"
-              icon={<GlobeAltIcon height={20} />}
-              label="Year"
+              path="/todos"
+              icon={<CheckCircleIcon height={20} />}
+              label="Todos"
             />
           </li>
         </ul>

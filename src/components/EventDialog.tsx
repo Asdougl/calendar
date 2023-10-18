@@ -17,6 +17,7 @@ import {
 import { z } from 'zod'
 import { format, set } from 'date-fns'
 import { type Event } from '@prisma/client'
+import * as Checkbox from '@radix-ui/react-checkbox'
 import { Header2 } from './ui/headers'
 import { Button } from './ui/button'
 import { Label } from './ui/label'
@@ -28,6 +29,8 @@ import { Alert } from './ui/Alert'
 import { time } from '~/utils/dates'
 import { api } from '~/trpc/react'
 import { type RouterInputs } from '~/trpc/shared'
+import { isError } from '~/utils/guards'
+import { log } from '~/utils/logging'
 
 type UpdateEventDialogProps = {
   disabled?: boolean
@@ -55,19 +58,6 @@ export const EventDialog: FC<EventDialogProps> = ({
 
   const queryClient = api.useContext()
 
-  // const { data: categories, isLoading: isLoadingCategories } = useQuery({
-  //   queryKey: ['categories'],
-  //   queryFn: async () => {
-  //     const response = await supabase.from('categories').select('*')
-  //     return response.data || []
-  //   },
-  //   staleTime: time.hours(2),
-  //   refetchInterval: time.hours(3),
-  //   refetchOnMount: false,
-  //   refetchOnReconnect: false,
-  //   refetchOnWindowFocus: false,
-  // })
-
   const { data: categories, isLoading: isLoadingCategories } =
     api.category.all.useQuery(undefined, {
       staleTime: time.hours(2),
@@ -83,7 +73,9 @@ export const EventDialog: FC<EventDialogProps> = ({
     error: insertError,
   } = api.event.create.useMutation({
     onSuccess: () => {
-      queryClient.event.invalidate().catch(console.error)
+      queryClient.event
+        .invalidate()
+        .catch((e) => (isError(e) ? setErrorMsg(e.message) : log('error', e)))
       setOpen(false)
       formRef.current?.reset()
     },
@@ -95,7 +87,9 @@ export const EventDialog: FC<EventDialogProps> = ({
     error: updateError,
   } = api.event.update.useMutation({
     onSuccess: () => {
-      queryClient.event.invalidate().catch(console.error)
+      queryClient.event
+        .invalidate()
+        .catch((e) => (isError(e) ? setErrorMsg(e.message) : log('error', e)))
       setOpen(false)
       formRef.current?.reset()
     },
@@ -107,7 +101,9 @@ export const EventDialog: FC<EventDialogProps> = ({
     error: deleteError,
   } = api.event.delete.useMutation({
     onSuccess: () => {
-      queryClient.event.invalidate().catch(console.error)
+      queryClient.event
+        .invalidate()
+        .catch((e) => (isError(e) ? setErrorMsg(e.message) : log('error', e)))
       setOpen(false)
       formRef.current?.reset()
     },
@@ -131,6 +127,11 @@ export const EventDialog: FC<EventDialogProps> = ({
     const category_id = z.string().parse(formData.get('event-category-id'))
     const date = z.string().parse(formData.get('event-date'))
     const time = z.string().parse(formData.get('event-time'))
+    const todo = z.string().nullable().parse(formData.get('event-todo'))
+    // const todoDone = z
+    //   .string()
+    //   .nullable()
+    //   .parse(formData.get('event-todo-done'))
 
     const datetime = time
       ? set(new Date(date), {
@@ -157,6 +158,12 @@ export const EventDialog: FC<EventDialogProps> = ({
           category_id === 'none' || !category_id ? undefined : category_id
       }
 
+      if (todo === 'on' && props.event.done === null) {
+        updateParams.done = false
+      } else if (todo === 'off' && props.event.done !== null) {
+        updateParams.done = null
+      }
+
       if (Object.keys(updateParams).length > 1) {
         updateMutate(updateParams)
       }
@@ -170,6 +177,7 @@ export const EventDialog: FC<EventDialogProps> = ({
         datetime,
         categoryId:
           category_id === 'none' || !category_id ? undefined : category_id,
+        todo: todo === 'on',
       })
     }
   }
@@ -189,6 +197,7 @@ export const EventDialog: FC<EventDialogProps> = ({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" />
         <Dialog.Content className="fixed left-1/2 top-1/4 z-10 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 p-6">
+          {/* Row 0 */}
           <div className="flex justify-between pb-2">
             <Dialog.Title asChild>
               <Header2>{'event' in props ? 'Edit Event' : 'Add Event'}</Header2>
@@ -207,6 +216,7 @@ export const EventDialog: FC<EventDialogProps> = ({
             ref={formRef}
             className="flex flex-col items-start gap-4"
           >
+            {/* Row 1 -- title */}
             <div className="flex w-full flex-col gap-1">
               <Label htmlFor="event-name" className="sr-only">
                 Event name
@@ -217,9 +227,11 @@ export const EventDialog: FC<EventDialogProps> = ({
                 name="event-name"
                 type="text"
                 defaultValue={'event' in props ? props.event.title : undefined}
+                autoComplete="off"
               />
             </div>
             <div className="flex w-full flex-col justify-between gap-4">
+              {/* Row 2 -- category */}
               <div className="flex flex-grow flex-wrap gap-4">
                 <Select.Root
                   defaultValue={
@@ -283,6 +295,7 @@ export const EventDialog: FC<EventDialogProps> = ({
                     </Select.Content>
                   </Select.Portal>
                 </Select.Root>
+                {/* Row 3 (Mobile) -- date & time */}
                 <div className="flex w-full gap-4 md:w-auto">
                   <UncontrolledDatePicker
                     name="event-date"
@@ -304,21 +317,48 @@ export const EventDialog: FC<EventDialogProps> = ({
                   />
                 </div>
               </div>
-              <div className="flex items-start justify-between">
-                {fullError && (
-                  <Alert
-                    level="error"
-                    title="An Error Occurred"
-                    message={fullError.message}
-                  />
-                )}
-                {errorMsg && (
-                  <Alert
-                    level="error"
-                    title="An Error Occurred"
-                    message={errorMsg}
-                  />
-                )}
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                {/* Row 4 -- Todo */}
+                <div className="flex h-full w-full gap-4">
+                  <label
+                    htmlFor="event-todo"
+                    className="relative flex h-full items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2 transition-colors data-[state=checked]:bg-neutral-800"
+                  >
+                    <Checkbox.Root
+                      id="event-todo"
+                      name="event-todo"
+                      defaultChecked={
+                        'event' in props && props.event.done !== null
+                      }
+                      className="flex h-4 w-4 items-center justify-center rounded bg-neutral-800"
+                      disabled
+                    >
+                      <Checkbox.Indicator>
+                        <CheckIcon height={20} className="w-3" />
+                      </Checkbox.Indicator>
+                    </Checkbox.Root>
+                    <span className="text-neutral-300">is todo</span>
+                  </label>
+                  {'event' in props && props.event.done !== null && (
+                    <label
+                      htmlFor="event-todo-done"
+                      className="relative flex h-full items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2 transition-colors data-[state=checked]:bg-neutral-800"
+                    >
+                      <Checkbox.Root
+                        id="event-todo-done"
+                        name="event-todo-done"
+                        defaultChecked={props.event.done}
+                        className="flex h-4 w-4 items-center justify-center rounded bg-neutral-800"
+                        disabled
+                      >
+                        <Checkbox.Indicator>
+                          <CheckIcon height={20} className="w-3" />
+                        </Checkbox.Indicator>
+                      </Checkbox.Root>
+                      <span className="text-neutral-300">done</span>
+                    </label>
+                  )}
+                </div>
                 <div className="flex flex-grow justify-end gap-4">
                   {'event' in props && (
                     <Button
@@ -341,6 +381,20 @@ export const EventDialog: FC<EventDialogProps> = ({
                   </Button>
                 </div>
               </div>
+              {fullError && (
+                <Alert
+                  level="error"
+                  title="An Error Occurred"
+                  message={fullError.message}
+                />
+              )}
+              {errorMsg && (
+                <Alert
+                  level="error"
+                  title="An Error Occurred"
+                  message={errorMsg}
+                />
+              )}
             </div>
           </form>
         </Dialog.Content>

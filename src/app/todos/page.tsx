@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { Inbox } from './inbox'
+import { TodosView } from './todos-view'
 import { Navbar } from '~/components/Navbar'
 import { getServerAuthSession } from '~/server/auth'
 
@@ -12,7 +12,7 @@ export default async function Home() {
 
   return (
     <main className="flex h-screen flex-col">
-      <Inbox />
+      <TodosView />
       <Navbar />
     </main>
   )

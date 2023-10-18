@@ -1,5 +1,6 @@
 import type { EffectCallback } from 'react'
 import { useEffect, useRef, useState } from 'react'
+import { type ZodSchema } from 'zod'
 
 export const useDebouncedState = <T>(initialValue: T, delay: number) => {
   const [value, setValue] = useState(initialValue)
@@ -31,4 +32,27 @@ export const useClientTimezone = () => {
     setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone)
   }, [])
   return timezone
+}
+
+export const useLocalStorage = <T>(key: string, validator: ZodSchema<T>) => {
+  const [value, setValue] = useState(validator.parse({}))
+
+  useEffect(() => {
+    const storedValue = localStorage.getItem(key)
+    if (storedValue) {
+      try {
+        setValue(validator.parse(JSON.parse(storedValue)))
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(e)
+      }
+    }
+  }, [key, validator])
+
+  const setLocalStorageValue = (newValue: T) => {
+    localStorage.setItem(key, JSON.stringify(newValue))
+    setValue(newValue)
+  }
+
+  return [value, setLocalStorageValue] as const
 }

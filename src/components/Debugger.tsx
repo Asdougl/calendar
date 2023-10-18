@@ -37,7 +37,7 @@ export const Debugger: FC = () => {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button>
+        <button className="flex h-full w-full items-center justify-center">
           <BugAntIcon height={20} />
         </button>
       </Dialog.Trigger>

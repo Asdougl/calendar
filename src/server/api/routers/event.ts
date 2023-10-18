@@ -18,12 +18,33 @@ export const eventRouter = createTRPCRouter({
         },
       })
     }),
+  todos: protectedProcedure
+    .input(z.object({ done: z.boolean() }))
+    .query(({ ctx, input }) => {
+      const doneQuery = input.done
+        ? {
+            NOT: {
+              done: null,
+            },
+          }
+        : {
+            done: false,
+          }
+
+      return ctx.db.event.findMany({
+        where: {
+          createdById: ctx.session.user.id,
+          ...doneQuery,
+        },
+      })
+    }),
   create: protectedProcedure
     .input(
       z.object({
         title: z.string(),
         datetime: z.date(),
         categoryId: z.string().optional(),
+        todo: z.boolean().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
@@ -33,6 +54,7 @@ export const eventRouter = createTRPCRouter({
           datetime: input.datetime,
           categoryId: input.categoryId,
           createdById: ctx.session.user.id,
+          done: input.todo ? false : null,
         },
       })
     }),
@@ -43,6 +65,7 @@ export const eventRouter = createTRPCRouter({
         title: z.string().optional(),
         datetime: z.date().optional(),
         categoryId: z.string().optional(),
+        done: z.boolean().nullable().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
@@ -54,6 +77,7 @@ export const eventRouter = createTRPCRouter({
           title: input.title,
           datetime: input.datetime,
           categoryId: input.categoryId,
+          done: input.done,
         },
       })
     }),
