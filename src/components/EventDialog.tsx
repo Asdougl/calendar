@@ -15,22 +15,20 @@ import {
   useRef,
 } from 'react'
 import { z } from 'zod'
-import { format, set } from 'date-fns'
 import { type Event } from '@prisma/client'
 import * as Checkbox from '@radix-ui/react-checkbox'
 import { Header2 } from './ui/headers'
-import { Button } from './ui/button'
+import { Button, SubmitButton } from './ui/button'
 import { Label } from './ui/label'
 import { Input } from './ui/input'
 import { Loader } from './ui/Loader'
 import { UncontrolledDatePicker } from './ui/DatePicker'
 import { UncontrolledTimeInput } from './ui/TimeInput'
 import { Alert } from './ui/Alert'
-import { time } from '~/utils/dates'
+import { time, toCalendarDate } from '~/utils/dates'
 import { api } from '~/trpc/react'
 import { type RouterInputs } from '~/trpc/shared'
-import { isError } from '~/utils/guards'
-import { log } from '~/utils/logging'
+import { match } from '~/utils/misc'
 
 type UpdateEventDialogProps = {
   disabled?: boolean
@@ -72,10 +70,8 @@ export const EventDialog: FC<EventDialogProps> = ({
     isLoading: isInserting,
     error: insertError,
   } = api.event.create.useMutation({
-    onSuccess: () => {
-      queryClient.event
-        .invalidate()
-        .catch((e) => (isError(e) ? setErrorMsg(e.message) : log('error', e)))
+    onSuccess: async () => {
+      await queryClient.event.invalidate()
       setOpen(false)
       formRef.current?.reset()
     },
@@ -86,10 +82,8 @@ export const EventDialog: FC<EventDialogProps> = ({
     isLoading: isUpdating,
     error: updateError,
   } = api.event.update.useMutation({
-    onSuccess: () => {
-      queryClient.event
-        .invalidate()
-        .catch((e) => (isError(e) ? setErrorMsg(e.message) : log('error', e)))
+    onSuccess: async () => {
+      await queryClient.event.invalidate()
       setOpen(false)
       formRef.current?.reset()
     },
@@ -100,10 +94,8 @@ export const EventDialog: FC<EventDialogProps> = ({
     isLoading: isDeleting,
     error: deleteError,
   } = api.event.delete.useMutation({
-    onSuccess: () => {
-      queryClient.event
-        .invalidate()
-        .catch((e) => (isError(e) ? setErrorMsg(e.message) : log('error', e)))
+    onSuccess: async () => {
+      await queryClient.event.invalidate()
       setOpen(false)
       formRef.current?.reset()
     },
@@ -125,7 +117,7 @@ export const EventDialog: FC<EventDialogProps> = ({
 
     const title = z.string().parse(formData.get('event-name'))
     const category_id = z.string().parse(formData.get('event-category-id'))
-    const date = z.string().parse(formData.get('event-date'))
+    const dateraw = z.string().parse(formData.get('event-date'))
     const time = z.string().parse(formData.get('event-time'))
     const todo = z.string().nullable().parse(formData.get('event-todo'))
     // const todoDone = z
@@ -133,29 +125,32 @@ export const EventDialog: FC<EventDialogProps> = ({
     //   .nullable()
     //   .parse(formData.get('event-todo-done'))
 
-    const datetime = time
-      ? set(new Date(date), {
-          hours: +time.slice(0, 2),
-          minutes: +time.slice(2, 4),
-        })
-      : new Date(date)
+    const [date] = match(/(\d{4}-\d{2}-\d{2})/, dateraw)
+
+    if (!title) return setErrorMsg('Title is required')
+    if (!date) return setErrorMsg('Date is required')
 
     if ('event' in props) {
       const updateParams: RouterInputs['event']['update'] = {
         id: props.event.id,
+        date: props.event.date,
       }
 
       if (title !== props.event.title) {
         updateParams.title = title.trim()
       }
 
-      if (datetime !== props.event.datetime) {
-        updateParams.datetime = datetime
+      if (time !== props.event.time) {
+        if (time) {
+          updateParams.time = `${time[0]}${time[1]}:${time[2]}${time[3]}`
+        } else {
+          updateParams.time = null
+        }
       }
 
-      if (category_id && category_id !== props.event.categoryId) {
+      if (category_id !== props.event.categoryId) {
         updateParams.categoryId =
-          category_id === 'none' || !category_id ? undefined : category_id
+          category_id === 'none' || !category_id ? null : category_id
       }
 
       if (todo === 'on' && props.event.done === null) {
@@ -164,17 +159,18 @@ export const EventDialog: FC<EventDialogProps> = ({
         updateParams.done = null
       }
 
-      if (Object.keys(updateParams).length > 1) {
+      if (
+        Object.keys(updateParams).length > 2 ||
+        updateParams.date !== props.event.date
+      ) {
         updateMutate(updateParams)
       }
       // else nothing being updated, don't bother.
     } else {
-      if (!title) return setErrorMsg('Title is required')
-      if (!datetime) return setErrorMsg('Date is required')
-
       insertMutate({
         title,
-        datetime,
+        date,
+        time: time ? `${time[0]}${time[1]}:${time[2]}${time[3]}` : undefined,
         categoryId:
           category_id === 'none' || !category_id ? undefined : category_id,
         todo: todo === 'on',
@@ -182,8 +178,9 @@ export const EventDialog: FC<EventDialogProps> = ({
     }
   }
 
-  const fullLoading =
-    isLoadingCategories || isUpdating || isInserting || isDeleting
+  const constructLoading = isUpdating || isInserting
+
+  const fullLoading = isLoadingCategories || constructLoading || isDeleting
 
   const fullDisable = disabled || fullLoading
 
@@ -301,16 +298,16 @@ export const EventDialog: FC<EventDialogProps> = ({
                     name="event-date"
                     defaultValue={
                       'event' in props
-                        ? props.event.datetime.toISOString()
-                        : props.initialDate.toISOString()
+                        ? props.event.date
+                        : toCalendarDate(props.initialDate)
                     }
                     className="flex-grow"
                   />
                   <UncontrolledTimeInput
                     name="event-time"
                     defaultValue={
-                      'event' in props
-                        ? format(new Date(props.event.datetime), 'HHmm')
+                      'event' in props && props.event.time
+                        ? props.event.time.replaceAll(/[^0-9]/g, '')
                         : ''
                     }
                     className="w-24 flex-grow"
@@ -361,24 +358,24 @@ export const EventDialog: FC<EventDialogProps> = ({
                 </div>
                 <div className="flex flex-grow justify-end gap-4">
                   {'event' in props && (
-                    <Button
+                    <SubmitButton
                       intent="danger"
                       type="button"
+                      loading={isDeleting}
                       onClick={() => deleteMutate({ id: props.event.id })}
                       disabled={fullDisable}
                     >
                       Delete
-                    </Button>
+                    </SubmitButton>
                   )}
-                  <Button intent="primary" type="submit" disabled={fullDisable}>
-                    {fullLoading ? (
-                      <Loader />
-                    ) : 'event' in props ? (
-                      'Save'
-                    ) : (
-                      'Add'
-                    )}
-                  </Button>
+                  <SubmitButton
+                    loading={constructLoading}
+                    intent="primary"
+                    type="submit"
+                    disabled={fullDisable}
+                  >
+                    {'event' in props ? 'Save' : 'Add'}
+                  </SubmitButton>
                 </div>
               </div>
               {fullError && (

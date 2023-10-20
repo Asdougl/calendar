@@ -13,7 +13,7 @@ import {
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { z } from 'zod'
 import { Header1 } from '~/components/ui/headers'
-import { time } from '~/utils/dates'
+import { time, toCalendarDate } from '~/utils/dates'
 import { Debugger } from '~/components/Debugger'
 import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
@@ -41,10 +41,12 @@ export const Inbox: FC = () => {
     isFetching,
   } = api.event.range.useQuery(
     {
-      start: focusDate,
-      end: setDay(focusDate, 7, {
-        weekStartsOn: getDay(focusDate),
-      }),
+      start: toCalendarDate(focusDate),
+      end: toCalendarDate(
+        setDay(focusDate, 7, {
+          weekStartsOn: getDay(focusDate),
+        })
+      ),
     },
     {
       refetchOnWindowFocus: false,
@@ -59,7 +61,7 @@ export const Inbox: FC = () => {
     const eventsByDay: NonNullable<RouterOutputs['event']['range']>[] = []
 
     events.forEach((event) => {
-      const dayOfWeek = getDay(new Date(event.datetime))
+      const dayOfWeek = getDay(new Date(event.date))
       const thisDay = eventsByDay[dayOfWeek]
       if (thisDay) thisDay?.push(event)
       else eventsByDay[dayOfWeek] = [event]

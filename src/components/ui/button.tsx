@@ -7,17 +7,24 @@ import {
   type FC,
 } from 'react'
 import Link from 'next/link'
+import { Loader } from './Loader'
 import { cn } from '~/utils/classnames'
 
 const button = cva(
-  'rounded-lg border focus:outline-none focus:ring ring-neutral-300',
+  'rounded-lg border focus:outline-none focus:ring focus:ring-opacity-50',
   {
     variants: {
       intent: {
-        primary: 'bg-neutral-50 text-neutral-950 border-blue-500',
-        secondary: 'bg-neutral-700 text-neutral-50 border-neutral-800',
-        tertiary: 'bg-neutral-950 text-neutral-50 border-neutral-800',
-        danger: 'bg-red-950 text-neutral-50 border-red-900',
+        primary:
+          'bg-neutral-50 text-neutral-950 border-blue-500 hover:bg-neutral-200 ring-neutral-100',
+        secondary:
+          'bg-neutral-700 text-neutral-50 border-neutral-800 hover:bg-neutral-600 ring-neutral-200',
+        tertiary:
+          'bg-neutral-950 text-neutral-50 border-neutral-800 hover:bg-neutral-900 ring-neutral-400',
+        danger:
+          'bg-red-950 text-neutral-50 border-red-900 hover:bg-red-900 ring-red-300',
+        success:
+          'bg-green-950 text-neutral-50 border-green-900 hover:bg-green-900 ring-green-300',
       },
       size: {
         sm: 'px-3 py-1 text-sm',
@@ -55,3 +62,33 @@ export const ButtonLink: FC<ButtonProps<typeof Link>> = ({
 }) => {
   return <Link {...props} className={cn(button(props), className)} />
 }
+
+type SubmitButtonProps = ButtonProps<'button'> & {
+  loading?: boolean
+}
+
+export const SubmitButton = forwardRef<HTMLButtonElement, SubmitButtonProps>(
+  function FwdSubmitButton(
+    { loading, className, children, type = 'submit', ...props },
+    ref
+  ) {
+    return (
+      <button
+        {...props}
+        type={type}
+        ref={ref}
+        className={cn(button(props), 'relative', className)}
+      >
+        <span className={loading ? 'opacity-0' : 'opacity-100'}>
+          {children}
+        </span>
+        <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center">
+          <Loader
+            intent={props.intent}
+            className={loading ? 'opacity-100' : 'opacity-0'}
+          />
+        </div>
+      </button>
+    )
+  }
+)

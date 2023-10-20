@@ -1,16 +1,26 @@
 import { z } from 'zod'
+import { zonedTimeToUtc } from 'date-fns-tz'
+import { getUnixTime } from 'date-fns'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
 
 export const eventRouter = createTRPCRouter({
   range: protectedProcedure
-    .input(z.object({ start: z.date(), end: z.date() }))
+    .input(z.object({ start: z.string(), end: z.string() }))
     .query(({ ctx, input }) => {
+      const unixStart = getUnixTime(
+        zonedTimeToUtc(`${input.start}T00:00:00.0000Z`, 'UTC')
+      )
+
+      const unixEnd = getUnixTime(
+        zonedTimeToUtc(`${input.end}T00:00:00.0000Z`, 'UTC')
+      )
+
       return ctx.db.event.findMany({
         where: {
           createdById: ctx.session.user.id,
-          datetime: {
-            gte: input.start,
-            lt: input.end,
+          timestamp: {
+            gte: unixStart,
+            lt: unixEnd,
           },
         },
         include: {
@@ -42,16 +52,23 @@ export const eventRouter = createTRPCRouter({
     .input(
       z.object({
         title: z.string(),
-        datetime: z.date(),
+        date: z.string(),
+        time: z.string().optional(),
         categoryId: z.string().optional(),
         todo: z.boolean().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
+      const timestamp = getUnixTime(
+        zonedTimeToUtc(`${input.date}T${input.time || '00:00:00.0000'}Z`, 'UTC')
+      )
+
       return ctx.db.event.create({
         data: {
           title: input.title,
-          datetime: input.datetime,
+          date: input.date,
+          time: input.time,
+          timestamp: timestamp,
           categoryId: input.categoryId,
           createdById: ctx.session.user.id,
           done: input.todo ? false : null,
@@ -63,19 +80,26 @@ export const eventRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         title: z.string().optional(),
-        datetime: z.date().optional(),
-        categoryId: z.string().optional(),
+        date: z.string(),
+        time: z.string().nullable().optional(),
+        categoryId: z.string().nullable().optional(),
         done: z.boolean().nullable().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
+      const timestamp = getUnixTime(
+        zonedTimeToUtc(`${input.date}T${input.time || '00:00:00.0000'}Z`, 'UTC')
+      )
+
       return ctx.db.event.update({
         where: {
           id: input.id,
         },
         data: {
           title: input.title,
-          datetime: input.datetime,
+          date: input.date,
+          time: input.time,
+          timestamp: timestamp,
           categoryId: input.categoryId,
           done: input.done,
         },

@@ -1,17 +1,15 @@
 import type { FC } from 'react'
 import { CheckIcon } from '@heroicons/react/24/solid'
+import { getUnixTime } from 'date-fns'
 import { EventDialog } from './EventDialog'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
-
-const hasMeaningfulTime = (date: Date) => {
-  return date.getHours() > 0 || date.getMinutes() > 0 || date.getSeconds() > 0
-}
+import { dateFromDateAndTime } from '~/utils/dates'
 
 export const EventItem: FC<{
   event: NonNullable<RouterOutputs['event']['range']>[number]
 }> = ({ event }) => {
-  const inThePast = event.datetime < new Date()
+  const inThePast = event.timestamp < getUnixTime(new Date())
 
   return (
     <EventDialog event={event}>
@@ -62,12 +60,15 @@ export const EventItem: FC<{
                 {event.category.icon}
               </span>
             )}
-            {hasMeaningfulTime(event.datetime) && (
+            {event.time && (
               <span className="text-xs leading-tight text-neutral-500">
-                {new Date(event.datetime).toLocaleTimeString([], {
-                  hour: 'numeric',
-                  minute: 'numeric',
-                })}
+                {dateFromDateAndTime(event.date, event.time).toLocaleTimeString(
+                  [],
+                  {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                  }
+                )}
               </span>
             )}
           </div>

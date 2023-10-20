@@ -5,7 +5,8 @@ import { endOfMonth, getMonth, getYear, set } from 'date-fns'
 import { Header1 } from '~/components/ui/headers'
 import { cn } from '~/utils/classnames'
 import { api } from '~/trpc/react'
-import { getMonthDates } from '~/utils/dates'
+import { getMonthDates, toCalendarDate } from '~/utils/dates'
+import { type RouterOutputs } from '~/trpc/shared'
 
 export const MonthView: FC = () => {
   const [focusMonth, setFocusMonth] = useState({
@@ -22,9 +23,20 @@ export const MonthView: FC = () => {
   const endOfMonthDate = endOfMonth(startOfMonthDate)
 
   const { data, isLoading } = api.event.range.useQuery({
-    start: startOfMonthDate,
-    end: endOfMonthDate,
+    start: toCalendarDate(startOfMonthDate),
+    end: toCalendarDate(startOfMonthDate),
   })
+
+  const eventsByDay = useMemo(() => {
+    if (!data) return {}
+    const eventsByDay: Record<string, RouterOutputs['event']['range']> = {}
+    data.forEach((event) => {
+      const eventsOfDay = eventsByDay[event.date]
+      if (eventsOfDay) eventsOfDay.push(event)
+      else eventsByDay[event.date] = [event]
+    })
+    return eventsByDay
+  }, [data])
 
   // eslint-disable-next-line no-console
   console.log(data, isLoading, setFocusMonth)
@@ -43,20 +55,37 @@ export const MonthView: FC = () => {
       <div className="flex flex-col gap-1">
         {monthDates.map((week, i) => (
           <div key={i} className="flex flex-row gap-1">
-            {week.map((day, j) => (
-              <div
-                key={j}
-                className={cn(
-                  'h-32 flex-1 flex-grow rounded-lg border border-neutral-800 px-2 py-1',
-                  { 'relative mr-4': j === 4 }
-                )}
-              >
-                {day.getDate()}
-                {j === 4 && (
-                  <div className="absolute -right-3 top-0 -ml-px h-full w-px bg-neutral-500"></div>
-                )}
-              </div>
-            ))}
+            {week.map((day, j) => {
+              const eventsForDay = eventsByDay[toCalendarDate(day)]
+
+              return (
+                <div
+                  key={j}
+                  className={cn(
+                    'h-32 flex-1 flex-grow rounded-lg border border-neutral-800 px-2 py-1',
+                    { 'relative mr-4': j === 4 }
+                  )}
+                >
+                  {day.getDate()}
+                  {j === 4 && (
+                    <div className="absolute -right-3 top-0 -ml-px h-full w-px bg-neutral-500"></div>
+                  )}
+                  {eventsForDay?.map((event) => (
+                    <div
+                      key={event.id}
+                      className={cn(
+                        'bg-primary-400 rounded-lg p-1 hover:bg-neutral-900',
+                        {
+                          'opacity-50': event.timestamp < Date.now(),
+                        }
+                      )}
+                    >
+                      {event.title}
+                    </div>
+                  ))}
+                </div>
+              )
+            })}
           </div>
         ))}
       </div>

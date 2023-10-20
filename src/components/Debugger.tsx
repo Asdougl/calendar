@@ -32,8 +32,6 @@ export const Debugger: FC = () => {
 
   const timezone = useClientTimezone()
 
-  console.log(timezone)
-
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>

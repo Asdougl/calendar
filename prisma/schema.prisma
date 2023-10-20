@@ -62,10 +62,15 @@ model VerificationToken {
 // Data
 
 model Event {
-    id       String   @id @default(uuid())
-    title    String
-    datetime DateTime
-    done     Boolean?
+    id    String @id @default(uuid())
+    title String
+
+    date      String // format YYYY-MM-DD
+    time      String? // format HH:MM:SS.SSS
+    timestamp Float // timestamp in seconds
+    timezone  String?
+
+    done Boolean? // for todos
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

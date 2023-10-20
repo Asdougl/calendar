@@ -13,7 +13,7 @@ import {
 } from 'date-fns'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
 import { Header1 } from '~/components/ui/headers'
-import { time } from '~/utils/dates'
+import { time, toCalendarDate } from '~/utils/dates'
 import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
@@ -30,10 +30,12 @@ export const WeekView: FC = () => {
 
   const { data: events, isLoading } = api.event.range.useQuery(
     {
-      start: focusDate,
-      end: endOfWeek(focusDate, {
-        weekStartsOn: 1,
-      }),
+      start: toCalendarDate(focusDate),
+      end: toCalendarDate(
+        endOfWeek(focusDate, {
+          weekStartsOn: 1,
+        })
+      ),
     },
     {
       refetchOnWindowFocus: false,
@@ -48,7 +50,7 @@ export const WeekView: FC = () => {
     const eventsByDay: NonNullable<RouterOutputs['event']['range']>[] = []
 
     events.forEach((event) => {
-      const dayOfWeek = getDay(new Date(event.datetime))
+      const dayOfWeek = getDay(new Date(event.date))
       const thisDay = eventsByDay[dayOfWeek]
       if (thisDay) thisDay?.push(event)
       else eventsByDay[dayOfWeek] = [event]

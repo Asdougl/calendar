@@ -28,7 +28,6 @@ export const useClientTimezone = () => {
   const [timezone, setTimezone] =
     useState<Intl.DateTimeFormatOptions['timeZone']>()
   useEffect(() => {
-    console.log({ timezone: Intl.DateTimeFormat().resolvedOptions() })
     setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone)
   }, [])
   return timezone
