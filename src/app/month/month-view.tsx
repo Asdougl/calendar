@@ -1,30 +1,42 @@
 'use client'
 
-import { useState, type FC, useMemo } from 'react'
-import { endOfMonth, getMonth, getYear, set } from 'date-fns'
+import { useState, type FC, useMemo, useRef } from 'react'
+import {
+  addMonths,
+  endOfMonth,
+  format,
+  getMonth,
+  getYear,
+  set,
+  setMonth,
+  startOfDay,
+  subMonths,
+} from 'date-fns'
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  PlusIcon,
+} from '@heroicons/react/24/solid'
+import Link from 'next/link'
 import { Header1 } from '~/components/ui/headers'
 import { cn } from '~/utils/classnames'
 import { api } from '~/trpc/react'
-import { getMonthDates, toCalendarDate } from '~/utils/dates'
+import { toCalendarDate, weekDatesOfDateRange } from '~/utils/dates'
 import { type RouterOutputs } from '~/trpc/shared'
 
 export const MonthView: FC = () => {
-  const [focusMonth, setFocusMonth] = useState({
-    month: getMonth(new Date()),
-    year: getYear(new Date()),
+  const [focusMonth, setFocusMonth] = useState(() => {
+    const now = new Date()
+    const start = startOfDay(set(now, { date: 1 }))
+    return {
+      start: start,
+      end: endOfMonth(start),
+    }
   })
-
-  const startOfMonthDate = set(new Date(), {
-    date: 1,
-    month: focusMonth.month,
-    year: focusMonth.year,
-  })
-
-  const endOfMonthDate = endOfMonth(startOfMonthDate)
 
   const { data, isLoading } = api.event.range.useQuery({
-    start: toCalendarDate(startOfMonthDate),
-    end: toCalendarDate(startOfMonthDate),
+    start: toCalendarDate(subMonths(focusMonth.start, 1)),
+    end: toCalendarDate(addMonths(focusMonth.end, 1)),
   })
 
   const eventsByDay = useMemo(() => {
@@ -38,45 +50,85 @@ export const MonthView: FC = () => {
     return eventsByDay
   }, [data])
 
-  // eslint-disable-next-line no-console
-  console.log(data, isLoading, setFocusMonth)
+  const weekDates = useMemo(() => {
+    const startOfCurrMonth = set(new Date(), {
+      date: 1,
+      month: focusMonth.start.getMonth(),
+      year: focusMonth.start.getFullYear(),
+    })
+    const endOfCurrMonth = endOfMonth(startOfCurrMonth)
 
-  const monthDates = useMemo(() => {
-    return getMonthDates(focusMonth.year, focusMonth.month)
-  }, [focusMonth.month, focusMonth.year])
+    return weekDatesOfDateRange(startOfCurrMonth, endOfCurrMonth)
+  }, [focusMonth.start])
+
+  const viewNextMonth = () => {
+    setFocusMonth((prev) => ({
+      start: addMonths(prev.start, 1),
+      end: addMonths(prev.end, 1),
+    }))
+  }
+
+  const viewPrevMonth = () => {
+    setFocusMonth((prev) => ({
+      start: subMonths(prev.start, 1),
+      end: subMonths(prev.end, 1),
+    }))
+  }
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
+    <div className="mx-auto flex h-full w-full max-w-2xl flex-grow flex-col">
       <header className="flex items-center justify-between px-4 py-6">
         <div className="w-8"></div>
-        <Header1 className="text-2xl">Month</Header1>
+        <Header1 className="text-2xl">
+          {format(focusMonth.start, 'MMMM yy')}
+        </Header1>
         <div className="w-8"></div>
       </header>
-      <div className="flex flex-col gap-1">
-        {monthDates.map((week, i) => (
-          <div key={i} className="flex flex-row gap-1">
+      <button
+        onClick={viewPrevMonth}
+        className="flex w-full items-center justify-center py-2"
+      >
+        <ChevronUpIcon height={24} />
+      </button>
+      <div className="flex flex-grow flex-col gap-[2px] overflow-scroll px-[2px]">
+        {weekDates.map((week, i) => (
+          <Link
+            key={week[0]?.toISOString() || i}
+            href={`/week?start=${toCalendarDate(week[0] || new Date())}`}
+            className="flex flex-1 flex-grow gap-[2px]"
+          >
             {week.map((day, j) => {
-              const eventsForDay = eventsByDay[toCalendarDate(day)]
+              const eventsForDay = eventsByDay
+                ? eventsByDay[toCalendarDate(day)]
+                : []
 
               return (
                 <div
                   key={j}
+                  id={toCalendarDate(day)}
                   className={cn(
-                    'h-32 flex-1 flex-grow rounded-lg border border-neutral-800 px-2 py-1',
-                    { 'relative mr-4': j === 4 }
+                    'group flex-1 flex-grow overflow-hidden rounded-lg border border-neutral-800 px-[2px] py-[2px]',
+                    j > 4 && 'border-neutral-500',
+                    day.getMonth() !== getMonth(focusMonth.start) &&
+                      'opacity-50'
                   )}
                 >
-                  {day.getDate()}
-                  {j === 4 && (
-                    <div className="absolute -right-3 top-0 -ml-px h-full w-px bg-neutral-500"></div>
+                  <div className="flex w-full items-center justify-between">
+                    <div className="text-xs">{format(day, 'dd')}</div>
+                    <button className="text-neutral-600 hover:text-neutral-50">
+                      <PlusIcon height={12} />
+                    </button>
+                  </div>
+                  {isLoading && (
+                    <div className="my-1 h-3 w-full animate-pulse rounded-full bg-neutral-900"></div>
                   )}
                   {eventsForDay?.map((event) => (
                     <div
                       key={event.id}
                       className={cn(
-                        'bg-primary-400 rounded-lg p-1 hover:bg-neutral-900',
+                        'bg-primary-400 truncate whitespace-nowrap rounded-lg text-xs hover:bg-neutral-900',
                         {
-                          'opacity-50': event.timestamp < Date.now(),
+                          'opacity-50': event.timestamp < Date.now() / 1000,
                         }
                       )}
                     >
@@ -86,9 +138,15 @@ export const MonthView: FC = () => {
                 </div>
               )
             })}
-          </div>
+          </Link>
         ))}
       </div>
+      <button
+        onClick={viewNextMonth}
+        className="flex w-full items-center justify-center py-2"
+      >
+        <ChevronDownIcon height={24} />
+      </button>
     </div>
   )
 }

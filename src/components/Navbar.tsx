@@ -9,6 +9,7 @@ import {
 import { usePathname } from 'next/navigation'
 import type { FC, ReactNode } from 'react'
 import { cn } from '~/utils/classnames'
+import { featureEnabled } from '~/utils/flags'
 
 const NavBarItem: FC<{
   path: string
@@ -38,7 +39,7 @@ export const Navbar = () => {
   return (
     <footer className="pb-6">
       <nav className="left-0 top-0 md:fixed md:h-screen">
-        <ul className="grid grid-cols-4 flex-col gap-8 px-4 md:flex md:py-4">
+        <ul className="flex items-center justify-between gap-8 px-4 md:flex-col md:justify-start md:py-4">
           <li>
             <NavBarItem
               path="/"
@@ -60,13 +61,15 @@ export const Navbar = () => {
               label="Month"
             />
           </li>
-          <li>
-            <NavBarItem
-              path="/todos"
-              icon={<CheckCircleIcon height={20} />}
-              label="Todos"
-            />
-          </li>
+          {featureEnabled('TODOS') && (
+            <li>
+              <NavBarItem
+                path="/todos"
+                icon={<CheckCircleIcon height={20} />}
+                label="Todos"
+              />
+            </li>
+          )}
         </ul>
       </nav>
     </footer>

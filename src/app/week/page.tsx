@@ -3,7 +3,7 @@ import { WeekView } from './week-view'
 import { Navbar } from '~/components/Navbar'
 import { getServerAuthSession } from '~/server/auth'
 
-export default async function Home() {
+export default async function WeekPage() {
   const session = await getServerAuthSession()
 
   if (!session) {

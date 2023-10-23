@@ -1,5 +1,6 @@
 import {
   addDays,
+  differenceInDays,
   endOfWeek,
   getDate,
   getDay,
@@ -65,10 +66,35 @@ export const getMonthDates = (year: number, month: number) => {
   return rows
 }
 
+export const weekDatesOfDateRange = (start: Date, end: Date) => {
+  const startOfPeriod = startOfWeek(start, { weekStartsOn: 1 })
+  const endOfPeriod = endOfWeek(end, { weekStartsOn: 1 })
+
+  const weeks = Math.ceil(differenceInDays(endOfPeriod, startOfPeriod) / 7)
+
+  console.log('AHHHHHHHHH', { weeks, startOfPeriod, endOfPeriod })
+
+  let focusDay = startOfPeriod
+
+  const rows: Date[][] = []
+
+  for (let i = 0; i < weeks; i++) {
+    rows[i] = []
+    for (let j = 0; j < 7; j++) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      rows[i][j] = focusDay
+      focusDay = addDays(focusDay, 1)
+    }
+  }
+
+  return rows
+}
+
 export const toCalendarDate = (date: Date) => {
   return `${date.getFullYear()}-${(date.getMonth() + 1)
     .toString()
-    .padStart(2, '0')}-${date.getDate().toString().padStart(2)}`
+    .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
 }
 
 export const getUtcTime = (yearMonthDate: string, time?: string) => {

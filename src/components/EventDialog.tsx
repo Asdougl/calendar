@@ -29,6 +29,7 @@ import { time, toCalendarDate } from '~/utils/dates'
 import { api } from '~/trpc/react'
 import { type RouterInputs } from '~/trpc/shared'
 import { match } from '~/utils/misc'
+import { featureEnabled } from '~/utils/flags'
 
 type UpdateEventDialogProps = {
   disabled?: boolean
@@ -315,36 +316,18 @@ export const EventDialog: FC<EventDialogProps> = ({
                 </div>
               </div>
               <div className="flex flex-wrap items-start justify-between gap-4">
-                {/* Row 4 -- Todo */}
-                <div className="flex h-full w-full gap-4">
-                  <label
-                    htmlFor="event-todo"
-                    className="relative flex h-full items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2 transition-colors data-[state=checked]:bg-neutral-800"
-                  >
-                    <Checkbox.Root
-                      id="event-todo"
-                      name="event-todo"
-                      defaultChecked={
-                        'event' in props && props.event.done !== null
-                      }
-                      className="flex h-4 w-4 items-center justify-center rounded bg-neutral-800"
-                      disabled
-                    >
-                      <Checkbox.Indicator>
-                        <CheckIcon height={20} className="w-3" />
-                      </Checkbox.Indicator>
-                    </Checkbox.Root>
-                    <span className="text-neutral-300">is todo</span>
-                  </label>
-                  {'event' in props && props.event.done !== null && (
+                {featureEnabled('TODOS') && (
+                  <div className="flex h-full w-full gap-4">
                     <label
-                      htmlFor="event-todo-done"
+                      htmlFor="event-todo"
                       className="relative flex h-full items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2 transition-colors data-[state=checked]:bg-neutral-800"
                     >
                       <Checkbox.Root
-                        id="event-todo-done"
-                        name="event-todo-done"
-                        defaultChecked={props.event.done}
+                        id="event-todo"
+                        name="event-todo"
+                        defaultChecked={
+                          'event' in props && props.event.done !== null
+                        }
                         className="flex h-4 w-4 items-center justify-center rounded bg-neutral-800"
                         disabled
                       >
@@ -352,10 +335,29 @@ export const EventDialog: FC<EventDialogProps> = ({
                           <CheckIcon height={20} className="w-3" />
                         </Checkbox.Indicator>
                       </Checkbox.Root>
-                      <span className="text-neutral-300">done</span>
+                      <span className="text-neutral-300">is todo</span>
                     </label>
-                  )}
-                </div>
+                    {'event' in props && props.event.done !== null && (
+                      <label
+                        htmlFor="event-todo-done"
+                        className="relative flex h-full items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2 transition-colors data-[state=checked]:bg-neutral-800"
+                      >
+                        <Checkbox.Root
+                          id="event-todo-done"
+                          name="event-todo-done"
+                          defaultChecked={props.event.done}
+                          className="flex h-4 w-4 items-center justify-center rounded bg-neutral-800"
+                          disabled
+                        >
+                          <Checkbox.Indicator>
+                            <CheckIcon height={20} className="w-3" />
+                          </Checkbox.Indicator>
+                        </Checkbox.Root>
+                        <span className="text-neutral-300">done</span>
+                      </label>
+                    )}
+                  </div>
+                )}
                 <div className="flex flex-grow justify-end gap-4">
                   {'event' in props && (
                     <SubmitButton

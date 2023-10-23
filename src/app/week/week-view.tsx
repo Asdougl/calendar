@@ -3,6 +3,7 @@
 import type { FC } from 'react'
 import { useMemo, useState } from 'react'
 import {
+  addWeeks,
   endOfWeek,
   format,
   getDay,
@@ -10,22 +11,28 @@ import {
   setWeek,
   startOfDay,
   startOfWeek,
+  subWeeks,
 } from 'date-fns'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Header1 } from '~/components/ui/headers'
 import { time, toCalendarDate } from '~/utils/dates'
 import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 
-export const WeekView: FC = () => {
-  const [focusWeek, setFocusWeek] = useState(getWeek(new Date()))
+export const WeekView = () => {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const startParam = searchParams.get('start')
 
   const focusDate = setWeek(
     startOfWeek(startOfDay(new Date()), {
       weekStartsOn: 1,
     }),
-    focusWeek
+    getWeek(startParam ? new Date(startParam) : new Date())
   )
 
   const { data: events, isLoading } = api.event.range.useQuery(
@@ -60,11 +67,15 @@ export const WeekView: FC = () => {
   }, [events])
 
   const nextWeek = () => {
-    setFocusWeek((week) => week + 1)
+    const params = new URLSearchParams(searchParams)
+    params.set('start', format(addWeeks(focusDate, 1), 'yyyy-MM-dd'))
+    router.push(`${pathname}?${params.toString()}`)
   }
 
   const prevWeek = () => {
-    setFocusWeek((week) => week - 1)
+    const params = new URLSearchParams(searchParams)
+    params.set('start', format(subWeeks(focusDate, 1), 'yyyy-MM-dd'))
+    router.push(`${pathname}?${params.toString()}`)
   }
 
   return (

@@ -59,9 +59,14 @@ export const eventRouter = createTRPCRouter({
       })
     )
     .mutation(({ ctx, input }) => {
-      const timestamp = getUnixTime(
-        zonedTimeToUtc(`${input.date}T${input.time || '00:00:00.0000'}Z`, 'UTC')
-      )
+      const timestamp = input.date
+        ? getUnixTime(
+            zonedTimeToUtc(
+              `${input.date}T${input.time || '00:00:00.0000'}Z`,
+              'UTC'
+            )
+          )
+        : -1
 
       return ctx.db.event.create({
         data: {
@@ -87,9 +92,14 @@ export const eventRouter = createTRPCRouter({
       })
     )
     .mutation(({ ctx, input }) => {
-      const timestamp = getUnixTime(
-        zonedTimeToUtc(`${input.date}T${input.time || '00:00:00.0000'}Z`, 'UTC')
-      )
+      const timestamp = input.date
+        ? getUnixTime(
+            zonedTimeToUtc(
+              `${input.date}T${input.time || '00:00:00.0000'}Z`,
+              'UTC'
+            )
+          )
+        : -1
 
       return ctx.db.event.update({
         where: {
