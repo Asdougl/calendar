@@ -18,10 +18,20 @@ export const eventRouter = createTRPCRouter({
       return ctx.db.event.findMany({
         where: {
           createdById: ctx.session.user.id,
-          timestamp: {
-            gte: unixStart,
-            lt: unixEnd,
-          },
+          OR: [
+            {
+              timestamp: {
+                gte: unixStart,
+                lt: unixEnd,
+              },
+            },
+            {
+              date: input.end,
+            },
+            {
+              date: input.start,
+            },
+          ],
         },
         include: {
           category: true,

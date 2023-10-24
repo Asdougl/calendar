@@ -1,28 +1,26 @@
 'use client'
 
-import { useState, type FC, useMemo, useRef } from 'react'
+import { useState, type FC, useMemo } from 'react'
 import {
+  addDays,
   addMonths,
   endOfMonth,
   format,
   getMonth,
-  getYear,
+  isAfter,
+  isBefore,
   isSameDay,
   set,
-  setMonth,
   startOfDay,
+  subDays,
   subMonths,
 } from 'date-fns'
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  PlusIcon,
-} from '@heroicons/react/24/solid'
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid'
 import Link from 'next/link'
 import { Header1 } from '~/components/ui/headers'
-import { cn } from '~/utils/classnames'
+import { cn, getCategoryColor } from '~/utils/classnames'
 import { api } from '~/trpc/react'
-import { toCalendarDate, weekDatesOfDateRange } from '~/utils/dates'
+import { time, toCalendarDate, weekDatesOfDateRange } from '~/utils/dates'
 import { type RouterOutputs } from '~/trpc/shared'
 
 export const MonthView: FC = () => {
@@ -35,10 +33,54 @@ export const MonthView: FC = () => {
     }
   })
 
-  const { data, isLoading } = api.event.range.useQuery({
-    start: toCalendarDate(subMonths(focusMonth.start, 1)),
-    end: toCalendarDate(addMonths(focusMonth.end, 1)),
-  })
+  const queryClient = api.useContext()
+
+  const { data, isFetching } = api.event.range.useQuery(
+    {
+      start: toCalendarDate(subDays(focusMonth.start, 7)),
+      end: toCalendarDate(addDays(focusMonth.end, 7)),
+    },
+    {
+      placeholderData: () => {
+        const toReturn: RouterOutputs['event']['range'] = []
+        const lastMonthData = queryClient.event.range.getData({
+          start: toCalendarDate(subDays(subMonths(focusMonth.start, 1), 7)),
+          end: toCalendarDate(
+            addDays(endOfMonth(subMonths(focusMonth.start, 1)), 7)
+          ),
+        })
+        if (lastMonthData)
+          toReturn.push(
+            ...lastMonthData.filter((event) =>
+              isAfter(
+                event.timestamp,
+                subDays(focusMonth.start, 7).getTime() / 1000
+              )
+            )
+          )
+        const nextMonthData = queryClient.event.range.getData({
+          start: toCalendarDate(subDays(addMonths(focusMonth.start, 1), 7)),
+          end: toCalendarDate(
+            addDays(endOfMonth(addMonths(focusMonth.start, 1)), 7)
+          ),
+        })
+
+        if (nextMonthData)
+          toReturn.push(
+            ...nextMonthData.filter((event) =>
+              isBefore(
+                event.timestamp,
+                addDays(focusMonth.end, 7).getTime() / 1000
+              )
+            )
+          )
+
+        return toReturn
+      },
+      staleTime: time.minutes(1),
+      refetchInterval: time.minutes(5),
+    }
+  )
 
   const eventsByDay = useMemo(() => {
     if (!data) return {}
@@ -87,57 +129,72 @@ export const MonthView: FC = () => {
       </header>
       <button
         onClick={viewPrevMonth}
-        className="flex w-full items-center justify-center py-2"
+        className="flex w-full items-center justify-center rounded-lg py-2 hover:bg-neutral-900"
       >
         <ChevronUpIcon height={24} />
       </button>
-      <div className="flex flex-grow flex-col gap-[2px] overflow-scroll px-[2px]">
+      <div className="flex flex-grow flex-col gap-1 overflow-scroll px-[2px]">
         {weekDates.map((week, i) => (
           <Link
             key={week[0]?.toISOString() || i}
             href={`/week?start=${toCalendarDate(week[0] || new Date())}`}
-            className="flex flex-1 flex-grow gap-[2px]"
+            className="group flex flex-1 flex-grow"
           >
             {week.map((day, j) => {
               const eventsForDay = eventsByDay
                 ? eventsByDay[toCalendarDate(day)]
                 : []
 
+              const inCurrMonth = day.getMonth() === getMonth(focusMonth.start)
+
               return (
                 <div
                   key={j}
                   id={toCalendarDate(day)}
                   className={cn(
-                    'group flex-1 flex-grow overflow-hidden rounded-lg border border-neutral-800 px-[2px] py-[2px]',
-                    j > 4 && 'border-neutral-500',
-                    day.getMonth() !== getMonth(focusMonth.start) &&
-                      'opacity-50'
+                    'group flex-1 flex-grow overflow-hidden border border-r-0 border-neutral-800 px-[2px] py-[2px] first:rounded-l-lg last:rounded-r-lg last:border-r group-hover:border-neutral-600 group-hover:bg-neutral-900',
+                    j > 4 && 'bg-neutral-900',
+                    !inCurrMonth && 'opacity-50'
                   )}
                 >
-                  <div className="flex w-full items-center justify-between">
+                  {/* needs to be wrapped in a flex because parent can't be a flex */}
+                  {/* if we want the event title to overflow into ellipsis */}
+                  <div className="flex">
                     <div
                       className={cn(
-                        'text-xs',
+                        'px-1 text-xs',
                         isSameDay(day, new Date()) &&
-                          'rounded-full bg-neutral-400 px-1 text-neutral-950'
+                          'rounded-full bg-neutral-50 text-neutral-950'
                       )}
                     >
-                      {format(day, 'dd')}
+                      {format(day, 'EE dd')}
                     </div>
                   </div>
-                  {isLoading && (
-                    <div className="my-1 h-3 w-full animate-pulse rounded-full bg-neutral-900"></div>
+                  {isFetching && (!eventsForDay || eventsForDay.length < 1) && (
+                    <div className="px-2 pt-1">
+                      <div className="h-3 w-full animate-pulse rounded-full bg-neutral-800"></div>
+                    </div>
                   )}
                   {eventsForDay?.map((event) => (
                     <div
                       key={event.id}
                       className={cn(
-                        'bg-primary-400 truncate whitespace-nowrap rounded-lg text-xs hover:bg-neutral-900',
+                        'bg-primary-400 truncate whitespace-nowrap text-xs hover:bg-neutral-900',
                         {
-                          'opacity-50': event.timestamp < Date.now() / 1000,
+                          'line-through opacity-50':
+                            event.timestamp < Date.now() / 1000,
+                          'animate-pulse opacity-50': isFetching,
                         }
                       )}
                     >
+                      {event.category && (
+                        <div
+                          className={cn(
+                            'mr-px inline-block h-2 w-1 rounded-lg',
+                            getCategoryColor(event.category.color, 'bg')
+                          )}
+                        ></div>
+                      )}
                       {event.title}
                     </div>
                   ))}
@@ -149,7 +206,7 @@ export const MonthView: FC = () => {
       </div>
       <button
         onClick={viewNextMonth}
-        className="flex w-full items-center justify-center py-2"
+        className="flex w-full items-center justify-center rounded-lg py-2 hover:bg-neutral-900"
       >
         <ChevronDownIcon height={24} />
       </button>

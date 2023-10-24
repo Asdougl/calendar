@@ -1,7 +1,7 @@
 'use client'
 
 import type { FC } from 'react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import {
   addWeeks,
   endOfWeek,
@@ -21,7 +21,7 @@ import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 
-export const WeekView = () => {
+export const WeekView: FC = () => {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -34,6 +34,15 @@ export const WeekView = () => {
     }),
     getWeek(startParam ? new Date(startParam) : new Date())
   )
+
+  useEffect(() => {
+    router.prefetch(
+      `/week?start=${format(subWeeks(focusDate, 1), 'yyyy-MM-dd')}`
+    )
+    router.prefetch(
+      `/week?start=${format(addWeeks(focusDate, 1), 'yyyy-MM-dd')}`
+    )
+  }, [router, focusDate, pathname])
 
   const { data: events, isLoading } = api.event.range.useQuery(
     {

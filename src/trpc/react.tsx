@@ -10,6 +10,7 @@ import { SessionProvider } from 'next-auth/react'
 import { getUrl, transformer } from './shared'
 import { type AppRouter } from '~/server/api/root'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const api = createTRPCReact<AppRouter>()
 
 export function TRPCReactProvider(props: {

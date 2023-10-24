@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { CategoryIcon } from '~/components/CategoryIcon'
 import { Field, InputField } from '~/components/ui/Field'
 import { Button, SubmitButton } from '~/components/ui/button'
-import { Header1, Header2, Header3 } from '~/components/ui/headers'
+import { Header1 } from '~/components/ui/headers'
 import { Input } from '~/components/ui/input'
 import { Select } from '~/components/ui/select'
 import { randomFromArray } from '~/utils/array'
-import { CategoryColors, cn, getCategoryColor } from '~/utils/classnames'
+import { CategoryColors } from '~/utils/classnames'
 
 const randomEmojis = [
   '🤣',
@@ -103,17 +104,17 @@ const randomEmojis = [
   '😻',
 ]
 
+type EventExample = {
+  title: string
+  category?: { icon: string; color: string }
+}
+
 export default function SandboxPage() {
-  const [eventExamples, setEventExamples] = useState<
-    {
-      title: string
-      category?: { icon: string; color: string }
-    }[]
-  >([])
+  const [eventExamples, setEventExamples] = useState<EventExample[]>([])
 
   useEffect(() => {
     setEventExamples([
-      ...CategoryColors.options.map((color) => ({
+      ...CategoryColors.map((color) => ({
         title: Math.random().toString(36).substring(2, 4),
         category: {
           icon: randomFromArray(randomEmojis),
@@ -134,29 +135,16 @@ export default function SandboxPage() {
         <ul className="flex flex-col gap-1">
           {eventExamples.map((event) => (
             <li key={event.title} className="flex items-center gap-2">
-              <div
-                className={cn(
-                  'bg-primary-400 hidden h-8 w-8 flex-shrink-0 flex-col items-center justify-center rounded-full text-white md:flex',
-                  event.category
-                    ? [getCategoryColor(event.category.color, 'bg'), 'text-sm']
-                    : 'bg-neutral-800'
-                )}
-              >
-                {event.category ? event.category.icon : event.title[0]}
-              </div>
-              <div>
-                {event.category && (
-                  <span
-                    className={cn(
-                      'mr-2 rounded-sm px-1 text-xs',
-                      getCategoryColor(event.category.color, 'bg')
-                    )}
-                  >
-                    🤣
-                  </span>
-                )}
-                {event.category ? event.category.color : 'no category'}
-              </div>
+              <CategoryIcon
+                size="lg"
+                category={event.category}
+                title={event.title}
+              />
+              <CategoryIcon
+                size="sm"
+                category={event.category}
+                title={event.title}
+              />
             </li>
           ))}
         </ul>

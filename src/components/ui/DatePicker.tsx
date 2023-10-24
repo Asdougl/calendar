@@ -18,6 +18,7 @@ import {
   setDate,
   setMonth,
   setYear,
+  startOfDay,
 } from 'date-fns'
 import { Button } from './button'
 import { cn } from '~/utils/classnames'
@@ -223,12 +224,12 @@ export const UncontrolledDatePicker: FC<
   const [value, setValue] = useState(new Date(defaultValue))
 
   const onChange = (date: Date) => {
-    setValue(set(date, { hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))
+    setValue(startOfDay(date))
   }
 
   return (
     <>
-      <input name={name} type="hidden" value={value.toISOString()} />
+      <input name={name} type="hidden" value={format(value, 'yyyy-MM-dd')} />
       <DatePicker value={value} onChange={onChange} {...props} />
     </>
   )

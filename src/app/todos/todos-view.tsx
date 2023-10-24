@@ -4,7 +4,6 @@ import { CheckIcon } from '@heroicons/react/24/solid'
 import * as Checkbox from '@radix-ui/react-checkbox'
 import { useState } from 'react'
 import { Alert } from '~/components/ui/Alert'
-import { Loader } from '~/components/ui/Loader'
 import { Button } from '~/components/ui/button'
 import { Header1 } from '~/components/ui/headers'
 import { api } from '~/trpc/react'
@@ -42,12 +41,14 @@ export const TodosView = () => {
       }
     },
     onSuccess: () => {
+      // eslint-disable-next-line no-console
       queryClient.event.todos.invalidate().catch(console.warn)
     },
   })
 
   const toggleShowDone = () => {
     setShowDone((curr) => !curr)
+    // eslint-disable-next-line no-console
     queryClient.event.todos.cancel({ done: showDone }).catch(console.warn)
   }
 

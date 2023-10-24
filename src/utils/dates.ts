@@ -72,8 +72,6 @@ export const weekDatesOfDateRange = (start: Date, end: Date) => {
 
   const weeks = Math.ceil(differenceInDays(endOfPeriod, startOfPeriod) / 7)
 
-  console.log('AHHHHHHHHH', { weeks, startOfPeriod, endOfPeriod })
-
   let focusDay = startOfPeriod
 
   const rows: Date[][] = []

@@ -16,22 +16,40 @@ const NavBarItem: FC<{
   path: string
   icon: ReactNode
   label: string
-}> = ({ path, icon, label }) => {
+  loading: boolean | undefined
+}> = ({ path, icon, label, loading }) => {
   const pathname = usePathname()
+
+  const active = pathname === path
 
   return (
     <Link
       href={path}
       className={cn(
-        'flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50',
-        {
-          'text-neutral-50': pathname === path,
-          'text-neutral-500': pathname !== path,
-        }
+        'flex flex-col items-center gap-2 rounded-lg px-4 py-2 hover:bg-neutral-900 hover:text-neutral-50',
+        active ? 'text-neutral-50' : 'text-neutral-500'
       )}
     >
-      {icon}
-      <div className="text-sm">{label}</div>
+      {!loading ? (
+        icon
+      ) : (
+        <div className="h-5 w-5 animate-pulse rounded-full bg-neutral-800"></div>
+      )}
+      <div className="px-1">
+        <div
+          className={cn(
+            'relative text-sm leading-none',
+            loading && 'text-transparent'
+          )}
+        >
+          {label}
+          {loading && (
+            <div className="absolute left-0 top-0 h-full w-full py-px">
+              <div className="h-full w-full animate-pulse rounded-full bg-neutral-800"></div>
+            </div>
+          )}
+        </div>
+      </div>
     </Link>
   )
 }
@@ -39,62 +57,41 @@ const NavBarItem: FC<{
 export const Navbar: FC<{ loading?: boolean }> = ({ loading }) => {
   return (
     <footer className="pb-6">
-      <nav className="left-0 top-0 md:fixed md:h-screen">
-        <ul className="flex items-center justify-between gap-8 px-4 md:flex-col md:justify-start md:py-4">
-          {loading ? (
-            <>
-              <li className="flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50">
-                <div className="h-6 w-6 animate-pulse rounded-full bg-neutral-800"></div>
-                <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-800"></div>
-              </li>
-              <li className="flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50">
-                <div className="h-6 w-6 animate-pulse rounded-full bg-neutral-800"></div>
-                <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-800"></div>
-              </li>
-              <li className="flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50">
-                <div className="h-6 w-6 animate-pulse rounded-full bg-neutral-800"></div>
-                <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-800"></div>
-              </li>
-              {featureEnabled('TODOS') && (
-                <li className="flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50">
-                  <div className="h-6 w-6 animate-pulse rounded-full bg-neutral-800"></div>
-                  <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-800"></div>
-                </li>
-              )}
-            </>
-          ) : (
-            <>
-              <li>
-                <NavBarItem
-                  path="/"
-                  icon={<InboxIcon height={20} />}
-                  label="Inbox"
-                />
-              </li>
-              <li>
-                <NavBarItem
-                  path="/week"
-                  icon={<Squares2X2Icon height={20} />}
-                  label="Week"
-                />
-              </li>
-              <li>
-                <NavBarItem
-                  path="/month"
-                  icon={<CalendarDaysIcon height={20} />}
-                  label="Month"
-                />
-              </li>
-              {featureEnabled('TODOS') && (
-                <li>
-                  <NavBarItem
-                    path="/todos"
-                    icon={<CheckCircleIcon height={20} />}
-                    label="Todos"
-                  />
-                </li>
-              )}
-            </>
+      <nav className="left-0 top-0 lg:fixed lg:h-screen">
+        <ul className="flex items-center justify-evenly gap-8 px-4 lg:flex-col lg:justify-start lg:py-4">
+          <li>
+            <NavBarItem
+              path="/"
+              icon={<InboxIcon height={20} />}
+              label="Inbox"
+              loading={loading}
+            />
+          </li>
+          <li>
+            <NavBarItem
+              path="/week"
+              icon={<Squares2X2Icon height={20} />}
+              label="Week"
+              loading={loading}
+            />
+          </li>
+          <li>
+            <NavBarItem
+              path="/month"
+              icon={<CalendarDaysIcon height={20} />}
+              label="Month"
+              loading={loading}
+            />
+          </li>
+          {featureEnabled('TODOS') && (
+            <li>
+              <NavBarItem
+                path="/todos"
+                icon={<CheckCircleIcon height={20} />}
+                label="Todos"
+                loading={loading}
+              />
+            </li>
           )}
         </ul>
       </nav>

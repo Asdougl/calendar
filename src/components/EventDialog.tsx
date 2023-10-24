@@ -30,6 +30,7 @@ import { api } from '~/trpc/react'
 import { type RouterInputs } from '~/trpc/shared'
 import { match } from '~/utils/misc'
 import { featureEnabled } from '~/utils/flags'
+import { cn, getCategoryColor } from '~/utils/classnames'
 
 type UpdateEventDialogProps = {
   disabled?: boolean
@@ -134,7 +135,7 @@ export const EventDialog: FC<EventDialogProps> = ({
     if ('event' in props) {
       const updateParams: RouterInputs['event']['update'] = {
         id: props.event.id,
-        date: props.event.date,
+        date: date,
       }
 
       if (title !== props.event.title) {
@@ -189,7 +190,10 @@ export const EventDialog: FC<EventDialogProps> = ({
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Trigger disabled={fullDisable}>
+      <Dialog.Trigger
+        disabled={fullDisable}
+        className="rounded-lg ring-neutral-600 focus:outline-none focus:ring"
+      >
         {children ?? <PlusIcon height={20} />}
       </Dialog.Trigger>
       <Dialog.Portal>
@@ -269,7 +273,12 @@ export const EventDialog: FC<EventDialogProps> = ({
                           value="none"
                           className="relative pl-8 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50"
                         >
-                          <Select.ItemText>No Category</Select.ItemText>
+                          <Select.ItemText asChild>
+                            <div className="flex items-start justify-start gap-1 md:gap-2">
+                              <div className="mt-[7px] h-2 w-2 rounded-full bg-neutral-800"></div>
+                              Uncategorised
+                            </div>
+                          </Select.ItemText>
                           <Select.ItemIndicator className="absolute left-0 top-1/2 -translate-y-1/2">
                             <CheckIcon height={20} />
                           </Select.ItemIndicator>
@@ -280,7 +289,17 @@ export const EventDialog: FC<EventDialogProps> = ({
                             value={category.id}
                             className="relative pl-8 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50"
                           >
-                            <Select.ItemText>{category.name}</Select.ItemText>
+                            <Select.ItemText asChild>
+                              <div className="flex items-start justify-start gap-1 md:gap-2">
+                                <div
+                                  className={cn(
+                                    'mt-[7px] h-2 w-2 rounded-full',
+                                    getCategoryColor(category.color, 'bg')
+                                  )}
+                                ></div>
+                                {category.name}
+                              </div>
+                            </Select.ItemText>
                             <Select.ItemIndicator className="absolute left-0 top-1/2 -translate-y-1/2">
                               <CheckIcon height={20} />
                             </Select.ItemIndicator>

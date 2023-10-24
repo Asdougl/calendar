@@ -1,6 +1,6 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { EffectCallback } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { type ZodSchema } from 'zod'
 
 /**
  * A hook that returns a debounced value.
@@ -60,4 +60,29 @@ export const useClientNow = ({
     setDate(modifier ? modifier(new Date()) : new Date())
   }, [modifier])
   return [date, setDate] as const
+}
+
+/**
+ * UseState but it persists in the React-Query cache.
+ * @param key Key of your query-state
+ * @param initialState Initial value for your query-state
+ * @returns Touple of your query-state and a function to update your query-state
+ */
+export const useQueryState = <T>(key: string, initialState: T) => {
+  const queryClient = useQueryClient()
+
+  const { data } = useQuery({
+    queryKey: ['query-state', key],
+    initialData: initialState,
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  })
+
+  const updateQueryState = (data: T) => {
+    queryClient.setQueryData(['query-state', key], data)
+  }
+
+  return [data, updateQueryState] as const
 }

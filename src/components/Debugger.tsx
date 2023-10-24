@@ -63,11 +63,12 @@ export const Debugger: FC = () => {
                 <ArrowPathIcon height={16} />
               </button>
             </DebugListItem>
-            <DebugListItem title="Clear Cache">
+            <DebugListItem title="Invalidate Cache">
               <Button
                 size="sm"
                 intent="secondary"
                 className="w-40"
+                // eslint-disable-next-line no-console
                 onClick={() => queryClient.invalidate().catch(console.error)}
               >
                 Clear
@@ -83,7 +84,7 @@ export const Debugger: FC = () => {
                 Logout
               </Button>
             </DebugListItem>
-            <DebugListItem title="Force Reload">
+            <DebugListItem title="Force Refresh">
               <Button
                 onClick={() => location.reload()}
                 size="sm"
