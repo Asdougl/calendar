@@ -16,8 +16,7 @@ const NavBarItem: FC<{
   path: string
   icon: ReactNode
   label: string
-  loading: boolean | undefined
-}> = ({ path, icon, label, loading }) => {
+}> = ({ path, icon, label }) => {
   const pathname = usePathname()
 
   const active = pathname === path
@@ -26,35 +25,19 @@ const NavBarItem: FC<{
     <Link
       href={path}
       className={cn(
-        'flex flex-col items-center gap-2 rounded-lg px-4 py-2 hover:bg-neutral-900 hover:text-neutral-50',
+        'flex flex-col items-center gap-2 rounded-lg px-4 py-2 hover:bg-neutral-900 md:hover:text-neutral-50',
         active ? 'text-neutral-50' : 'text-neutral-500'
       )}
     >
-      {!loading ? (
-        icon
-      ) : (
-        <div className="h-5 w-5 animate-pulse rounded-full bg-neutral-800"></div>
-      )}
+      {icon}
       <div className="px-1">
-        <div
-          className={cn(
-            'relative text-sm leading-none',
-            loading && 'text-transparent'
-          )}
-        >
-          {label}
-          {loading && (
-            <div className="absolute left-0 top-0 h-full w-full py-px">
-              <div className="h-full w-full animate-pulse rounded-full bg-neutral-800"></div>
-            </div>
-          )}
-        </div>
+        <div className="text-sm leading-none">{label}</div>
       </div>
     </Link>
   )
 }
 
-export const Navbar: FC<{ loading?: boolean }> = ({ loading }) => {
+export const Navbar: FC<{ loading?: boolean }> = () => {
   return (
     <footer className="pb-6">
       <nav className="left-0 top-0 lg:fixed lg:h-screen">
@@ -64,7 +47,6 @@ export const Navbar: FC<{ loading?: boolean }> = ({ loading }) => {
               path="/"
               icon={<InboxIcon height={20} />}
               label="Inbox"
-              loading={loading}
             />
           </li>
           <li>
@@ -72,7 +54,6 @@ export const Navbar: FC<{ loading?: boolean }> = ({ loading }) => {
               path="/week"
               icon={<Squares2X2Icon height={20} />}
               label="Week"
-              loading={loading}
             />
           </li>
           <li>
@@ -80,7 +61,6 @@ export const Navbar: FC<{ loading?: boolean }> = ({ loading }) => {
               path="/month"
               icon={<CalendarDaysIcon height={20} />}
               label="Month"
-              loading={loading}
             />
           </li>
           {featureEnabled('TODOS') && (
@@ -89,7 +69,6 @@ export const Navbar: FC<{ loading?: boolean }> = ({ loading }) => {
                 path="/todos"
                 icon={<CheckCircleIcon height={20} />}
                 label="Todos"
-                loading={loading}
               />
             </li>
           )}

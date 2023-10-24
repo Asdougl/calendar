@@ -6,6 +6,7 @@ import {
   addMonths,
   endOfMonth,
   format,
+  getISOWeek,
   getMonth,
   isAfter,
   isBefore,
@@ -136,7 +137,9 @@ export const MonthView: FC = () => {
       <div className="flex flex-grow flex-col gap-1 overflow-scroll px-[2px]">
         {weekDates.map((week, i) => (
           <Link
-            key={week[0]?.toISOString() || i}
+            key={
+              week[0] ? `${format(week[0], 'yy')}w${getISOWeek(week[0])}` : i
+            }
             href={`/week?start=${toCalendarDate(week[0] || new Date())}`}
             className="group flex flex-1 flex-grow"
           >
@@ -149,10 +152,10 @@ export const MonthView: FC = () => {
 
               return (
                 <div
-                  key={j}
+                  key={format(day, 'yyyy-MM-dd')}
                   id={toCalendarDate(day)}
                   className={cn(
-                    'group flex-1 flex-grow overflow-hidden border border-r-0 border-neutral-800 px-[2px] py-[2px] first:rounded-l-lg last:rounded-r-lg last:border-r group-hover:border-neutral-600 group-hover:bg-neutral-900',
+                    'group flex-1 flex-grow overflow-hidden border border-r-0 border-neutral-800 px-[2px] py-[2px] first:rounded-l-lg last:rounded-r-lg last:border-r md:group-hover:border-neutral-600 md:group-hover:bg-neutral-900',
                     j > 4 && 'bg-neutral-900',
                     !inCurrMonth && 'opacity-50'
                   )}
