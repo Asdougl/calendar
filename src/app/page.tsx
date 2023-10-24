@@ -1,12 +1,19 @@
+'use client'
+
 import { redirect } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Inbox } from './inbox'
 import { Navbar } from '~/components/Navbar'
-import { getServerAuthSession } from '~/server/auth'
+import { FullPageLoader } from '~/components/ui/FullPageLoader'
 
-export default async function Home() {
-  const session = await getServerAuthSession()
+export default function Home() {
+  const { data, status } = useSession()
 
-  if (!session) {
+  if (status === 'loading') {
+    return <FullPageLoader />
+  }
+
+  if (!data?.user) {
     redirect('/login')
   }
 

@@ -7,6 +7,7 @@ import {
   format,
   getMonth,
   getYear,
+  isSameDay,
   set,
   setMonth,
   startOfDay,
@@ -80,7 +81,7 @@ export const MonthView: FC = () => {
       <header className="flex items-center justify-between px-4 py-6">
         <div className="w-8"></div>
         <Header1 className="text-2xl">
-          {format(focusMonth.start, 'MMMM yy')}
+          {format(focusMonth.start, 'MMMM yyyy')}
         </Header1>
         <div className="w-8"></div>
       </header>
@@ -114,10 +115,15 @@ export const MonthView: FC = () => {
                   )}
                 >
                   <div className="flex w-full items-center justify-between">
-                    <div className="text-xs">{format(day, 'dd')}</div>
-                    <button className="text-neutral-600 hover:text-neutral-50">
-                      <PlusIcon height={12} />
-                    </button>
+                    <div
+                      className={cn(
+                        'text-xs',
+                        isSameDay(day, new Date()) &&
+                          'rounded-full bg-neutral-400 px-1 text-neutral-950'
+                      )}
+                    >
+                      {format(day, 'dd')}
+                    </div>
                   </div>
                   {isLoading && (
                     <div className="my-1 h-3 w-full animate-pulse rounded-full bg-neutral-900"></div>

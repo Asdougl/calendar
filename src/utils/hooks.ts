@@ -2,6 +2,9 @@ import type { EffectCallback } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { type ZodSchema } from 'zod'
 
+/**
+ * A hook that returns a debounced value.
+ */
 export const useDebouncedState = <T>(initialValue: T, delay: number) => {
   const [value, setValue] = useState(initialValue)
   const [debouncedValue, setDebouncedValue] = useState(initialValue)
@@ -14,6 +17,9 @@ export const useDebouncedState = <T>(initialValue: T, delay: number) => {
   return [debouncedValue, setValue, value === debouncedValue, value] as const
 }
 
+/**
+ * A hook that executes code only on component mount.
+ */
 export const useMountEffect = (callback: EffectCallback) => {
   const mountedRef = useRef(false)
 
@@ -24,6 +30,10 @@ export const useMountEffect = (callback: EffectCallback) => {
   }, [])
 }
 
+/**
+ * A hook that returns the client timezone.
+ * @returns The client timezone.
+ */
 export const useClientTimezone = () => {
   const [timezone, setTimezone] =
     useState<Intl.DateTimeFormatOptions['timeZone']>()
@@ -33,25 +43,21 @@ export const useClientTimezone = () => {
   return timezone
 }
 
-export const useLocalStorage = <T>(key: string, validator: ZodSchema<T>) => {
-  const [value, setValue] = useState(validator.parse({}))
-
+/**
+ * A hook to return the client's date
+ * @returns The current date as per the client's timezone.
+ */
+export const useClientNow = ({
+  initialDate,
+  modifier,
+}: {
+  initialDate?: Date
+  modifier?: (date: Date) => Date
+}) => {
+  const [date, setDate] = useState(initialDate || new Date())
   useEffect(() => {
-    const storedValue = localStorage.getItem(key)
-    if (storedValue) {
-      try {
-        setValue(validator.parse(JSON.parse(storedValue)))
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e)
-      }
-    }
-  }, [key, validator])
-
-  const setLocalStorageValue = (newValue: T) => {
-    localStorage.setItem(key, JSON.stringify(newValue))
-    setValue(newValue)
-  }
-
-  return [value, setLocalStorageValue] as const
+    // resets the date based on the client's timezone
+    setDate(modifier ? modifier(new Date()) : new Date())
+  }, [modifier])
+  return [date, setDate] as const
 }

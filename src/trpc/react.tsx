@@ -6,6 +6,7 @@ import { createTRPCReact } from '@trpc/react-query'
 import { useState } from 'react'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
+import { SessionProvider } from 'next-auth/react'
 import { getUrl, transformer } from './shared'
 import { type AppRouter } from '~/server/api/root'
 
@@ -39,11 +40,13 @@ export function TRPCReactProvider(props: {
   )
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <api.Provider client={trpcClient} queryClient={queryClient}>
-        {props.children}
-        <ReactQueryDevtools />
-      </api.Provider>
-    </QueryClientProvider>
+    <SessionProvider>
+      <QueryClientProvider client={queryClient}>
+        <api.Provider client={trpcClient} queryClient={queryClient}>
+          {props.children}
+          <ReactQueryDevtools />
+        </api.Provider>
+      </QueryClientProvider>
+    </SessionProvider>
   )
 }

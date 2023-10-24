@@ -11,29 +11,25 @@ import {
   EllipsisVerticalIcon,
 } from '@heroicons/react/24/solid'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { z } from 'zod'
 import { Header1 } from '~/components/ui/headers'
 import { time, toCalendarDate } from '~/utils/dates'
 import { Debugger } from '~/components/Debugger'
 import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
-import { useLocalStorage } from '~/utils/hooks'
+import { useLocalStorage } from '~/utils/localStorage'
 import { cn } from '~/utils/classnames'
-
-const InboxSettings = z.object({
-  leftWeekends: z.boolean().default(true),
-})
+import { useClientNow } from '~/utils/hooks'
 
 export const Inbox: FC = () => {
-  const focusDate = startOfDay(new Date())
+  const [focusDate] = useClientNow({
+    initialDate: startOfDay(new Date()),
+    modifier: startOfDay,
+  })
 
   const queryClient = api.useContext()
 
-  const [settings, setSettings] = useLocalStorage(
-    'inbox-settings',
-    InboxSettings
-  )
+  const [settings, setSettings] = useLocalStorage('inbox-settings')
 
   const {
     data: events,
