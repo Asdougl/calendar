@@ -6,6 +6,7 @@ import {
   InboxIcon,
   Squares2X2Icon,
 } from '@heroicons/react/24/solid'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { FC, ReactNode } from 'react'
 import { cn } from '~/utils/classnames'
@@ -19,7 +20,7 @@ const NavBarItem: FC<{
   const pathname = usePathname()
 
   return (
-    <a
+    <Link
       href={path}
       className={cn(
         'flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50',
@@ -31,44 +32,69 @@ const NavBarItem: FC<{
     >
       {icon}
       <div className="text-sm">{label}</div>
-    </a>
+    </Link>
   )
 }
 
-export const Navbar = () => {
+export const Navbar: FC<{ loading?: boolean }> = ({ loading }) => {
   return (
     <footer className="pb-6">
       <nav className="left-0 top-0 md:fixed md:h-screen">
         <ul className="flex items-center justify-between gap-8 px-4 md:flex-col md:justify-start md:py-4">
-          <li>
-            <NavBarItem
-              path="/"
-              icon={<InboxIcon height={20} />}
-              label="Inbox"
-            />
-          </li>
-          <li>
-            <NavBarItem
-              path="/week"
-              icon={<Squares2X2Icon height={20} />}
-              label="Week"
-            />
-          </li>
-          <li>
-            <NavBarItem
-              path="/month"
-              icon={<CalendarDaysIcon height={20} />}
-              label="Month"
-            />
-          </li>
-          {featureEnabled('TODOS') && (
-            <li>
-              <NavBarItem
-                path="/todos"
-                icon={<CheckCircleIcon height={20} />}
-                label="Todos"
-              />
-            </li>
+          {loading ? (
+            <>
+              <li className="flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50">
+                <div className="h-6 w-6 animate-pulse rounded-full bg-neutral-800"></div>
+                <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-800"></div>
+              </li>
+              <li className="flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50">
+                <div className="h-6 w-6 animate-pulse rounded-full bg-neutral-800"></div>
+                <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-800"></div>
+              </li>
+              <li className="flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50">
+                <div className="h-6 w-6 animate-pulse rounded-full bg-neutral-800"></div>
+                <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-800"></div>
+              </li>
+              {featureEnabled('TODOS') && (
+                <li className="flex flex-col items-center gap-1 px-4 py-2 hover:text-neutral-50">
+                  <div className="h-6 w-6 animate-pulse rounded-full bg-neutral-800"></div>
+                  <div className="h-3 w-12 animate-pulse rounded-full bg-neutral-800"></div>
+                </li>
+              )}
+            </>
+          ) : (
+            <>
+              <li>
+                <NavBarItem
+                  path="/"
+                  icon={<InboxIcon height={20} />}
+                  label="Inbox"
+                />
+              </li>
+              <li>
+                <NavBarItem
+                  path="/week"
+                  icon={<Squares2X2Icon height={20} />}
+                  label="Week"
+                />
+              </li>
+              <li>
+                <NavBarItem
+                  path="/month"
+                  icon={<CalendarDaysIcon height={20} />}
+                  label="Month"
+                />
+              </li>
+              {featureEnabled('TODOS') && (
+                <li>
+                  <NavBarItem
+                    path="/todos"
+                    icon={<CheckCircleIcon height={20} />}
+                    label="Todos"
+                  />
+                </li>
+              )}
+            </>
           )}
         </ul>
       </nav>
