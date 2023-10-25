@@ -140,7 +140,9 @@ export const MonthView: FC = () => {
             key={
               week[0] ? `${format(week[0], 'yy')}w${getISOWeek(week[0])}` : i
             }
-            href={`/week?start=${toCalendarDate(week[0] || new Date())}`}
+            href={`/week?start=${toCalendarDate(
+              week[0] || new Date()
+            )}&random=${Math.random().toString(36).substring(2, 7)}`}
             className="group flex flex-1 flex-grow"
           >
             {week.map((day, j) => {
