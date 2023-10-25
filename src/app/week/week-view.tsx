@@ -32,12 +32,11 @@ import { useMountEffect } from '~/utils/hooks'
 type ViewOfAWeekProps = {
   starting: Date
   ready: boolean
-  index: number
   onInView?: () => void
 }
 
 const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
-  function ViewOfAWeekWithRef({ starting, ready, index, onInView }, ref) {
+  function ViewOfAWeekWithRef({ starting, ready, onInView }, ref) {
     const weekRef = useRef<HTMLDivElement>(null)
 
     useImperativeHandle(ref, () => weekRef.current!)
@@ -103,7 +102,6 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
       >
         {/* weekend */}
         <div className="grid grid-rows-3 gap-2">
-          {index}
           <DayBox
             focusDate={starting}
             dayOfWeek={6}
@@ -237,7 +235,6 @@ export const WeekView: FC = () => {
           }}
           starting={loadedWeeks[0]}
           ready={ready}
-          index={0}
           onInView={() => {
             if (!blocker.current) {
               setLoadedWeeks((loadedWeeks) => [
@@ -258,7 +255,6 @@ export const WeekView: FC = () => {
           }}
           starting={loadedWeeks[1]}
           ready={ready}
-          index={1}
         />
         <ViewOfAWeek
           key={format(loadedWeeks[2], 'yyyy-MM-dd')}
@@ -267,7 +263,6 @@ export const WeekView: FC = () => {
           }}
           starting={loadedWeeks[2]}
           ready={ready}
-          index={2}
           onInView={() => {
             if (!blocker.current) {
               setLoadedWeeks((loadedWeeks) => [
