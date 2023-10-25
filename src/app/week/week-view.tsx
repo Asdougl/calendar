@@ -3,6 +3,7 @@
 import type { FC } from 'react'
 import {
   forwardRef,
+  useEffect,
   useImperativeHandle,
   useLayoutEffect,
   useMemo,
@@ -32,11 +33,12 @@ import { useMountEffect } from '~/utils/hooks'
 type ViewOfAWeekProps = {
   starting: Date
   ready: boolean
+  index: number
   onInView?: () => void
 }
 
 const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
-  function ViewOfAWeekWithRef({ starting, ready, onInView }, ref) {
+  function ViewOfAWeekWithRef({ starting, ready, onInView, index }, ref) {
     const weekRef = useRef<HTMLDivElement>(null)
 
     useImperativeHandle(ref, () => weekRef.current!)
@@ -101,7 +103,8 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
         className="grid h-full w-full flex-shrink-0 snap-center grid-cols-2 gap-2 overflow-y-scroll px-1 pb-2"
       >
         {/* weekend */}
-        <div className="grid grid-rows-3 gap-2">
+        <div className="relative grid grid-rows-2 gap-2">
+          <div className="absolute left-0 top-0 bg-black">{index}</div>
           <DayBox
             focusDate={starting}
             dayOfWeek={6}
@@ -173,17 +176,17 @@ export const WeekView: FC = () => {
   ])
   const weeksRefs = useRef<HTMLDivElement[]>([])
 
+  const containerRef = useRef<HTMLDivElement>(null)
+
   // blocks intersectionObservers until the current week is in view
   const [ready, setReady] = useState(false)
   const blocker = useRef<ReturnType<typeof setTimeout>>()
 
-  useMountEffect(() => {
-    const currentWeek = weeksRefs.current[1]
-    if (currentWeek) {
-      currentWeek.scrollIntoView()
-      setReady(true)
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollLeft = containerRef.current.scrollWidth / 3
     }
-  })
+  }, [loadedWeeks])
 
   const onScrollTimeout = useRef<ReturnType<typeof setTimeout>>()
 
@@ -225,6 +228,7 @@ export const WeekView: FC = () => {
         </div>
       </header>
       <div
+        ref={containerRef}
         className="flex h-full w-full snap-x snap-mandatory flex-nowrap overflow-scroll px-1"
         onScroll={onScroll}
       >
@@ -235,6 +239,7 @@ export const WeekView: FC = () => {
           }}
           starting={loadedWeeks[0]}
           ready={ready}
+          index={0}
           onInView={() => {
             if (!blocker.current) {
               setLoadedWeeks((loadedWeeks) => [
@@ -255,6 +260,7 @@ export const WeekView: FC = () => {
           }}
           starting={loadedWeeks[1]}
           ready={ready}
+          index={1}
         />
         <ViewOfAWeek
           key={format(loadedWeeks[2], 'yyyy-MM-dd')}
@@ -263,6 +269,7 @@ export const WeekView: FC = () => {
           }}
           starting={loadedWeeks[2]}
           ready={ready}
+          index={2}
           onInView={() => {
             if (!blocker.current) {
               setLoadedWeeks((loadedWeeks) => [
