@@ -26,7 +26,7 @@ const isCategoryColor = (input: string): input is CategoryColors => {
 }
 
 const CATEGORY_COLOR_MAP: Record<
-  CategoryColors,
+  CategoryColors | '_none',
   Record<ColorProperties, string>
 > = {
   yellow: {
@@ -83,15 +83,21 @@ const CATEGORY_COLOR_MAP: Record<
     border: 'border-orange-400',
     ring: 'ring-orange-400',
   },
+  _none: {
+    bg: 'bg-neutral-600',
+    text: 'test-neutral-200',
+    border: 'border-neutral-200',
+    ring: 'ring-neutral-400',
+  },
 }
 
 export const getCategoryColor = (
-  colorName: string,
+  colorName: string | undefined,
   property: ColorProperties
 ) => {
-  if (isCategoryColor(colorName)) {
+  if (colorName && isCategoryColor(colorName)) {
     return CATEGORY_COLOR_MAP[colorName][property]
   } else {
-    return CATEGORY_COLOR_MAP.gray[property]
+    return CATEGORY_COLOR_MAP._none[property]
   }
 }

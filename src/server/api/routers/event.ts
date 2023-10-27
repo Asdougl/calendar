@@ -36,6 +36,9 @@ export const eventRouter = createTRPCRouter({
         include: {
           category: true,
         },
+        orderBy: {
+          timestamp: 'asc',
+        },
       })
     }),
   todos: protectedProcedure

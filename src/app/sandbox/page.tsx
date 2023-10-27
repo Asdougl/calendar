@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Switch } from '~/components/ui/switch'
 import { CategoryIcon } from '~/components/CategoryIcon'
 import { Field, InputField } from '~/components/ui/Field'
 import { Button, SubmitButton } from '~/components/ui/button'
@@ -207,6 +208,11 @@ export default function SandboxPage() {
                 { name: 'baz', value: 'baz' },
               ]}
             />
+          </Field>
+        </div>
+        <div className="flex flex-col items-start gap-2">
+          <Field id="my-switch" label="My Switch">
+            <Switch id="my-switch" />
           </Field>
         </div>
       </div>

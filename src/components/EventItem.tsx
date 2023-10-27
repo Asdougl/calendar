@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { getUnixTime } from 'date-fns'
+import { format } from 'date-fns'
 import { EventDialog } from './EventDialog'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
@@ -7,47 +7,48 @@ import { dateFromDateAndTime } from '~/utils/dates'
 
 export const EventItem: FC<{
   event: NonNullable<RouterOutputs['event']['range']>[number]
-}> = ({ event }) => {
-  const inThePast = event.timestamp < getUnixTime(new Date())
+  condensed?: boolean
+}> = ({ event, condensed }) => {
+  const inThePast =
+    dateFromDateAndTime(event.date, event.time).getTime() < new Date().getTime()
 
   return (
     <EventDialog event={event}>
       <li
         className={cn(
-          'flex items-center gap-2 rounded-lg p-1 hover:bg-neutral-900',
-          { 'opacity-50': inThePast }
+          'flex items-center justify-start overflow-hidden rounded-lg px-1 hover:bg-neutral-900 md:flex-row md:items-center md:gap-1',
+          { 'opacity-50': inThePast },
+          !condensed ? 'flex-col items-start' : 'flex-row items-center gap-1'
         )}
       >
-        <div className="flex flex-col flex-wrap items-baseline justify-start md:flex-row">
-          <div className="flex items-start justify-start gap-1 md:gap-2">
-            {event.category && (
-              <div
-                className={cn(
-                  'mt-[7px] h-2 w-2 rounded-full',
-                  getCategoryColor(event.category.color, 'bg')
-                )}
-              ></div>
+        <div className="flex items-start justify-start gap-1 overflow-hidden md:gap-2">
+          <div
+            className={cn(
+              'mt-1 h-3 w-1 flex-shrink-0 rounded-full',
+              getCategoryColor(event.category?.color, 'bg')
             )}
-            <span
-              className={cn('text-left font-semibold leading-snug', {
+          ></div>
+          <div
+            className={cn(
+              'flex-grow-0 truncate text-left text-sm leading-snug',
+              {
                 'line-through': inThePast,
-              })}
-            >
-              {event.title}
-            </span>
+              }
+            )}
+          >
+            {event.title}
           </div>
-          {event.time && (
-            <span className="-mt-[2px] whitespace-nowrap pl-3 text-xs leading-tight text-neutral-500 md:pl-2">
-              {dateFromDateAndTime(event.date, event.time).toLocaleTimeString(
-                [],
-                {
-                  hour: 'numeric',
-                  minute: 'numeric',
-                }
-              )}
-            </span>
-          )}
         </div>
+        {event.time && (
+          <div
+            className={cn(
+              'whitespace-nowrap text-xs leading-tight text-neutral-500 md:pl-2',
+              !condensed && 'pl-2 md:pl-0'
+            )}
+          >
+            {format(dateFromDateAndTime(event.date, event.time), 'HH:mm')}
+          </div>
+        )}
       </li>
     </EventDialog>
   )

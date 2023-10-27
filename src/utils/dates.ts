@@ -101,7 +101,7 @@ export const getUtcTime = (yearMonthDate: string, time?: string) => {
   )
 }
 
-export const dateFromDateAndTime = (date: string, time: string) => {
+export const dateFromDateAndTime = (date: string, time?: string | null) => {
   const dateObj = new Date()
 
   const dateSplit = date.split('-')

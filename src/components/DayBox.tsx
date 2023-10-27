@@ -5,6 +5,7 @@ import { EventDialog } from './EventDialog'
 import { EventItem } from './EventItem'
 import { cn } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
+import { dateFromDateAndTime } from '~/utils/dates'
 
 export const DayBox: FC<{
   focusDate: Date
@@ -21,12 +22,26 @@ export const DayBox: FC<{
     )
   }, [focusDate, dayOfWeek, startToday])
 
+  const sortedEvents = useMemo(() => {
+    const pastEvents: RouterOutputs['event']['range'] = []
+    const futureEvents: RouterOutputs['event']['range'] = []
+    const now = new Date().getTime()
+    events.forEach((event) => {
+      if (dateFromDateAndTime(event.date, event.time).getTime() < now)
+        pastEvents.push(event)
+      else futureEvents.push(event)
+    })
+    return [...futureEvents, ...pastEvents]
+  }, [events])
+
   const distanceToToday = getDayOfYear(day) - getDayOfYear(new Date())
+
+  const shouldCondense = events.length > 2 && dayOfWeek < 6
 
   return (
     <div
       className={cn(
-        'flex-grow rounded-lg border border-neutral-800 px-2 py-1',
+        'flex-1 overflow-hidden rounded-lg border border-neutral-800 px-2 py-1',
         { 'border-neutral-400': distanceToToday === 0 },
         startToday && {
           'border-neutral-500': distanceToToday === 1,
@@ -54,11 +69,17 @@ export const DayBox: FC<{
         </div>
         <EventDialog initialDate={day} />
       </div>
-      <ul className="flex flex-col gap-1 py-1">
+      <ul className="flex flex-col gap-1 overflow-scroll py-1">
         {isLoading ? (
           <li className="my-2 h-4 w-3/4 animate-pulse rounded-full bg-neutral-900"></li>
         ) : (
-          events.map((event) => <EventItem key={event.id} event={event} />)
+          sortedEvents.map((event) => (
+            <EventItem
+              key={event.id}
+              event={event}
+              condensed={shouldCondense}
+            />
+          ))
         )}
       </ul>
     </div>

@@ -13,7 +13,7 @@ const localStorageData = <T>({
 })
 
 const LocalStorageKeys = {
-  'inbox-settings': localStorageData({
+  'local-settings': localStorageData({
     schema: z.object({
       leftWeekends: z.boolean(),
     }),
@@ -70,9 +70,20 @@ export const useLocalStorage = <K extends keyof LocalStorageKeys>(key: K) => {
   const queryClient = useQueryClient()
 
   const setLocalStorageValue = (
-    newValue: z.infer<(typeof LocalStorageKeys)[K]['schema']>
+    newValue:
+      | z.infer<(typeof LocalStorageKeys)[K]['schema']>
+      | ((
+          old: z.infer<(typeof LocalStorageKeys)[K]['schema']>
+        ) => z.infer<(typeof LocalStorageKeys)[K]['schema']>)
   ) => {
-    localStorage.setItem(key, JSON.stringify(newValue))
+    localStorage.setItem(
+      key,
+      JSON.stringify(
+        typeof newValue === 'function'
+          ? newValue(getFromLocalStorage(key))
+          : newValue
+      )
+    )
     // eslint-disable-next-line no-console
     queryClient.invalidateQueries(['localStorage', key]).catch(console.error)
   }

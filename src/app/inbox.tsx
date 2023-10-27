@@ -3,25 +3,25 @@
 import type { FC } from 'react'
 import { useMemo } from 'react'
 import getDay from 'date-fns/getDay'
-import setDay from 'date-fns/setDay'
 import startOfDay from 'date-fns/startOfDay'
-import {
-  ArrowPathIcon,
-  CheckIcon,
-  EllipsisVerticalIcon,
-} from '@heroicons/react/24/solid'
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { ArrowPathIcon } from '@heroicons/react/24/solid'
+import { endOfWeek } from 'date-fns'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { Header1 } from '~/components/ui/headers'
 import { time, toCalendarDate } from '~/utils/dates'
-import { Debugger } from '~/components/Debugger'
 import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { useLocalStorage } from '~/utils/localStorage'
 import { cn } from '~/utils/classnames'
 import { useClientNow } from '~/utils/hooks'
+import { DisplayPicture } from '~/components/DisplayPicture'
 
-export const Inbox: FC = () => {
+export const Inbox: FC<{ username: string; userImage?: string | null }> = ({
+  username,
+  userImage,
+}) => {
   const [focusDate] = useClientNow({
     initialDate: startOfDay(new Date()),
     modifier: startOfDay,
@@ -29,7 +29,7 @@ export const Inbox: FC = () => {
 
   const queryClient = api.useContext()
 
-  const [settings, setSettings] = useLocalStorage('inbox-settings')
+  const [settings] = useLocalStorage('local-settings')
 
   const {
     data: events,
@@ -39,7 +39,7 @@ export const Inbox: FC = () => {
     {
       start: toCalendarDate(focusDate),
       end: toCalendarDate(
-        setDay(focusDate, 7, {
+        endOfWeek(focusDate, {
           weekStartsOn: getDay(focusDate),
         })
       ),
@@ -67,10 +67,16 @@ export const Inbox: FC = () => {
   }, [events])
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
+    <div className="mx-auto grid h-full w-full max-w-2xl grid-rows-[auto_1fr] flex-col overflow-hidden">
       <header className="flex items-center justify-between px-4 py-6">
         <div className="w-8">
-          <Debugger />
+          <motion.button
+            whileHover={{ rotate: -25 }}
+            whileTap={{ rotate: 25 }}
+            onClick={() => queryClient.invalidate()}
+          >
+            <ArrowPathIcon height={20} className="" />
+          </motion.button>
         </div>
         <div className="relative">
           <div
@@ -84,54 +90,25 @@ export const Inbox: FC = () => {
           <Header1 className="bg-neutral-950 text-2xl">Inbox</Header1>
         </div>
         <div className="relative w-8">
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger className="flex h-full w-full items-center justify-center">
-              <EllipsisVerticalIcon height={20} />
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content className="right-0 rounded-lg border border-neutral-800 bg-neutral-950 py-1 shadow-lg">
-                <DropdownMenu.Item asChild>
-                  <button
-                    className="relative flex w-full items-center py-2 pl-8 pr-4 text-sm text-neutral-50 hover:bg-neutral-800"
-                    onClick={() => queryClient.event.range.invalidate()}
-                  >
-                    <span className="relative">
-                      <ArrowPathIcon
-                        width={20}
-                        className="absolute right-full top-1/2 -translate-y-1/2 pr-2"
-                      />
-                    </span>
-                    Reload
-                  </button>
-                </DropdownMenu.Item>
-                <DropdownMenu.CheckboxItem
-                  className="relative flex w-full items-center py-2 pl-8 pr-4 text-sm text-neutral-50 hover:bg-neutral-800"
-                  checked={settings?.leftWeekends}
-                  onCheckedChange={(value) =>
-                    setSettings({ ...settings, leftWeekends: value })
-                  }
-                >
-                  <DropdownMenu.ItemIndicator className="relative">
-                    <CheckIcon
-                      width={20}
-                      className="absolute right-full top-1/2 -translate-y-1/2 pr-2"
-                    />
-                  </DropdownMenu.ItemIndicator>
-                  Left Weekends
-                </DropdownMenu.CheckboxItem>
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
+          <Link
+            href="/settings"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent hover:border-neutral-600"
+          >
+            <DisplayPicture
+              src={userImage}
+              username={username}
+              className="h-8 w-8"
+            />
+          </Link>
         </div>
       </header>
-      <div className="grid h-full max-h-screen grid-cols-2 gap-2 px-1 pb-2">
+      <div
+        className={cn('flex gap-2 overflow-hidden px-1 pb-2', {
+          'flex-row-reverse': !settings.leftWeekends,
+        })}
+      >
         {/* weekend */}
-        <div
-          className={cn(
-            'grid grid-rows-2 gap-2',
-            settings.leftWeekends ? 'order-none' : 'order-2'
-          )}
-        >
+        <div className="flex w-1/2 flex-1 flex-col gap-2 overflow-hidden">
           <DayBox
             focusDate={focusDate}
             dayOfWeek={6}
@@ -148,7 +125,7 @@ export const Inbox: FC = () => {
           />
         </div>
         {/* weekdays */}
-        <div className="grid grid-rows-5 gap-2">
+        <div className="flex w-1/2 flex-1 flex-col gap-2 overflow-hidden">
           <DayBox
             focusDate={focusDate}
             dayOfWeek={5}

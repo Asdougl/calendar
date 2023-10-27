@@ -6,7 +6,6 @@ import {
   useEffect,
   useImperativeHandle,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -23,27 +22,25 @@ import {
 } from 'date-fns'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
 import { useSearchParams } from 'next/navigation'
+import { useScroll, motion, useTransform } from 'framer-motion'
 import { Header1 } from '~/components/ui/headers'
 import { time, toCalendarDate } from '~/utils/dates'
 import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
-import { type RouterOutputs } from '~/trpc/shared'
-import { useMountEffect } from '~/utils/hooks'
 
 type ViewOfAWeekProps = {
   starting: Date
-  ready: boolean
   index: number
   onInView?: () => void
 }
 
 const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
-  function ViewOfAWeekWithRef({ starting, ready, onInView, index }, ref) {
+  function ViewOfAWeekWithRef({ starting, onInView }, ref) {
     const weekRef = useRef<HTMLDivElement>(null)
 
     useImperativeHandle(ref, () => weekRef.current!)
 
-    const { data: events, isLoading } = api.event.range.useQuery(
+    const { data: events = [], isLoading } = api.event.range.useQuery(
       {
         start: toCalendarDate(starting),
         end: toCalendarDate(
@@ -56,23 +53,22 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
         refetchOnWindowFocus: false,
         staleTime: time.minutes(2),
         refetchInterval: time.minutes(5),
+        select: (data) => {
+          if (!data?.length) return []
+
+          const eventsByDay: NonNullable<typeof data>[] = []
+
+          data.forEach((event) => {
+            const dayOfWeek = getDay(new Date(event.date))
+            const thisDay = eventsByDay[dayOfWeek]
+            if (thisDay) thisDay?.push(event)
+            else eventsByDay[dayOfWeek] = [event]
+          })
+
+          return eventsByDay
+        },
       }
     )
-
-    const eventsByDay = useMemo(() => {
-      if (!events?.length) return []
-
-      const eventsByDay: NonNullable<RouterOutputs['event']['range']>[] = []
-
-      events.forEach((event) => {
-        const dayOfWeek = getDay(new Date(event.date))
-        const thisDay = eventsByDay[dayOfWeek]
-        if (thisDay) thisDay?.push(event)
-        else eventsByDay[dayOfWeek] = [event]
-      })
-
-      return eventsByDay
-    }, [events])
 
     useLayoutEffect(() => {
       const options = {
@@ -89,65 +85,63 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
         })
       }, options)
 
-      if (ready && weekRef.current)
-        intersectionObserver.observe(weekRef.current)
+      if (weekRef.current) intersectionObserver.observe(weekRef.current)
 
       return () => {
         intersectionObserver.disconnect()
       }
-    }, [onInView, ready])
+    }, [onInView])
 
     return (
       <div
         ref={weekRef}
-        className="grid h-full w-full flex-shrink-0 snap-center grid-cols-2 gap-2 overflow-y-scroll px-1 pb-2"
+        className="flex h-full w-full flex-shrink-0 snap-center gap-2 overflow-hidden overflow-y-scroll px-1 pb-2"
       >
         {/* weekend */}
-        <div className="relative grid grid-rows-2 gap-2">
-          <div className="absolute left-0 top-0 bg-black">{index}</div>
+        <div className="relative flex w-1/2 flex-1 flex-col gap-2 overflow-hidden">
           <DayBox
             focusDate={starting}
             dayOfWeek={6}
-            events={eventsByDay[6] || []}
+            events={events[6] || []}
             isLoading={isLoading}
           />
           <DayBox
             focusDate={starting}
             dayOfWeek={0}
-            events={eventsByDay[0] || []}
+            events={events[0] || []}
             isLoading={isLoading}
           />
         </div>
         {/* weekdays */}
-        <div className="grid grid-rows-5 gap-2">
+        <div className="flex w-1/2 flex-1 flex-col gap-2 overflow-hidden">
           <DayBox
             focusDate={starting}
             dayOfWeek={5}
-            events={eventsByDay[5] || []}
+            events={events[5] || []}
             isLoading={isLoading}
           />
           <DayBox
             focusDate={starting}
             dayOfWeek={4}
-            events={eventsByDay[4] || []}
+            events={events[4] || []}
             isLoading={isLoading}
           />
           <DayBox
             focusDate={starting}
             dayOfWeek={3}
-            events={eventsByDay[3] || []}
+            events={events[3] || []}
             isLoading={isLoading}
           />
           <DayBox
             focusDate={starting}
             dayOfWeek={2}
-            events={eventsByDay[2] || []}
+            events={events[2] || []}
             isLoading={isLoading}
           />
           <DayBox
             focusDate={starting}
             dayOfWeek={1}
-            events={eventsByDay[1] || []}
+            events={events[1] || []}
             isLoading={isLoading}
           />
         </div>
@@ -155,6 +149,8 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
     )
   }
 )
+
+const isThisWeek = (date: Date) => getWeek(date) === getWeek(new Date())
 
 export const WeekView: FC = () => {
   const searchParams = useSearchParams()
@@ -179,8 +175,7 @@ export const WeekView: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   // blocks intersectionObservers until the current week is in view
-  const [ready, setReady] = useState(false)
-  const blocker = useRef<ReturnType<typeof setTimeout>>()
+  const nextUpdate = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     if (containerRef.current) {
@@ -188,48 +183,94 @@ export const WeekView: FC = () => {
     }
   }, [loadedWeeks])
 
+  const { scrollXProgress } = useScroll({
+    container: containerRef,
+  })
+
+  const weektitleY = useTransform(
+    scrollXProgress,
+    [0, 0.5, 1],
+    [0, (1 / 3) * -100, (2 / 3) * -100]
+  )
+
+  const thisWeekOpacity = useTransform(
+    scrollXProgress,
+    [0, 0.5, 1],
+    isThisWeek(loadedWeeks[1])
+      ? [0, 1, 0]
+      : isThisWeek(loadedWeeks[0])
+      ? [1, 0, 0]
+      : isThisWeek(loadedWeeks[2])
+      ? [0, 0, 1]
+      : [0, 0, 0]
+  )
+
   const onScrollTimeout = useRef<ReturnType<typeof setTimeout>>()
 
   const onScroll = () => {
     if (onScrollTimeout.current) clearTimeout(onScrollTimeout.current)
-    if (ready) setReady(false)
     onScrollTimeout.current = setTimeout(() => {
-      setReady(true)
+      if (nextUpdate.current) {
+        nextUpdate.current()
+        nextUpdate.current = null
+      }
     }, 100)
   }
 
   return (
     <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
       <header className="flex items-center justify-between px-4 py-6">
-        <div className="w-8">
+        <div className="flex h-full w-8">
           <button
-            className="hidden md:block"
-            disabled={!ready || !weeksRefs.current[0]}
+            className="group flex h-full w-full items-center justify-center rounded-lg hover:bg-neutral-800"
+            disabled={!weeksRefs.current[0]}
             onClick={() =>
               weeksRefs.current[0]?.scrollIntoView({ behavior: 'smooth' })
             }
           >
-            <ArrowLeftIcon height={20} />
+            <ArrowLeftIcon
+              height={20}
+              className="translate-x-1 transition-transform group-hover:translate-x-0"
+            />
           </button>
         </div>
-        <Header1 className="text-2xl">
-          Week of {format(loadedWeeks[1], 'MMM d')}
+        <Header1 className="relative flex h-8 items-baseline gap-2 text-2xl">
+          Week of
+          <div className="w-22 relative h-full overflow-hidden">
+            <motion.div
+              style={{ y: weektitleY }}
+              className="flex flex-col gap-px"
+            >
+              <span>{format(loadedWeeks[0], 'MMM dd')}</span>
+              <span>{format(loadedWeeks[1], 'MMM dd')}</span>
+              <span>{format(loadedWeeks[2], 'MMM dd')}</span>
+            </motion.div>
+          </div>
+          <motion.div
+            style={{ opacity: thisWeekOpacity }}
+            className="absolute left-full top-1/2 -translate-y-1/2 pl-1"
+          >
+            <div className="h-2 w-2 rounded-full bg-neutral-50"></div>
+          </motion.div>
         </Header1>
-        <div className="w-8">
+        <div className="flex h-full w-8">
           <button
-            className="hidden md:block"
-            disabled={!ready || !weeksRefs.current[2]}
+            className="group flex h-full w-full items-center justify-center rounded-lg hover:bg-neutral-800"
+            disabled={!weeksRefs.current[2]}
             onClick={() =>
               weeksRefs.current[2]?.scrollIntoView({ behavior: 'smooth' })
             }
           >
-            <ArrowRightIcon height={20} />
+            <ArrowRightIcon
+              height={20}
+              className="-translate-x-1 transition-transform group-hover:translate-x-0"
+            />
           </button>
         </div>
       </header>
       <div
         ref={containerRef}
-        className="flex h-full w-full snap-x snap-mandatory flex-nowrap overflow-scroll px-1"
+        className="flex h-full w-full snap-x snap-mandatory flex-nowrap gap-2 overflow-scroll px-1"
         onScroll={onScroll}
       >
         <ViewOfAWeek
@@ -238,18 +279,14 @@ export const WeekView: FC = () => {
             weeksRefs.current[0] = ref!
           }}
           starting={loadedWeeks[0]}
-          ready={ready}
           index={0}
           onInView={() => {
-            if (!blocker.current) {
+            nextUpdate.current = () => {
               setLoadedWeeks((loadedWeeks) => [
                 subWeeks(loadedWeeks[0], 1),
                 loadedWeeks[0],
                 loadedWeeks[1],
               ])
-              blocker.current = setTimeout(() => {
-                blocker.current = undefined
-              }, 200)
             }
           }}
         />
@@ -259,7 +296,6 @@ export const WeekView: FC = () => {
             weeksRefs.current[1] = ref!
           }}
           starting={loadedWeeks[1]}
-          ready={ready}
           index={1}
         />
         <ViewOfAWeek
@@ -268,18 +304,14 @@ export const WeekView: FC = () => {
             weeksRefs.current[2] = ref!
           }}
           starting={loadedWeeks[2]}
-          ready={ready}
           index={2}
           onInView={() => {
-            if (!blocker.current) {
+            nextUpdate.current = () => {
               setLoadedWeeks((loadedWeeks) => [
                 loadedWeeks[1],
                 loadedWeeks[2],
                 addWeeks(loadedWeeks[2], 1),
               ])
-              blocker.current = setTimeout(() => {
-                blocker.current = undefined
-              }, 200)
             }
           }}
         />

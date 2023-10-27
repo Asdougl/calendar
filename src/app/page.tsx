@@ -11,8 +11,11 @@ export default async function Home() {
   }
 
   return (
-    <main className="flex h-screen flex-col">
-      <Inbox />
+    <main className="flex h-screen flex-col overflow-hidden">
+      <Inbox
+        username={session.user.name ?? ''}
+        userImage={session.user.image}
+      />
       <Navbar />
     </main>
   )

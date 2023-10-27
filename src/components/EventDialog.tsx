@@ -192,7 +192,8 @@ export const EventDialog: FC<EventDialogProps> = ({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Trigger
         disabled={fullDisable}
-        className="rounded-lg ring-neutral-600 focus:outline-none focus:ring"
+        className="rounded-lg px-1 ring-neutral-600 hover:bg-neutral-800 focus:outline-none focus:ring"
+        asChild={!!children}
       >
         {children ?? <PlusIcon height={20} />}
       </Dialog.Trigger>
