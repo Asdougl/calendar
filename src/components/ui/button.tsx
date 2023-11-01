@@ -27,6 +27,7 @@ const button = cva(
           'bg-green-950 text-neutral-50 border-green-900 hover:bg-green-900 ring-green-300',
       },
       size: {
+        xs: 'px-2 py-1 text-xs',
         sm: 'px-3 py-1 text-sm',
         md: 'px-4 py-2 text-base',
         lg: 'px-5 py-2 text-lg',

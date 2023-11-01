@@ -214,7 +214,7 @@ export const WeekView: FC = () => {
         nextUpdate.current()
         nextUpdate.current = null
       }
-    }, 100)
+    }, 300)
   }
 
   return (

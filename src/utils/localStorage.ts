@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { z, type ZodSchema } from 'zod'
+import { useMountEffect } from './hooks'
 
 const localStorageData = <T>({
   schema,
@@ -62,12 +63,18 @@ export const useLocalStorage = <K extends keyof LocalStorageKeys>(key: K) => {
   const { data } = useQuery({
     queryKey: ['localStorage', key],
     queryFn: () => getFromLocalStorage(key),
+    initialData: LocalStorageKeys[key].defaultValues,
     staleTime: Infinity,
     refetchOnMount: false,
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
   })
   const queryClient = useQueryClient()
+
+  useMountEffect(() => {
+    // eslint-disable-next-line no-console
+    queryClient.invalidateQueries(['localStorage', key]).catch(console.error)
+  })
 
   const setLocalStorageValue = (
     newValue:

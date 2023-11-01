@@ -25,7 +25,7 @@ const NavBarItem: FC<{
     <Link
       href={path}
       className={cn(
-        'flex flex-col items-center gap-2 rounded-lg px-4 py-2 hover:bg-neutral-900 md:hover:text-neutral-50',
+        'flex flex-col items-center gap-2 rounded-lg px-4 py-2 md:hover:bg-neutral-900 md:hover:text-neutral-50',
         active ? 'text-neutral-50' : 'text-neutral-500'
       )}
     >

@@ -2,8 +2,9 @@
 
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import { signOut } from 'next-auth/react'
+import Link from 'next/link'
 import { useState } from 'react'
-import { Button } from '~/components/ui/button'
+import { Button, ButtonLink } from '~/components/ui/button'
 import { Header3 } from '~/components/ui/headers'
 import { Switch } from '~/components/ui/switch'
 import { api } from '~/trpc/react'
@@ -32,8 +33,8 @@ const SettingList = ({
   title: string
   children: React.ReactNode
 }) => (
-  <div className="">
-    <div className="pb-2">
+  <div className="px-4">
+    <div className="px-2 py-2">
       <Header3>{title}</Header3>
     </div>
     <ul className="flex-grow-0 divide-y divide-neutral-800 rounded-lg border border-neutral-800">
@@ -57,6 +58,16 @@ export const LocalSettings = () => {
             }))
           }
         />
+      </SettingItem>
+      <SettingItem title="Categories">
+        <ButtonLink
+          href="/categories"
+          size="sm"
+          intent="secondary"
+          className="w-40 text-center"
+        >
+          Edit
+        </ButtonLink>
       </SettingItem>
     </SettingList>
   )
