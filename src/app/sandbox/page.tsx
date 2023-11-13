@@ -10,6 +10,9 @@ import { Input } from '~/components/ui/input'
 import { Select } from '~/components/ui/select'
 import { randomFromArray } from '~/utils/array'
 import { CategoryColors } from '~/utils/classnames'
+import { UncontrolledDatePicker } from '~/components/ui/DatePicker'
+import { Label } from '~/components/ui/label'
+import { SkeletonText } from '~/components/skeleton/Text'
 
 const randomEmojis = [
   '🤣',
@@ -113,6 +116,8 @@ type EventExample = {
 export default function SandboxPage() {
   const [eventExamples, setEventExamples] = useState<EventExample[]>([])
 
+  const [toggle, setToggle] = useState(false)
+
   useEffect(() => {
     setEventExamples([
       ...CategoryColors.map((color) => ({
@@ -212,8 +217,22 @@ export default function SandboxPage() {
         </div>
         <div className="flex flex-col items-start gap-2">
           <Field id="my-switch" label="My Switch">
-            <Switch id="my-switch" />
+            <Switch
+              id="my-switch"
+              checked={toggle}
+              onCheckedChange={(value) => setToggle(value)}
+            />
           </Field>
+        </div>
+        <div className="flex flex-col items-start gap-2">
+          <Label>Date Picker</Label>
+          <UncontrolledDatePicker name="my-date-picker" />
+        </div>
+        <div className="flex flex-col items-start gap-2">
+          <Label>Skeleton Text</Label>
+          <SkeletonText skeletonized={toggle}>
+            Use above toggle to skeletonize
+          </SkeletonText>
         </div>
       </div>
     </main>

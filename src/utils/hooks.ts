@@ -86,3 +86,109 @@ export const useQueryState = <T>(key: string, initialState: T) => {
 
   return [data, updateQueryState] as const
 }
+
+export const useStateMap = <Key extends string, Value>(
+  initialState?: Partial<Record<Key, Value>>
+) => {
+  const [map] = useState(() => {
+    const initialMap = new Map<Key, Value>()
+
+    if (initialState) {
+      for (const [key, value] of Object.entries(initialState)) {
+        initialMap.set(key as Key, value as Value)
+      }
+    }
+
+    return initialMap
+  })
+  const [, render] = useState(Date.now())
+
+  const get = (key: Key) => {
+    return map.get(key)
+  }
+
+  const set = (key: Key, value: Value) => {
+    const old = map.get(key)
+    if (old === value) return
+    map.set(key, value)
+  }
+
+  const remove = (key: Key) => {
+    if (!map.has(key)) return
+    map.delete(key)
+    render(Date.now())
+  }
+
+  const has = (key: Key) => {
+    return map.has(key)
+  }
+
+  const clear = () => {
+    map.clear()
+    render(Date.now())
+  }
+
+  const values = () => map.values()
+
+  const keys = () => map.keys()
+
+  const entries = () => map.entries()
+
+  return {
+    get,
+    set,
+    delete: remove,
+    has,
+    clear,
+    values,
+    keys,
+    entries,
+    get size() {
+      return map.size
+    },
+  } as const
+}
+
+export const useStateSet = <T>(initialValue: T[] = []) => {
+  const [stateSet] = useState(new Set<T>(initialValue))
+  const [, render] = useState(Date.now())
+
+  const add = (item: T) => {
+    stateSet.add(item)
+    render((value) => value + 1)
+  }
+
+  const remove = (item: T) => {
+    stateSet.delete(item)
+    render((value) => value + 1)
+  }
+
+  const has = (item: T) => stateSet.has(item)
+
+  const clear = () => {
+    stateSet.clear()
+    render((value) => value + 1)
+  }
+
+  const values = () => stateSet.values()
+
+  const keys = () => stateSet.keys()
+
+  const entries = () => stateSet.entries()
+
+  const toArray = (): T[] => Array.from(stateSet)
+
+  return {
+    add,
+    delete: remove,
+    has,
+    clear,
+    values,
+    keys,
+    entries,
+    toArray,
+    get size() {
+      return stateSet.size
+    },
+  } as const
+}

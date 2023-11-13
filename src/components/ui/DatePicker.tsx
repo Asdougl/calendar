@@ -21,6 +21,7 @@ import {
   startOfDay,
 } from 'date-fns'
 import { Button } from './button'
+import { NumberInput } from './input'
 import { cn } from '~/utils/classnames'
 import { getMonthDates } from '~/utils/dates'
 
@@ -65,6 +66,7 @@ const MONTH_OPTIONS = [
 
 const stdFormat = (date: Date) => format(date, 'yyyy-MM-dd')
 const displayFormat = (date: Date) => format(date, 'd MMM yy')
+const accessibleFormat = (date: Date) => format(date, 'd, eeee, MMMM yyyy')
 
 const isDisabled = (test: Date, min?: Date, max?: Date) => {
   if (max && isAfter(test, max)) {
@@ -76,8 +78,8 @@ const isDisabled = (test: Date, min?: Date, max?: Date) => {
   return false
 }
 
-const getInitialFocus = () => {
-  return setDate(new Date(), 1)
+const getInitialFocus = (initialDate?: Date) => {
+  return setDate(initialDate ?? new Date(), 1)
 }
 
 type DatePickerProps = {
@@ -95,8 +97,9 @@ export const DatePicker: FC<DatePickerProps> = ({
   max,
   className,
 }) => {
-  const [focusMonth, setFocusMonth] = useState(getInitialFocus())
+  const [focusMonth, setFocusMonth] = useState(() => getInitialFocus(value))
   const [open, setOpen] = useState(false)
+  const [yearError, setYearError] = useState<'min' | 'max' | null>(null)
 
   const monthDates = useMemo(() => {
     return getMonthDates(getYear(focusMonth), getMonth(focusMonth))
@@ -133,13 +136,17 @@ export const DatePicker: FC<DatePickerProps> = ({
         </Button>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content className="relative z-10 w-screen p-2 md:w-auto">
+        <Popover.Content
+          className="relative z-10 w-screen p-2 md:w-auto"
+          aria-label="date picker"
+        >
           <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-2">
             <div className="flex h-10 justify-between">
               <button
                 type="button"
                 onClick={prevMonth}
                 className="rounded-lg px-2 hover:bg-neutral-900"
+                aria-label="Previous Month"
               >
                 <ChevronLeftIcon height={18} />
               </button>
@@ -148,24 +155,29 @@ export const DatePicker: FC<DatePickerProps> = ({
                 onChange={(e) =>
                   setFocusMonth(setMonth(focusMonth, +e.currentTarget.value))
                 }
+                aria-label="month"
                 className="rounded-lg bg-neutral-950 text-neutral-50 hover:bg-neutral-900"
               >
                 {MONTH_OPTIONS}
               </select>
-              <input
-                type="number"
-                min={1901}
-                max={2100}
+              {/* rework this because it's shit */}
+              <NumberInput
+                aria-label="year"
                 value={getYear(focusMonth)}
-                onChange={(e) =>
-                  setFocusMonth(setYear(focusMonth, +e.currentTarget.value))
-                }
-                className="rounded-lg bg-neutral-950 text-neutral-50 hover:bg-neutral-900"
+                onChange={(value, error) => {
+                  setFocusMonth(setYear(focusMonth, value))
+                  setYearError(error ?? null)
+                }}
+                error={!!yearError}
+                max={2100}
+                min={1901}
+                className="w-12 rounded-lg border-none bg-neutral-950 px-1 py-0 leading-tight text-neutral-50 hover:bg-neutral-900"
               />
               <button
                 type="button"
                 onClick={nextMonth}
                 className="rounded-lg px-2 hover:bg-neutral-900"
+                aria-label="Next Month"
               >
                 <ChevronRightIcon height={18} />
               </button>
@@ -183,13 +195,18 @@ export const DatePicker: FC<DatePickerProps> = ({
                 row.map((date) => {
                   const current = value ? isSameDay(date, value) : false
                   const isToday = isSameDay(date, today)
+
+                  let ariaLabel = accessibleFormat(date)
+                  if (isToday) ariaLabel += ', today'
+                  if (current) ariaLabel += ', selected date'
+
                   return (
                     <button
                       // ref={isToday ? todayRef : undefined}
                       type="button"
                       disabled={isDisabled(date, min, max)}
                       key={stdFormat(date)}
-                      aria-labelledby={stdFormat(date)}
+                      aria-label={ariaLabel}
                       className={cn(
                         'h-10 w-auto rounded-lg border text-lg hover:bg-neutral-900 disabled:opacity-10 md:w-10',
                         {
@@ -217,11 +234,13 @@ export const DatePicker: FC<DatePickerProps> = ({
 
 export const UncontrolledDatePicker: FC<
   Omit<DatePickerProps, 'value' | 'onChange'> & {
-    name: string
-    defaultValue: string
+    name?: string
+    defaultValue?: string
   }
 > = ({ name, defaultValue, ...props }) => {
-  const [value, setValue] = useState(new Date(defaultValue))
+  const [value, setValue] = useState(
+    defaultValue ? new Date(defaultValue) : new Date()
+  )
 
   const onChange = (date: Date) => {
     setValue(startOfDay(date))

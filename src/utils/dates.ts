@@ -7,6 +7,7 @@ import {
   getDayOfYear,
   getUnixTime,
   set,
+  startOfDay,
   startOfWeek,
 } from 'date-fns'
 import { zonedTimeToUtc } from 'date-fns-tz'
@@ -117,7 +118,13 @@ export const dateFromDateAndTime = (date: string, time?: string | null) => {
       hours: parseInt(timeSplit[0] || ''),
       minutes: parseInt(timeSplit[1] || ''),
     })
+  } else {
+    return startOfDay(withDate)
   }
+}
 
-  return withDate
+export const isValidDateString = (dateString: string) => {
+  const date = new Date(dateString)
+
+  return !isNaN(date.getTime())
 }

@@ -5,10 +5,10 @@ export default function SettingsLoader() {
   return (
     <main className="flex h-screen flex-col">
       <div className="mx-auto grid h-full w-full max-w-2xl grid-rows-[auto_1fr] overflow-hidden">
-        <div className="py-6">
+        <div className="px-4 py-6">
           <Header1 skeleton>Hi Username</Header1>
         </div>
-        <div className="">
+        <div className="flex flex-col gap-2 px-4">
           <div className="pb-2">
             <Header3 skeleton>Some settings</Header3>
           </div>

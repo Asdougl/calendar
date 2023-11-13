@@ -17,12 +17,12 @@ import {
   subMonths,
 } from 'date-fns'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid'
-import Link from 'next/link'
 import { Header1 } from '~/components/ui/headers'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { api } from '~/trpc/react'
 import { time, toCalendarDate, weekDatesOfDateRange } from '~/utils/dates'
 import { type RouterOutputs } from '~/trpc/shared'
+import { PathLink } from '~/components/ui/PathLink'
 
 export const MonthView: FC = () => {
   const [focusMonth, setFocusMonth] = useState(() => {
@@ -136,13 +136,16 @@ export const MonthView: FC = () => {
       </button>
       <div className="flex flex-grow flex-col gap-1 overflow-scroll px-[2px]">
         {weekDates.map((week, i) => (
-          <Link
+          <PathLink
             key={
               week[0] ? `${format(week[0], 'yy')}w${getISOWeek(week[0])}` : i
             }
-            href={`/week?start=${toCalendarDate(
-              week[0] || new Date()
-            )}&random=${Math.random().toString(36).substring(2, 7)}`}
+            path={(path) =>
+              path.week({
+                start: toCalendarDate(week[0] || new Date()),
+                random: Math.random().toString(36).substring(2, 7),
+              })
+            }
             className="group flex flex-1 flex-grow"
           >
             {week.map((day, j) => {
@@ -206,7 +209,7 @@ export const MonthView: FC = () => {
                 </div>
               )
             })}
-          </Link>
+          </PathLink>
         ))}
       </div>
       <button

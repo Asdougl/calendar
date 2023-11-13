@@ -33,6 +33,7 @@ const config = {
     ],
     '@typescript-eslint/prefer-nullish-coalescing': 0,
     'react/jsx-props-no-spreading': 0,
+    'lodash/prefer-is-nil': 0,
   },
   overrides: [
     {

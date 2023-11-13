@@ -22,11 +22,19 @@ type LoaderProps = {
 } & VariantProps<typeof loaderStyle>
 
 export const Loader: FC<LoaderProps> = ({ className, ...props }) => {
-  return <div className={cn('h-6 w-6', loaderStyle(props), className)}></div>
+  return (
+    <div
+      data-testid="loader"
+      className={cn('h-6 w-6', loaderStyle(props), className)}
+    ></div>
+  )
 }
 
 export const InlineLoader: FC<LoaderProps> = ({ className, ...props }) => {
   return (
-    <div className={cn('h-[1em] w-[1em]', loaderStyle(props), className)}></div>
+    <div
+      data-testid="loader"
+      className={cn('h-[1em] w-[1em]', loaderStyle(props), className)}
+    ></div>
   )
 }

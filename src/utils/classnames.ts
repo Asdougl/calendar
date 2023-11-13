@@ -6,7 +6,7 @@ export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(...inputs))
 }
 
-type ColorProperties = 'bg' | 'text' | 'border' | 'ring'
+type ColorProperties = 'bg' | 'text' | 'border' | 'ring' | 'alttext'
 
 export const CategoryColors = [
   'yellow',
@@ -34,60 +34,70 @@ const CATEGORY_COLOR_MAP: Record<
     text: 'text-yellow-400',
     border: 'border-yellow-400',
     ring: 'ring-yellow-400',
+    alttext: 'text-yellow-800',
   },
   blue: {
     bg: 'bg-blue-400',
     text: 'text-blue-400',
     border: 'border-blue-400',
     ring: 'ring-blue-400',
+    alttext: 'text-blue-800',
   },
   green: {
     bg: 'bg-green-400',
     text: 'text-green-400',
     border: 'border-green-400',
     ring: 'ring-green-400',
+    alttext: 'text-green-800',
   },
   pink: {
     bg: 'bg-pink-400',
     text: 'text-pink-400',
     border: 'border-pink-400',
     ring: 'ring-pink-400',
+    alttext: 'text-pink-800',
   },
   purple: {
     bg: 'bg-purple-400',
     text: 'text-purple-400',
     border: 'border-purple-400',
     ring: 'ring-purple-400',
+    alttext: 'text-purple-800',
   },
   red: {
     bg: 'bg-red-400',
     text: 'text-red-400',
     border: 'border-red-400',
     ring: 'ring-red-400',
+    alttext: 'text-red-800',
   },
   indigo: {
     bg: 'bg-indigo-400',
     text: 'text-indigo-400',
     border: 'border-indigo-400',
     ring: 'ring-indigo-400',
+    alttext: 'text-indigo-800',
   },
   gray: {
     bg: 'bg-gray-400',
     text: 'text-gray-400',
     border: 'border-gray-400',
     ring: 'ring-gray-400',
+    alttext: 'text-gray-800',
   },
   orange: {
     bg: 'bg-orange-400',
     text: 'text-orange-400',
     border: 'border-orange-400',
     ring: 'ring-orange-400',
+    alttext: 'text-orange-800',
   },
   _none: {
     bg: 'bg-neutral-600',
     text: 'test-neutral-200',
     border: 'border-neutral-200',
     ring: 'ring-neutral-400',
+    alttext: 'text-neutral-200',
   },
 }
 
