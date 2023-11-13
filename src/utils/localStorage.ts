@@ -72,8 +72,10 @@ export const useLocalStorage = <K extends keyof LocalStorageKeys>(key: K) => {
   const queryClient = useQueryClient()
 
   useMountEffect(() => {
-    // eslint-disable-next-line no-console
-    queryClient.invalidateQueries(['localStorage', key]).catch(console.error)
+    queryClient
+      .invalidateQueries({ queryKey: ['localStorage', key] })
+      // eslint-disable-next-line no-console
+      .catch(console.error)
   })
 
   const setLocalStorageValue = (
@@ -91,8 +93,10 @@ export const useLocalStorage = <K extends keyof LocalStorageKeys>(key: K) => {
           : newValue
       )
     )
-    // eslint-disable-next-line no-console
-    queryClient.invalidateQueries(['localStorage', key]).catch(console.error)
+    queryClient
+      .invalidateQueries({ queryKey: ['localStorage', key] })
+      // eslint-disable-next-line no-console
+      .catch(console.error)
   }
 
   return [

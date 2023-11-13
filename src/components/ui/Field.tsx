@@ -1,4 +1,4 @@
-import { useId, type FC, type PropsWithChildren } from 'react'
+import { useId, type FC, type PropsWithChildren, forwardRef } from 'react'
 import { type VariantProps, cva } from 'class-variance-authority'
 import { Input, type InputProps } from './input'
 import { Label, type LabelProps } from './label'
@@ -20,7 +20,7 @@ const fieldStyle = cva('flex flex-col gap-1', {
 
 type FieldProps = {
   label: string
-  id: string
+  id?: string
   className?: string
   condition?: LabelProps['condition']
   error?: string
@@ -52,16 +52,17 @@ export const Field: FC<PropsWithChildren<FieldProps>> = ({
   )
 }
 
-export const InputField: FC<
-  Omit<InputProps, 'error'> & Omit<FieldProps, 'id'>
-> = ({ id, error, ...props }) => {
+export const InputField = forwardRef<
+  HTMLInputElement,
+  Omit<InputProps, 'error'> & FieldProps
+>(function InputFieldWithRef({ id, error, ...props }, ref) {
   const internalId = useId()
 
   const htmlId = id || internalId
 
   return (
     <Field id={htmlId} error={error} {...props}>
-      <Input id={htmlId} width="full" error={!!error} {...props} />
+      <Input id={htmlId} width="full" error={!!error} {...props} ref={ref} />
     </Field>
   )
-}
+})

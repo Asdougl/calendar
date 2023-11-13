@@ -1,10 +1,16 @@
-import type { ComponentProps, FC } from 'react'
+import {
+  forwardRef,
+  type ComponentProps,
+  useState,
+  type ChangeEvent,
+} from 'react'
 import type { VariantProps } from 'class-variance-authority'
 import { cva } from 'class-variance-authority'
 import { cn } from '~/utils/classnames'
+import { exists } from '~/utils/guards'
 
 const input = cva(
-  'border border-neutral-800 bg-neutral-950 text-neutral-50 px-3 py-2 rounded-md focus:outline-none focus:ring ring-neutral-400 w-full',
+  'border border-neutral-800 bg-neutral-950 text-neutral-50 px-3 py-2 rounded-md focus:outline-none focus:ring ring-neutral-400 w-full placeholder:text-neutral-700',
   {
     variants: {
       size: {
@@ -31,8 +37,65 @@ const input = cva(
 )
 type InputVariantProps = VariantProps<typeof input>
 
-export type InputProps = ComponentProps<'input'> & InputVariantProps
+export type InputProps = Omit<ComponentProps<'input'>, 'ref'> &
+  InputVariantProps
 
-export const Input: FC<InputProps> = ({ className, ...props }) => {
-  return <input className={cn(input(props), className)} {...props} />
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  function InputWithRef({ className, error, ...props }, ref) {
+    return (
+      <input
+        className={cn(input({ ...props, error }), className)}
+        {...props}
+        ref={ref}
+      />
+    )
+  }
+)
+
+type NumberInputProps = Omit<
+  InputProps,
+  'ref' | 'onChange' | 'input' | 'maxLength' | 'minLength' | 'type'
+> & {
+  onChange: (value: number, error?: 'min' | 'max') => void
+  value: number
+  min?: number
+  max?: number
+  error?: boolean
 }
+
+export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
+  function NumberInputWithRef(
+    { value, max, min, onChange: setExternalValue, ...props },
+    ref
+  ) {
+    const [internalValue, setInternalValue] = useState(value.toString())
+
+    const onInternalChange = (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.currentTarget.value
+      const numberedValue = +value.replaceAll(/\D/g, '')
+
+      if (isNaN(numberedValue) || value === '') {
+        setInternalValue('')
+        return
+      } else if (exists(max) && numberedValue > max) {
+        setExternalValue(max, 'max')
+        setInternalValue(max.toString())
+      } else if (exists(min) && numberedValue < min) {
+        setExternalValue(min, 'min')
+        setInternalValue(numberedValue.toString())
+      } else {
+        setExternalValue(numberedValue)
+        setInternalValue(numberedValue.toString())
+      }
+    }
+
+    return (
+      <Input
+        ref={ref}
+        {...props}
+        value={internalValue}
+        onChange={onInternalChange}
+      />
+    )
+  }
+)

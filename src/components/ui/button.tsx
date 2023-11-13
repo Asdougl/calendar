@@ -6,8 +6,8 @@ import {
   type ElementType,
   type FC,
 } from 'react'
-import Link from 'next/link'
 import { Loader } from './Loader'
+import { PathLink } from './PathLink'
 import { cn } from '~/utils/classnames'
 
 const button = cva(
@@ -16,15 +16,15 @@ const button = cva(
     variants: {
       intent: {
         primary:
-          'bg-neutral-50 text-neutral-950 border-blue-500 hover:bg-neutral-200 ring-neutral-100',
+          'bg-neutral-50 text-neutral-950 border-blue-500 hover:bg-neutral-200 ring-neutral-100 disabled:text-neutral-600 disabled:hover:bg-neutral-50 disabled:border-neutral-300 disabled:ring-neutral-100',
         secondary:
-          'bg-neutral-700 text-neutral-50 border-neutral-800 hover:bg-neutral-600 ring-neutral-200',
+          'bg-neutral-700 text-neutral-50 border-neutral-800 hover:bg-neutral-600 ring-neutral-200 disabled:text-neutral-600 disabled:hover:bg-neutral-700 disabled:border-neutral-800 disabled:ring-neutral-200',
         tertiary:
-          'bg-neutral-950 text-neutral-50 border-neutral-800 hover:bg-neutral-900 ring-neutral-400',
+          'bg-neutral-950 text-neutral-50 border-neutral-800 hover:bg-neutral-900 ring-neutral-400 disabled:text-neutral-600 disabled:hover:bg-neutral-950 disabled:border-neutral-800 disabled:ring-neutral-400',
         danger:
-          'bg-red-950 text-neutral-50 border-red-900 hover:bg-red-900 ring-red-300',
+          'bg-red-950 text-neutral-50 border-red-900 hover:bg-red-900 ring-red-300 disabled:text-neutral-600 disabled:hover:bg-red-950 disabled:border-red-900 disabled:ring-red-300',
         success:
-          'bg-green-950 text-neutral-50 border-green-900 hover:bg-green-900 ring-green-300',
+          'bg-green-950 text-neutral-50 border-green-900 hover:bg-green-900 ring-green-300 disabled:text-neutral-600 disabled:hover:bg-green-950 disabled:border-green-900 disabled:ring-green-300',
       },
       size: {
         xs: 'px-2 py-1 text-xs',
@@ -57,11 +57,11 @@ export const ButtonAnchor = forwardRef<HTMLAnchorElement, ButtonProps<'a'>>(
   }
 )
 
-export const ButtonLink: FC<ButtonProps<typeof Link>> = ({
+export const ButtonLink: FC<ButtonProps<typeof PathLink>> = ({
   className,
   ...props
 }) => {
-  return <Link {...props} className={cn(button(props), className)} />
+  return <PathLink {...props} className={cn(button(props), className)} />
 }
 
 type SubmitButtonProps = ButtonProps<'button'> & {

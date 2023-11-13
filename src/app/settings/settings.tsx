@@ -2,7 +2,6 @@
 
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import { signOut } from 'next-auth/react'
-import Link from 'next/link'
 import { useState } from 'react'
 import { Button, ButtonLink } from '~/components/ui/button'
 import { Header3 } from '~/components/ui/headers'
@@ -61,7 +60,7 @@ export const LocalSettings = () => {
       </SettingItem>
       <SettingItem title="Categories">
         <ButtonLink
-          href="/categories"
+          path={(path) => path.settings.categories()}
           size="sm"
           intent="secondary"
           className="w-40 text-center"

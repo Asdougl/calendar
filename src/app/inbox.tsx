@@ -6,7 +6,6 @@ import getDay from 'date-fns/getDay'
 import startOfDay from 'date-fns/startOfDay'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import { endOfWeek } from 'date-fns'
-import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Header1 } from '~/components/ui/headers'
 import { time, toCalendarDate } from '~/utils/dates'
@@ -17,6 +16,7 @@ import { useLocalStorage } from '~/utils/localStorage'
 import { cn } from '~/utils/classnames'
 import { useClientNow } from '~/utils/hooks'
 import { DisplayPicture } from '~/components/DisplayPicture'
+import { PathLink } from '~/components/ui/PathLink'
 
 export const Inbox: FC<{ username: string; userImage?: string | null }> = ({
   username,
@@ -90,8 +90,8 @@ export const Inbox: FC<{ username: string; userImage?: string | null }> = ({
           <Header1 className="bg-neutral-950 text-2xl">Inbox</Header1>
         </div>
         <div className="relative w-8">
-          <Link
-            href="/settings"
+          <PathLink
+            path={(paths) => paths.settings.path()}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent hover:border-neutral-600"
           >
             <DisplayPicture
@@ -99,7 +99,7 @@ export const Inbox: FC<{ username: string; userImage?: string | null }> = ({
               username={username}
               className="h-8 w-8"
             />
-          </Link>
+          </PathLink>
         </div>
       </header>
       <div
