@@ -18,7 +18,7 @@ export default function MonthView() {
         <header className="flex items-center justify-between px-4 py-6">
           <div className="w-8"></div>
           <Header1 className="text-2xl">
-            <SkeletonText>November 2000</SkeletonText>
+            <SkeletonText skeletonized>November 2000</SkeletonText>
           </Header1>
           <div className="w-8"></div>
         </header>
