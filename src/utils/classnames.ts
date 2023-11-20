@@ -101,6 +101,67 @@ const CATEGORY_COLOR_MAP: Record<
   },
 }
 
+type ColorOrNone = CategoryColors | '_none'
+
+type CategoryColorOption = {
+  value: ColorOrNone
+  name: string
+  color: ColorOrNone
+}
+
+export const CATEGORY_SELECT_OPTIONS: CategoryColorOption[] = [
+  {
+    name: 'None',
+    value: '_none',
+    color: '_none',
+  },
+  {
+    name: 'Yellow',
+    value: 'yellow',
+    color: 'yellow',
+  },
+  {
+    name: 'Blue',
+    value: 'blue',
+    color: 'blue',
+  },
+  {
+    name: 'Green',
+    value: 'green',
+    color: 'green',
+  },
+  {
+    name: 'Pink',
+    value: 'pink',
+    color: 'pink',
+  },
+  {
+    name: 'Purple',
+    value: 'purple',
+    color: 'purple',
+  },
+  {
+    name: 'Red',
+    value: 'red',
+    color: 'red',
+  },
+  {
+    name: 'Indigo',
+    value: 'indigo',
+    color: 'indigo',
+  },
+  {
+    name: 'Gray',
+    value: 'gray',
+    color: 'gray',
+  },
+  {
+    name: 'Orange',
+    value: 'orange',
+    color: 'orange',
+  },
+]
+
 export const getCategoryColor = (
   colorName: string | undefined,
   property: ColorProperties

@@ -10,77 +10,26 @@ import {
   getDate,
   getMonth,
   getYear,
-  isAfter,
-  isBefore,
   isSameDay,
   isSameMonth,
   set,
-  setDate,
   setMonth,
   setYear,
   startOfDay,
 } from 'date-fns'
-import { Button } from './button'
-import { NumberInput } from './input'
+import { Button } from '../button'
+import { NumberInput } from '../input'
+import {
+  MONTH_OPTIONS,
+  accessibleFormat,
+  daysOfWeek,
+  displayFormat,
+  getInitialFocus,
+  isDisabled,
+  stdFormat,
+} from './common'
 import { cn } from '~/utils/classnames'
 import { getMonthDates } from '~/utils/dates'
-
-const MONTH_OPTIONS = [
-  <option key={0} value={0}>
-    January
-  </option>,
-  <option key={1} value={1}>
-    February
-  </option>,
-  <option key={2} value={2}>
-    March
-  </option>,
-  <option key={3} value={3}>
-    April
-  </option>,
-  <option key={4} value={4}>
-    May
-  </option>,
-  <option key={5} value={5}>
-    June
-  </option>,
-  <option key={6} value={6}>
-    July
-  </option>,
-  <option key={7} value={7}>
-    August
-  </option>,
-  <option key={8} value={8}>
-    September
-  </option>,
-  <option key={9} value={9}>
-    October
-  </option>,
-  <option key={10} value={10}>
-    November
-  </option>,
-  <option key={11} value={11}>
-    December
-  </option>,
-]
-
-const stdFormat = (date: Date) => format(date, 'yyyy-MM-dd')
-const displayFormat = (date: Date) => format(date, 'd MMM yy')
-const accessibleFormat = (date: Date) => format(date, 'd, eeee, MMMM yyyy')
-
-const isDisabled = (test: Date, min?: Date, max?: Date) => {
-  if (max && isAfter(test, max)) {
-    return true
-  }
-  if (min && isBefore(test, min)) {
-    return true
-  }
-  return false
-}
-
-const getInitialFocus = (initialDate?: Date) => {
-  return setDate(initialDate ?? new Date(), 1)
-}
 
 type DatePickerProps = {
   value: Date
@@ -88,6 +37,7 @@ type DatePickerProps = {
   min?: Date
   max?: Date
   className?: string
+  id?: string
 }
 
 export const DatePicker: FC<DatePickerProps> = ({
@@ -96,6 +46,7 @@ export const DatePicker: FC<DatePickerProps> = ({
   min,
   max,
   className,
+  id,
 }) => {
   const [focusMonth, setFocusMonth] = useState(() => getInitialFocus(value))
   const [open, setOpen] = useState(false)
@@ -125,12 +76,10 @@ export const DatePicker: FC<DatePickerProps> = ({
 
   const today = new Date()
 
-  const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
-        <Button className={cn('flex items-center gap-2', className)}>
+        <Button id={id} className={cn('flex items-center gap-2', className)}>
           <CalendarIcon height={20} />
           <span>{displayFormat(value)}</span>
         </Button>

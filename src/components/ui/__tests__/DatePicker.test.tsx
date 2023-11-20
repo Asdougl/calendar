@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { addDays, format } from 'date-fns'
 import { useState } from 'react'
-import { DatePicker } from '../DatePicker'
+import { DatePicker } from '../dates/DatePicker'
 
 const DEFAULT_DATE = '2023-10-10'
 

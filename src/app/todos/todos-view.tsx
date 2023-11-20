@@ -82,7 +82,7 @@ export const TodosView = () => {
                 onCheckedChange={(value) =>
                   mutate({
                     id: todo.id,
-                    date: '',
+                    datetime: new Date(0),
                     done: !!value,
                   })
                 }

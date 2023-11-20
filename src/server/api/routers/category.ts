@@ -1,12 +1,19 @@
 import { z } from 'zod'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
 
+const select = {
+  id: true,
+  name: true,
+  color: true,
+}
+
 export const categoryRouter = createTRPCRouter({
   all: protectedProcedure.query(({ ctx }) => {
     return ctx.db.category.findMany({
       where: {
         createdById: ctx.session.user.id,
       },
+      select,
     })
   }),
   one: protectedProcedure
@@ -17,6 +24,7 @@ export const categoryRouter = createTRPCRouter({
           id: input.id,
           createdById: ctx.session.user.id,
         },
+        select,
       })
     }),
   create: protectedProcedure
@@ -24,7 +32,6 @@ export const categoryRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         color: z.string(),
-        icon: z.string().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
@@ -32,9 +39,9 @@ export const categoryRouter = createTRPCRouter({
         data: {
           name: input.name,
           color: input.color,
-          icon: input.icon || '',
           createdById: ctx.session.user.id,
         },
+        select,
       })
     }),
   update: protectedProcedure
@@ -43,7 +50,6 @@ export const categoryRouter = createTRPCRouter({
         id: z.string(),
         name: z.string().optional(),
         color: z.string().optional(),
-        icon: z.string().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
@@ -55,8 +61,8 @@ export const categoryRouter = createTRPCRouter({
         data: {
           name: input.name,
           color: input.color,
-          icon: input.icon,
         },
+        select,
       })
     }),
   remove: protectedProcedure
@@ -67,6 +73,7 @@ export const categoryRouter = createTRPCRouter({
           id: input.id,
           createdById: ctx.session.user.id,
         },
+        select,
       })
     }),
 })

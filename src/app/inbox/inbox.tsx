@@ -5,23 +5,26 @@ import { useMemo } from 'react'
 import getDay from 'date-fns/getDay'
 import startOfDay from 'date-fns/startOfDay'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
-import { endOfWeek } from 'date-fns'
+import { endOfDay, endOfWeek } from 'date-fns'
 import { motion } from 'framer-motion'
 import { Header1 } from '~/components/ui/headers'
-import { time, toCalendarDate } from '~/utils/dates'
+import { time } from '~/utils/dates'
 import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
-import { useLocalStorage } from '~/utils/localStorage'
 import { cn } from '~/utils/classnames'
 import { useClientNow } from '~/utils/hooks'
 import { DisplayPicture } from '~/components/DisplayPicture'
 import { PathLink } from '~/components/ui/PathLink'
+import { type Preferences } from '~/types/preferences'
 
-export const Inbox: FC<{ username: string; userImage?: string | null }> = ({
-  username,
-  userImage,
-}) => {
+type InboxProps = {
+  username: string
+  userImage?: string | null
+  preferences: Preferences
+}
+
+export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
   const [focusDate] = useClientNow({
     initialDate: startOfDay(new Date()),
     modifier: startOfDay,
@@ -29,16 +32,14 @@ export const Inbox: FC<{ username: string; userImage?: string | null }> = ({
 
   const queryClient = api.useContext()
 
-  const [settings] = useLocalStorage('local-settings')
-
   const {
     data: events,
     isLoading,
     isFetching,
   } = api.event.range.useQuery(
     {
-      start: toCalendarDate(focusDate),
-      end: toCalendarDate(
+      start: startOfDay(focusDate),
+      end: endOfDay(
         endOfWeek(focusDate, {
           weekStartsOn: getDay(focusDate),
         })
@@ -57,7 +58,7 @@ export const Inbox: FC<{ username: string; userImage?: string | null }> = ({
     const eventsByDay: NonNullable<RouterOutputs['event']['range']>[] = []
 
     events.forEach((event) => {
-      const dayOfWeek = getDay(new Date(event.date))
+      const dayOfWeek = getDay(event.datetime)
       const thisDay = eventsByDay[dayOfWeek]
       if (thisDay) thisDay?.push(event)
       else eventsByDay[dayOfWeek] = [event]
@@ -91,7 +92,7 @@ export const Inbox: FC<{ username: string; userImage?: string | null }> = ({
         </div>
         <div className="relative w-8">
           <PathLink
-            path={(paths) => paths.settings.path()}
+            path="/settings"
             className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent hover:border-neutral-600"
           >
             <DisplayPicture
@@ -104,7 +105,7 @@ export const Inbox: FC<{ username: string; userImage?: string | null }> = ({
       </header>
       <div
         className={cn('flex gap-2 overflow-hidden px-1 pb-2', {
-          'flex-row-reverse': !settings.leftWeekends,
+          'flex-row-reverse': !preferences.leftWeekends,
         })}
       >
         {/* weekend */}

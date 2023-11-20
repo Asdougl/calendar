@@ -22,7 +22,7 @@ const categoryIconStyles = cva('text-sm', {
 type StyleProps = VariantProps<typeof categoryIconStyles>
 
 type CategoryIconProps = {
-  category?: Pick<Category, 'icon' | 'color'> | null
+  category?: Pick<Category, 'color'> | null
   title: string
   className?: string
   hideWithoutCategory?: boolean
@@ -52,7 +52,7 @@ export const CategoryIcon: FC<CategoryIconProps> = ({
         className
       )}
     >
-      {category ? category.icon : title[0]}
+      {title[0]}
     </div>
   )
 }

@@ -8,23 +8,32 @@ import {
 } from '@heroicons/react/24/solid'
 import { usePathname } from 'next/navigation'
 import type { FC, ReactNode } from 'react'
-import { type PathCreator, PathLink } from './ui/PathLink'
+import Link from 'next/link'
 import { cn } from '~/utils/classnames'
 import { featureEnabled } from '~/utils/flags'
-import { PATHS } from '~/utils/path'
+import {
+  type PathCreatorParams,
+  type PathName,
+  pathReplace,
+} from '~/utils/path'
 
-const NavBarItem: FC<{
-  path: PathCreator
+const NavBarItem = <Path extends PathName>({
+  icon,
+  label,
+  ...pathParams
+}: {
   icon: ReactNode
   label: string
-}> = ({ path, icon, label }) => {
+} & PathCreatorParams<Path>) => {
   const pathname = usePathname()
 
-  const active = pathname === path(PATHS)
+  const navPath = pathReplace(pathParams)
+
+  const active = pathname === navPath
 
   return (
-    <PathLink
-      path={path}
+    <Link
+      href={navPath}
       className={cn(
         'flex flex-col items-center gap-2 rounded-lg px-4 py-2 md:hover:bg-neutral-900 md:hover:text-neutral-50',
         active ? 'text-neutral-50' : 'text-neutral-500'
@@ -34,7 +43,7 @@ const NavBarItem: FC<{
       <div className="px-1">
         <div className="text-sm leading-none">{label}</div>
       </div>
-    </PathLink>
+    </Link>
   )
 }
 
@@ -45,21 +54,21 @@ export const Navbar: FC<{ loading?: boolean }> = () => {
         <ul className="flex items-center justify-evenly gap-8 px-4 lg:flex-col lg:justify-start lg:py-4">
           <li>
             <NavBarItem
-              path={(path) => path.root()}
+              path="/inbox"
               icon={<InboxIcon height={20} />}
               label="Inbox"
             />
           </li>
           <li>
             <NavBarItem
-              path={(path) => path.week()}
+              path="/week"
               icon={<Squares2X2Icon height={20} />}
               label="Week"
             />
           </li>
           <li>
             <NavBarItem
-              path={(path) => path.month()}
+              path="/month"
               icon={<CalendarDaysIcon height={20} />}
               label="Month"
             />
@@ -67,7 +76,7 @@ export const Navbar: FC<{ loading?: boolean }> = () => {
           {featureEnabled('TODOS') && (
             <li>
               <NavBarItem
-                path={(path) => path.todos()}
+                path="/todos"
                 icon={<CheckCircleIcon height={20} />}
                 label="Todos"
               />

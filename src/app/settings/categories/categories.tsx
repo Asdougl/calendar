@@ -243,7 +243,7 @@ export const CategoriesPage: FC<CategoriesPageProps> = ({
   return (
     <div className="mx-auto grid h-full w-full max-w-2xl grid-rows-[auto_1fr] overflow-hidden">
       <div className="flex items-center justify-start gap-4 px-4 py-6">
-        <PathLink path={(paths) => paths.settings.path()}>
+        <PathLink path="/settings">
           <ArrowLeftIcon height={24} />
         </PathLink>
         <Header1>Family</Header1>
