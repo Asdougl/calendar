@@ -10,9 +10,10 @@ import { Input } from '~/components/ui/input'
 import { Select } from '~/components/ui/select'
 import { randomFromArray } from '~/utils/array'
 import { CategoryColors } from '~/utils/classnames'
-import { UncontrolledDatePicker } from '~/components/ui/DatePicker'
+import { UncontrolledDatePicker } from '~/components/ui/dates/DatePicker'
 import { Label } from '~/components/ui/label'
 import { SkeletonText } from '~/components/skeleton/Text'
+import { UncontrolledDateRangePicker } from '~/components/ui/dates/DateRangePicker'
 
 const randomEmojis = [
   '🤣',
@@ -234,6 +235,9 @@ export default function SandboxPage() {
             Use above toggle to skeletonize
           </SkeletonText>
         </div>
+        <Field label="Date Range Picker">
+          <UncontrolledDateRangePicker />
+        </Field>
       </div>
     </main>
   )

@@ -60,7 +60,7 @@ export const LocalSettings = () => {
       </SettingItem>
       <SettingItem title="Categories">
         <ButtonLink
-          path={(path) => path.settings.categories()}
+          path="/settings/categories"
           size="sm"
           intent="secondary"
           className="w-40 text-center"

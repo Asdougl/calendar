@@ -5,7 +5,6 @@ import { EventDialog } from './EventDialog'
 import { EventItem } from './EventItem'
 import { cn } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
-import { dateFromDateAndTime } from '~/utils/dates'
 
 export const DayBox: FC<{
   focusDate: Date
@@ -25,13 +24,14 @@ export const DayBox: FC<{
   const sortedEvents = useMemo(() => {
     const pastEvents: RouterOutputs['event']['range'] = []
     const futureEvents: RouterOutputs['event']['range'] = []
+    const allDayEvents: RouterOutputs['event']['range'] = []
     const now = new Date().getTime()
     events.forEach((event) => {
-      if (dateFromDateAndTime(event.date, event.time).getTime() < now)
-        pastEvents.push(event)
+      if (event.timeStatus !== 'STANDARD') allDayEvents.push(event)
+      else if (event.datetime.getTime() < now) pastEvents.push(event)
       else futureEvents.push(event)
     })
-    return [...futureEvents, ...pastEvents]
+    return [...allDayEvents, ...futureEvents, ...pastEvents]
   }, [events])
 
   const distanceToToday = getDayOfYear(day) - getDayOfYear(new Date())

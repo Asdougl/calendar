@@ -25,7 +25,7 @@ export const TimeInput: FC<TimeInputProps> = ({
 
     if (input.length === 4) {
       // Define a regular expression pattern to match "hh:mm" format
-      const timePattern = /^([0-1]?[0-9]|2[0-3])[0-5][0-9]/
+      const timePattern = /^([0-1]?[0-9]|2[0-3])[0-5][0-9]$/
 
       setValid(timePattern.test(input))
     }

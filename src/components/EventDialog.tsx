@@ -7,34 +7,35 @@ import {
 } from '@heroicons/react/24/solid'
 import * as Dialog from '@radix-ui/react-dialog'
 import * as Select from '@radix-ui/react-select'
-import {
-  useState,
-  type FC,
-  type FormEvent,
-  type PropsWithChildren,
-  useRef,
-} from 'react'
+import { useState, type FC, type PropsWithChildren, useRef } from 'react'
 import { z } from 'zod'
-import { type Event } from '@prisma/client'
-import * as Checkbox from '@radix-ui/react-checkbox'
+import { Controller, useForm } from 'react-hook-form'
+import { format, isValid } from 'date-fns'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Header2 } from './ui/headers'
 import { Button, SubmitButton } from './ui/button'
 import { Label } from './ui/label'
 import { Input } from './ui/input'
 import { Loader } from './ui/Loader'
-import { UncontrolledDatePicker } from './ui/DatePicker'
-import { UncontrolledTimeInput } from './ui/TimeInput'
+import { DatePicker } from './ui/dates/DatePicker'
+import { TimeInput } from './ui/TimeInput'
 import { Alert } from './ui/Alert'
-import { time, toCalendarDate } from '~/utils/dates'
+import { dateFromDateAndTime, time } from '~/utils/dates'
 import { api } from '~/trpc/react'
-import { type RouterInputs } from '~/trpc/shared'
-import { match } from '~/utils/misc'
-import { featureEnabled } from '~/utils/flags'
+import { type RouterOutputs } from '~/trpc/shared'
 import { cn, getCategoryColor } from '~/utils/classnames'
+
+const EventDialogFormSchema = z.object({
+  title: z.string(),
+  date: z.string(),
+  time: z.string().nullable(),
+  categoryId: z.string().nullable(),
+})
+type EventDialogFormSchema = z.infer<typeof EventDialogFormSchema>
 
 type UpdateEventDialogProps = {
   disabled?: boolean
-  event: Event
+  event: RouterOutputs['event']['range'][number]
 }
 
 type InsertEventDialogProps = {
@@ -52,7 +53,6 @@ export const EventDialog: FC<EventDialogProps> = ({
   ...props
 }) => {
   const [open, setOpen] = useState(false)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const formRef = useRef<HTMLFormElement>(null)
 
@@ -103,6 +103,26 @@ export const EventDialog: FC<EventDialogProps> = ({
     },
   })
 
+  const {
+    handleSubmit,
+    register,
+    control,
+    setError,
+    formState: { isDirty, errors },
+  } = useForm<EventDialogFormSchema>({
+    defaultValues: {
+      title: 'event' in props ? props.event.title : '',
+      date:
+        'event' in props
+          ? format(props.event.datetime, 'yyyy-MM-dd')
+          : format(props.initialDate, 'yyyy-MM-dd'),
+      time: 'event' in props ? format(props.event.datetime, 'HHmm') : '',
+      categoryId:
+        'event' in props && props.event.category ? props.event.category.id : '',
+    },
+    resolver: zodResolver(EventDialogFormSchema),
+  })
+
   const onOpenChange = (open: boolean) => {
     setOpen(open)
     if (open) {
@@ -112,73 +132,48 @@ export const EventDialog: FC<EventDialogProps> = ({
     }
   }
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    const formData = new FormData(e.currentTarget)
-
-    const title = z.string().parse(formData.get('event-name'))
-    const category_id = z.string().parse(formData.get('event-category-id'))
-    const dateraw = z.string().parse(formData.get('event-date'))
-    const time = z.string().parse(formData.get('event-time'))
-    const todo = z.string().nullable().parse(formData.get('event-todo'))
-    // const todoDone = z
-    //   .string()
-    //   .nullable()
-    //   .parse(formData.get('event-todo-done'))
-
-    const [date] = match(/(\d{4}-\d{2}-\d{2})/, dateraw)
-
-    if (!title) return setErrorMsg('Title is required')
-    if (!date) return setErrorMsg('Date is required')
+  const onSubmit = handleSubmit((data) => {
+    const formattedTime =
+      data.time && /^([0-1]?[0-9]|2[0-3])[0-5][0-9]$/.test(data.time)
+        ? `${data.time.slice(0, 2)}:${data.time.slice(2)}`
+        : '12:00'
 
     if ('event' in props) {
-      const updateParams: RouterInputs['event']['update'] = {
+      const dateTime = dateFromDateAndTime(data.date, formattedTime)
+
+      if (!isValid(dateTime)) {
+        setError('date', { message: 'Invalid date' })
+        return
+      }
+
+      updateMutate({
         id: props.event.id,
-        date: date,
-      }
-
-      if (title !== props.event.title) {
-        updateParams.title = title.trim()
-      }
-
-      if (time !== props.event.time) {
-        if (time) {
-          updateParams.time = `${time[0]}${time[1]}:${time[2]}${time[3]}`
-        } else {
-          updateParams.time = null
-        }
-      }
-
-      if (category_id !== props.event.categoryId) {
-        updateParams.categoryId =
-          category_id === 'none' || !category_id ? null : category_id
-      }
-
-      if (todo === 'on' && props.event.done === null) {
-        updateParams.done = false
-      } else if (todo === 'off' && props.event.done !== null) {
-        updateParams.done = null
-      }
-
-      if (
-        Object.keys(updateParams).length > 2 ||
-        updateParams.date !== props.event.date
-      ) {
-        updateMutate(updateParams)
-      }
-      // else nothing being updated, don't bother.
-    } else {
-      insertMutate({
-        title,
-        date,
-        time: time ? `${time[0]}${time[1]}:${time[2]}${time[3]}` : undefined,
+        title: data.title,
+        timeStatus: data.time ? 'STANDARD' : 'NO_TIME',
+        datetime: dateTime,
         categoryId:
-          category_id === 'none' || !category_id ? undefined : category_id,
-        todo: todo === 'on',
+          data.categoryId && data.categoryId !== 'none'
+            ? data.categoryId
+            : undefined,
+      })
+    } else {
+      const dateTime = dateFromDateAndTime(data.date, formattedTime)
+
+      if (!isValid(dateTime)) {
+        setError('date', { message: 'Invalid date' })
+        return
+      }
+      insertMutate({
+        title: data.title,
+        timeStatus: data.time ? 'STANDARD' : 'NO_TIME',
+        datetime: dateTime,
+        categoryId:
+          data.categoryId && data.categoryId !== 'none'
+            ? data.categoryId
+            : undefined,
       })
     }
-  }
+  })
 
   const constructLoading = isUpdating || isInserting
 
@@ -227,116 +222,122 @@ export const EventDialog: FC<EventDialogProps> = ({
               <Input
                 className="w-full"
                 id="event-name"
-                name="event-name"
-                type="text"
-                defaultValue={'event' in props ? props.event.title : undefined}
+                {...register('title')}
                 autoComplete="off"
               />
             </div>
             <div className="flex w-full flex-col justify-between gap-4">
               {/* Row 2 -- category */}
               <div className="flex flex-grow flex-wrap gap-4">
-                <Select.Root
-                  defaultValue={
-                    'event' in props && props.event.categoryId
-                      ? props.event.categoryId
-                      : undefined
-                  }
-                  name="event-category-id"
-                >
-                  <Select.Trigger asChild>
-                    <Button
-                      disabled={fullDisable}
-                      className="flex w-full flex-grow items-center justify-between gap-1 md:w-auto"
+                <Controller
+                  control={control}
+                  name="categoryId"
+                  render={({ field }) => (
+                    <Select.Root
+                      value={field.value || 'none'}
+                      onValueChange={field.onChange}
                     >
-                      {isLoadingCategories ? (
-                        <Loader />
-                      ) : (
-                        <>
-                          <Select.Value
-                            placeholder="Category"
-                            className="placeholder:opacity-75"
-                          />
-                          <Select.Icon>
-                            <ChevronDownIcon height={16} />
-                          </Select.Icon>
-                        </>
-                      )}
-                    </Button>
-                  </Select.Trigger>
-                  <Select.Portal>
-                    <Select.Content className="relative z-10 rounded-lg border border-neutral-800 bg-neutral-950 px-1 py-2">
-                      <Select.ScrollUpButton className="SelectScrollButton">
-                        <ChevronUpIcon height={20} />
-                      </Select.ScrollUpButton>
-                      <Select.Viewport className="flex flex-col gap-1">
-                        <Select.Item
-                          value="none"
-                          className="relative pl-8 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50"
+                      <Select.Trigger asChild>
+                        <Button
+                          disabled={fullDisable}
+                          className="flex w-full flex-grow items-center justify-between gap-1 md:w-auto"
                         >
-                          <Select.ItemText asChild>
-                            <div className="flex items-start justify-start gap-1 md:gap-2">
-                              <div className="mt-[7px] h-2 w-2 rounded-full bg-neutral-800"></div>
-                              Uncategorised
-                            </div>
-                          </Select.ItemText>
-                          <Select.ItemIndicator className="absolute left-0 top-1/2 -translate-y-1/2">
-                            <CheckIcon height={20} />
-                          </Select.ItemIndicator>
-                        </Select.Item>
-                        {categories?.map((category) => (
-                          <Select.Item
-                            key={category.id}
-                            value={category.id}
-                            className="relative pl-8 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50"
-                          >
-                            <Select.ItemText asChild>
-                              <div className="flex items-start justify-start gap-1 md:gap-2">
-                                <div
-                                  className={cn(
-                                    'mt-[7px] h-2 w-2 rounded-full',
-                                    getCategoryColor(category.color, 'bg')
-                                  )}
-                                ></div>
-                                {category.name}
-                              </div>
-                            </Select.ItemText>
-                            <Select.ItemIndicator className="absolute left-0 top-1/2 -translate-y-1/2">
-                              <CheckIcon height={20} />
-                            </Select.ItemIndicator>
-                          </Select.Item>
-                        ))}
-                      </Select.Viewport>
-                      <Select.ScrollDownButton className="SelectScrollButton">
-                        <ChevronDownIcon />
-                      </Select.ScrollDownButton>
-                    </Select.Content>
-                  </Select.Portal>
-                </Select.Root>
+                          {isLoadingCategories ? (
+                            <Loader />
+                          ) : (
+                            <>
+                              <Select.Value
+                                placeholder="Category"
+                                className="placeholder:opacity-75"
+                              />
+                              <Select.Icon>
+                                <ChevronDownIcon height={16} />
+                              </Select.Icon>
+                            </>
+                          )}
+                        </Button>
+                      </Select.Trigger>
+                      <Select.Portal>
+                        <Select.Content className="relative z-10 rounded-lg border border-neutral-800 bg-neutral-950 px-1 py-2">
+                          <Select.ScrollUpButton className="SelectScrollButton">
+                            <ChevronUpIcon height={20} />
+                          </Select.ScrollUpButton>
+                          <Select.Viewport className="flex flex-col gap-1">
+                            <Select.Item
+                              value="none"
+                              className="relative pl-8 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50"
+                            >
+                              <Select.ItemText asChild>
+                                <div className="flex items-start justify-start gap-1 md:gap-2">
+                                  <div className="mt-[7px] h-2 w-2 rounded-full bg-neutral-800"></div>
+                                  Uncategorised
+                                </div>
+                              </Select.ItemText>
+                              <Select.ItemIndicator className="absolute left-0 top-1/2 -translate-y-1/2">
+                                <CheckIcon height={20} />
+                              </Select.ItemIndicator>
+                            </Select.Item>
+                            {categories?.map((category) => (
+                              <Select.Item
+                                key={category.id}
+                                value={category.id}
+                                className="relative pl-8 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50"
+                              >
+                                <Select.ItemText asChild>
+                                  <div className="flex items-start justify-start gap-1 md:gap-2">
+                                    <div
+                                      className={cn(
+                                        'mt-[7px] h-2 w-2 rounded-full',
+                                        getCategoryColor(category.color, 'bg')
+                                      )}
+                                    ></div>
+                                    {category.name}
+                                  </div>
+                                </Select.ItemText>
+                                <Select.ItemIndicator className="absolute left-0 top-1/2 -translate-y-1/2">
+                                  <CheckIcon height={20} />
+                                </Select.ItemIndicator>
+                              </Select.Item>
+                            ))}
+                          </Select.Viewport>
+                          <Select.ScrollDownButton className="SelectScrollButton">
+                            <ChevronDownIcon />
+                          </Select.ScrollDownButton>
+                        </Select.Content>
+                      </Select.Portal>
+                    </Select.Root>
+                  )}
+                />
                 {/* Row 3 (Mobile) -- date & time */}
                 <div className="flex w-full gap-4 md:w-auto">
-                  <UncontrolledDatePicker
-                    name="event-date"
-                    defaultValue={
-                      'event' in props
-                        ? props.event.date
-                        : toCalendarDate(props.initialDate)
-                    }
-                    className="flex-grow"
+                  <Controller
+                    control={control}
+                    name="date"
+                    render={({ field }) => (
+                      <DatePicker
+                        value={field.value ? new Date(field.value) : new Date()}
+                        onChange={(value) =>
+                          field.onChange(format(value, 'yyyy-MM-dd'))
+                        }
+                        className="flex-grow"
+                      />
+                    )}
                   />
-                  <UncontrolledTimeInput
-                    name="event-time"
-                    defaultValue={
-                      'event' in props && props.event.time
-                        ? props.event.time.replaceAll(/[^0-9]/g, '')
-                        : ''
-                    }
-                    className="w-24 flex-grow"
+                  <Controller
+                    control={control}
+                    name="time"
+                    render={({ field }) => (
+                      <TimeInput
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        className="w-24 flex-grow"
+                      />
+                    )}
                   />
                 </div>
               </div>
               <div className="flex flex-wrap items-start justify-between gap-4">
-                {featureEnabled('TODOS') && (
+                {/* {featureEnabled('TODOS') && (
                   <div className="flex h-full w-full gap-4">
                     <label
                       htmlFor="event-todo"
@@ -377,7 +378,7 @@ export const EventDialog: FC<EventDialogProps> = ({
                       </label>
                     )}
                   </div>
-                )}
+                )} */}
                 <div className="flex flex-grow justify-end gap-4">
                   {'event' in props && (
                     <SubmitButton
@@ -394,7 +395,7 @@ export const EventDialog: FC<EventDialogProps> = ({
                     loading={constructLoading}
                     intent="primary"
                     type="submit"
-                    disabled={fullDisable}
+                    disabled={fullDisable || !isDirty}
                   >
                     {'event' in props ? 'Save' : 'Add'}
                   </SubmitButton>
@@ -403,15 +404,17 @@ export const EventDialog: FC<EventDialogProps> = ({
               {fullError && (
                 <Alert
                   level="error"
-                  title="An Error Occurred"
+                  title="An API Error Occurred"
                   message={fullError.message}
                 />
               )}
-              {errorMsg && (
+              {Object.keys(errors).length > 0 && (
                 <Alert
                   level="error"
-                  title="An Error Occurred"
-                  message={errorMsg}
+                  title="A Form Error Occurred"
+                  message={Object.values(errors)
+                    .map((error) => error.message)
+                    .join(', ')}
                 />
               )}
             </div>

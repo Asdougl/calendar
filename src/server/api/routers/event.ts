@@ -1,43 +1,40 @@
 import { z } from 'zod'
-import { zonedTimeToUtc } from 'date-fns-tz'
-import { getUnixTime } from 'date-fns'
+import { TimeStatus } from '@prisma/client'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
+
+const select = {
+  id: true,
+  title: true,
+  datetime: true,
+  timeStatus: true,
+  category: {
+    select: {
+      id: true,
+      name: true,
+      color: true,
+    },
+  },
+}
 
 export const eventRouter = createTRPCRouter({
   range: protectedProcedure
-    .input(z.object({ start: z.string(), end: z.string() }))
+    .input(z.object({ start: z.date(), end: z.date() }))
     .query(({ ctx, input }) => {
-      const unixStart = getUnixTime(
-        zonedTimeToUtc(`${input.start}T00:00:00.0000Z`, 'UTC')
-      )
-
-      const unixEnd = getUnixTime(
-        zonedTimeToUtc(`${input.end}T00:00:00.0000Z`, 'UTC')
-      )
-
       return ctx.db.event.findMany({
         where: {
           createdById: ctx.session.user.id,
           OR: [
             {
-              timestamp: {
-                gte: unixStart,
-                lt: unixEnd,
+              datetime: {
+                gte: input.start.toISOString(),
+                lt: input.end.toISOString(),
               },
-            },
-            {
-              date: input.end,
-            },
-            {
-              date: input.start,
             },
           ],
         },
-        include: {
-          category: true,
-        },
+        select,
         orderBy: {
-          timestamp: 'asc',
+          datetime: 'asc',
         },
       })
     }),
@@ -59,38 +56,35 @@ export const eventRouter = createTRPCRouter({
           createdById: ctx.session.user.id,
           ...doneQuery,
         },
+        select: {
+          ...select,
+          done: true,
+        },
       })
     }),
   create: protectedProcedure
     .input(
       z.object({
         title: z.string(),
-        date: z.string(),
-        time: z.string().optional(),
+        datetime: z.date(),
+        timeStatus: z
+          .enum([TimeStatus.ALL_DAY, TimeStatus.NO_TIME, TimeStatus.STANDARD])
+          .default(TimeStatus.STANDARD),
         categoryId: z.string().optional(),
         todo: z.boolean().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
-      const timestamp = input.date
-        ? getUnixTime(
-            zonedTimeToUtc(
-              `${input.date}T${input.time || '00:00:00.0000'}Z`,
-              'UTC'
-            )
-          )
-        : -1
-
       return ctx.db.event.create({
         data: {
           title: input.title,
-          date: input.date,
-          time: input.time,
-          timestamp: timestamp,
+          datetime: input.datetime,
+          timeStatus: input.timeStatus,
           categoryId: input.categoryId,
           createdById: ctx.session.user.id,
           done: input.todo ? false : null,
         },
+        select,
       })
     }),
   update: protectedProcedure
@@ -98,34 +92,28 @@ export const eventRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         title: z.string().optional(),
-        date: z.string(),
-        time: z.string().nullable().optional(),
+        datetime: z.date().optional(),
+        timeStatus: z
+          .enum([TimeStatus.ALL_DAY, TimeStatus.NO_TIME, TimeStatus.STANDARD])
+          .optional(),
         categoryId: z.string().nullable().optional(),
         done: z.boolean().nullable().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
-      const timestamp = input.date
-        ? getUnixTime(
-            zonedTimeToUtc(
-              `${input.date}T${input.time || '00:00:00.0000'}Z`,
-              'UTC'
-            )
-          )
-        : -1
-
+      console.log(input.categoryId)
       return ctx.db.event.update({
         where: {
           id: input.id,
         },
         data: {
           title: input.title,
-          date: input.date,
-          time: input.time,
-          timestamp: timestamp,
+          datetime: input.datetime,
+          timeStatus: input.timeStatus,
           categoryId: input.categoryId,
           done: input.done,
         },
+        select,
       })
     }),
   delete: protectedProcedure
@@ -135,6 +123,7 @@ export const eventRouter = createTRPCRouter({
         where: {
           id: input.id,
         },
+        select,
       })
     }),
 })

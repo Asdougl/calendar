@@ -7,7 +7,7 @@ import {
 import { type VariantProps, cva } from 'class-variance-authority'
 import { Loader } from './Loader'
 import { Button } from './button'
-import { cn } from '~/utils/classnames'
+import { cn, getCategoryColor } from '~/utils/classnames'
 
 const selectStyle = cva(
   'flex w-full flex-grow items-center justify-between gap-1',
@@ -26,27 +26,30 @@ const selectStyle = cva(
   }
 )
 
-type Option = {
-  value: string
+type Option<Values = string> = {
+  value: Values
   name: string
+  color?: string
 }
 
-type SelectProps = {
+type SelectProps<Values = string> = {
   defaultValue?: string
+  value?: string
   name?: string
   className?: string
   disabled?: boolean
   loading?: boolean
-  options: Option[]
+  options: Option<Values>[]
   defaultOption?: Option
   placeholder?: string
   id?: string
   onChange?: (value: string) => void
 } & VariantProps<typeof selectStyle>
 
-export const Select = ({
+export const Select = <Values extends string = string>({
   className,
   defaultValue,
+  value,
   name,
   onChange,
   disabled,
@@ -56,10 +59,11 @@ export const Select = ({
   options,
   id,
   ...otherProps
-}: SelectProps) => {
+}: SelectProps<Values>) => {
   return (
     <RadixSelect.Root
       defaultValue={defaultValue}
+      value={value}
       name={name}
       onValueChange={onChange}
     >
@@ -109,7 +113,19 @@ export const Select = ({
                 value={option.value}
                 className="relative flex items-center gap-1 rounded-lg py-1 pl-4 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50 hover:outline-none"
               >
-                <RadixSelect.ItemText>{option.name}</RadixSelect.ItemText>
+                <RadixSelect.ItemText asChild>
+                  <div className="flex items-start gap-2">
+                    {option.color && (
+                      <div
+                        className={cn(
+                          'mt-[7px] h-2 w-2 rounded-full',
+                          getCategoryColor(option.color, 'bg')
+                        )}
+                      ></div>
+                    )}
+                    <span>{option.name}</span>
+                  </div>
+                </RadixSelect.ItemText>
                 <RadixSelect.ItemIndicator>
                   <CheckIcon height={16} />
                 </RadixSelect.ItemIndicator>

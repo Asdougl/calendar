@@ -3,14 +3,12 @@ import { format } from 'date-fns'
 import { EventDialog } from './EventDialog'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
-import { dateFromDateAndTime } from '~/utils/dates'
 
 export const EventItem: FC<{
   event: NonNullable<RouterOutputs['event']['range']>[number]
   condensed?: boolean
 }> = ({ event, condensed }) => {
-  const inThePast =
-    dateFromDateAndTime(event.date, event.time).getTime() < new Date().getTime()
+  const inThePast = event.datetime.getTime() < new Date().getTime()
 
   return (
     <EventDialog event={event}>
@@ -39,14 +37,14 @@ export const EventItem: FC<{
             {event.title}
           </div>
         </div>
-        {event.time && (
+        {event.timeStatus === 'STANDARD' && (
           <div
             className={cn(
               'whitespace-nowrap text-xs leading-tight text-neutral-500 md:pl-2',
               !condensed && 'pl-2 md:pl-0'
             )}
           >
-            {format(dateFromDateAndTime(event.date, event.time), 'HH:mm')}
+            {format(event.datetime, 'HH:mm')}
           </div>
         )}
       </li>

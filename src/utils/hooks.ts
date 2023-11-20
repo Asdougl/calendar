@@ -153,21 +153,25 @@ export const useStateSet = <T>(initialValue: T[] = []) => {
   const [stateSet] = useState(new Set<T>(initialValue))
   const [, render] = useState(Date.now())
 
+  const triggerRender = () => {
+    render((value) => value + 1)
+  }
+
   const add = (item: T) => {
     stateSet.add(item)
-    render((value) => value + 1)
+    triggerRender()
   }
 
   const remove = (item: T) => {
     stateSet.delete(item)
-    render((value) => value + 1)
+    triggerRender()
   }
 
   const has = (item: T) => stateSet.has(item)
 
   const clear = () => {
     stateSet.clear()
-    render((value) => value + 1)
+    triggerRender()
   }
 
   const values = () => stateSet.values()
@@ -178,8 +182,15 @@ export const useStateSet = <T>(initialValue: T[] = []) => {
 
   const toArray = (): T[] => Array.from(stateSet)
 
+  const set = (items: T[]) => {
+    stateSet.clear()
+    items.forEach((item) => stateSet.add(item))
+    triggerRender()
+  }
+
   return {
     add,
+    set,
     delete: remove,
     has,
     clear,
@@ -187,6 +198,19 @@ export const useStateSet = <T>(initialValue: T[] = []) => {
     keys,
     entries,
     toArray,
+    addStart: (item: T) => {
+      const allItems = toArray()
+      set([item, ...allItems])
+    },
+    addEnd: add,
+    trimStart: (count: number) => {
+      const allItems = toArray()
+      set(allItems.slice(count))
+    },
+    trimEnd: (count: number) => {
+      const allItems = toArray()
+      set(allItems.slice(0, allItems.length - count))
+    },
     get size() {
       return stateSet.size
     },

@@ -44,6 +44,9 @@ model User {
     email         String?    @unique
     emailVerified DateTime?
     image         String?
+    
+    preferences   Json?
+
     accounts      Account[]
     sessions      Session[]
     Event         Event[]
@@ -61,14 +64,18 @@ model VerificationToken {
 
 // Data
 
+enum TimeStatus {
+    STANDARD
+    ALL_DAY
+    NO_TIME
+}
+
 model Event {
     id    String @id @default(uuid())
     title String
 
-    date      String // format YYYY-MM-DD
-    time      String? // format HH:MM:SS.SSS
-    timestamp Float // timestamp in seconds
-    timezone  String?
+    datetime DateTime
+    timeStatus TimeStatus @default(NO_TIME)
 
     done Boolean? // for todos
 
@@ -86,7 +93,6 @@ model Category {
     id    String @id @default(uuid())
     name  String
     color String
-    icon  String
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -95,6 +101,7 @@ model Category {
     createdById String
 
     Event Event[]
+    Period Period[]
 }
 
 model Period {
@@ -102,12 +109,15 @@ model Period {
     name      String
     color     String
     icon      String
-    startDate String
-    endDate   String
+    startDate DateTime
+    endDate   DateTime
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     createdBy   User   @relation(fields: [createdById], references: [id])
     createdById String
+
+    category   Category? @relation(fields: [categoryId], references: [id])
+    categoryId String?
 }

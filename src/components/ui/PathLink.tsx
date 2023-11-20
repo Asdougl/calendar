@@ -1,17 +1,24 @@
 import Link from 'next/link'
-import { type FC, type ComponentProps } from 'react'
-import { PATHS } from '~/utils/path'
+import { type ComponentProps } from 'react'
+import { pathReplace, type PathName, type PathParams } from '~/utils/path'
 
-export type PathCreator = (paths: typeof PATHS) => string
+type PathLinkBasicProps<Path extends PathName> = Omit<
+  ComponentProps<typeof Link>,
+  'href'
+> & {
+  path: Path
+  query?: Record<string, string>
+}
 
-export const PathLink: FC<
-  Omit<ComponentProps<typeof Link>, 'href'> & {
-    path: PathCreator
+type PathLinkWithParamsProps<Path extends PathName> =
+  PathLinkBasicProps<Path> & {
+    params: PathParams<Path>
   }
-> = ({ path, children, ...props }) => {
-  return (
-    <Link href={path(PATHS)} {...props}>
-      {children}
-    </Link>
-  )
+
+export type PathLinkProps<Path extends PathName> = PathParams<Path> extends null
+  ? PathLinkBasicProps<Path>
+  : PathLinkWithParamsProps<Path>
+
+export const PathLink = <Path extends PathName>(props: PathLinkProps<Path>) => {
+  return <Link href={pathReplace(props)} {...props} />
 }

@@ -1,54 +1,65 @@
+import { useRouter } from 'next/navigation'
 import { type Flags, featureEnabled } from './flags'
 
-type PathConfig = {
-  flag?: {
-    name: Flags
-    fallback: string
-  }
+type PathParamsMap = {
+  '/': null
+  '/inbox': null
+  '/login': null
+  '/settings': null
+  '/settings/categories': null
+  '/settings/debug': null
+  '/week': null
+  '/year': null
+  '/month': null
+  '/periods': null
+  '/periods/:id': { id: string }
+  '/todos': null
 }
 
-const createPath =
-  (path: string, config?: PathConfig) => (query?: Record<string, string>) => {
-    if (config?.flag?.name && !featureEnabled(config.flag.name)) {
-      return config.flag.fallback
-    }
-    if (!query) return path
+export type PathName = keyof PathParamsMap
+
+export type PathParams<T extends PathName> = PathParamsMap[T]
+
+const PathFlags: Partial<
+  Record<PathName, { name: Flags; fallback: PathName }>
+> = {
+  '/todos': { name: 'TODOS', fallback: '/' },
+}
+
+export type PathCreatorParams<Path extends PathName> = {
+  path: Path
+  params?: PathParams<Path>
+  query?: Record<string, string>
+}
+
+export const pathReplace = <T extends PathName>({
+  path,
+  params,
+  query,
+}: PathCreatorParams<T>) => {
+  let newPath: string = path
+  const flag = PathFlags[path]
+  if (flag && !featureEnabled(flag.name)) {
+    newPath = flag.fallback
+  }
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      newPath = newPath.replace(`:${key}`, value)
+    })
+  }
+  if (query) {
     const queryString = Object.entries(query)
       .map(([key, value]) => `${key}=${value}`)
       .join('&')
-    return `${path}?${queryString}`
+    newPath = `${newPath}?${queryString}`
   }
-
-type PathWithQuery = (query?: Record<string, string>) => string
-
-type Path = {
-  path: PathWithQuery
-  [key: string]:
-    | PathWithQuery
-    | Path
-    | ((...args: string[]) => PathWithQuery | Path)
+  return newPath
 }
 
-type RootPath = {
-  root: PathWithQuery
-  [key: string]:
-    | PathWithQuery
-    | Path
-    | ((...args: string[]) => PathWithQuery | Path)
-}
+export const useNavigate = () => {
+  const router = useRouter()
 
-export const PATHS = {
-  root: createPath('/'),
-  login: createPath('/login'),
-  settings: {
-    path: createPath('/settings'),
-    categories: createPath('/settings/categories'),
-    debug: createPath('/settings/debug'),
-  },
-  week: createPath('/week'),
-  year: createPath('/year'),
-  month: createPath('/month'),
-  todos: createPath('/todos', {
-    flag: { name: 'TODOS', fallback: '/' },
-  }),
-} satisfies RootPath
+  return <T extends PathName>(params: PathCreatorParams<T>) => {
+    router.push(pathReplace(params))
+  }
+}

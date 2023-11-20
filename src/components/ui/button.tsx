@@ -1,14 +1,10 @@
 import type { VariantProps } from 'class-variance-authority'
 import { cva } from 'class-variance-authority'
-import {
-  forwardRef,
-  type ComponentProps,
-  type ElementType,
-  type FC,
-} from 'react'
+import { forwardRef, type ComponentProps, type ElementType } from 'react'
 import { Loader } from './Loader'
-import { PathLink } from './PathLink'
+import { PathLink, type PathLinkProps } from './PathLink'
 import { cn } from '~/utils/classnames'
+import { type PathName } from '~/utils/path'
 
 const button = cva(
   'rounded-lg border focus:outline-none focus:ring focus:ring-opacity-50',
@@ -31,6 +27,7 @@ const button = cva(
         sm: 'px-3 py-1 text-sm',
         md: 'px-4 py-2 text-base',
         lg: 'px-5 py-2 text-lg',
+        xl: 'px-8 py-3 text-2xl font-bold',
       },
     },
     defaultVariants: {
@@ -57,11 +54,17 @@ export const ButtonAnchor = forwardRef<HTMLAnchorElement, ButtonProps<'a'>>(
   }
 )
 
-export const ButtonLink: FC<ButtonProps<typeof PathLink>> = ({
-  className,
-  ...props
-}) => {
-  return <PathLink {...props} className={cn(button(props), className)} />
+type ButtonLinkProps<Path extends PathName> = PathLinkProps<Path> &
+  ButtonVariantProps
+
+export const ButtonLink = <Path extends PathName>(
+  props: ButtonLinkProps<Path>
+) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { className, ...rest } = props
+  return (
+    <PathLink<Path> {...props} className={cn(button(rest), props.className)} />
+  )
 }
 
 type SubmitButtonProps = ButtonProps<'button'> & {

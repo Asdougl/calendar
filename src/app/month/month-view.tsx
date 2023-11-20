@@ -4,6 +4,7 @@ import { useState, type FC, useMemo } from 'react'
 import {
   addDays,
   addMonths,
+  endOfDay,
   endOfMonth,
   format,
   getISOWeek,
@@ -38,39 +39,35 @@ export const MonthView: FC = () => {
 
   const { data, isFetching } = api.event.range.useQuery(
     {
-      start: toCalendarDate(subDays(focusMonth.start, 7)),
-      end: toCalendarDate(addDays(focusMonth.end, 7)),
+      start: startOfDay(subDays(focusMonth.start, 7)),
+      end: endOfDay(addDays(focusMonth.end, 7)),
     },
     {
       placeholderData: () => {
         const toReturn: RouterOutputs['event']['range'] = []
         const lastMonthData = queryClient.event.range.getData({
-          start: toCalendarDate(subDays(subMonths(focusMonth.start, 1), 7)),
-          end: toCalendarDate(
-            addDays(endOfMonth(subMonths(focusMonth.start, 1)), 7)
-          ),
+          start: startOfDay(subDays(subMonths(focusMonth.start, 1), 7)),
+          end: endOfDay(addDays(endOfMonth(subMonths(focusMonth.start, 1)), 7)),
         })
         if (lastMonthData)
           toReturn.push(
             ...lastMonthData.filter((event) =>
               isAfter(
-                event.timestamp,
+                event.datetime,
                 subDays(focusMonth.start, 7).getTime() / 1000
               )
             )
           )
         const nextMonthData = queryClient.event.range.getData({
-          start: toCalendarDate(subDays(addMonths(focusMonth.start, 1), 7)),
-          end: toCalendarDate(
-            addDays(endOfMonth(addMonths(focusMonth.start, 1)), 7)
-          ),
+          start: startOfDay(subDays(addMonths(focusMonth.start, 1), 7)),
+          end: endOfDay(addDays(endOfMonth(addMonths(focusMonth.start, 1)), 7)),
         })
 
         if (nextMonthData)
           toReturn.push(
             ...nextMonthData.filter((event) =>
               isBefore(
-                event.timestamp,
+                event.datetime,
                 addDays(focusMonth.end, 7).getTime() / 1000
               )
             )
@@ -87,9 +84,10 @@ export const MonthView: FC = () => {
     if (!data) return {}
     const eventsByDay: Record<string, RouterOutputs['event']['range']> = {}
     data.forEach((event) => {
-      const eventsOfDay = eventsByDay[event.date]
+      const dayKey = format(event.datetime, 'yyyy-MM-dd')
+      const eventsOfDay = eventsByDay[dayKey]
       if (eventsOfDay) eventsOfDay.push(event)
-      else eventsByDay[event.date] = [event]
+      else eventsByDay[dayKey] = [event]
     })
     return eventsByDay
   }, [data])
@@ -140,12 +138,11 @@ export const MonthView: FC = () => {
             key={
               week[0] ? `${format(week[0], 'yy')}w${getISOWeek(week[0])}` : i
             }
-            path={(path) =>
-              path.week({
-                start: toCalendarDate(week[0] || new Date()),
-                random: Math.random().toString(36).substring(2, 7),
-              })
-            }
+            path="/week"
+            query={{
+              start: toCalendarDate(week[0] || new Date()),
+              random: Math.random().toString(36).substring(2, 7),
+            }}
             className="group flex flex-1 flex-grow"
           >
             {week.map((day, j) => {
@@ -160,7 +157,7 @@ export const MonthView: FC = () => {
                   key={format(day, 'yyyy-MM-dd')}
                   id={toCalendarDate(day)}
                   className={cn(
-                    'group flex-1 flex-grow overflow-hidden border border-r-0 border-neutral-800 px-[2px] py-[2px] first:rounded-l-lg last:rounded-r-lg last:border-r md:group-hover:border-neutral-600 md:group-hover:bg-neutral-900',
+                    'group flex flex-1 flex-grow flex-col gap-0.5 overflow-hidden border border-r-0 border-neutral-800 px-[2px] py-[2px] first:rounded-l-lg last:rounded-r-lg last:border-r md:group-hover:border-neutral-600 md:group-hover:bg-neutral-900',
                     j > 4 && 'bg-neutral-900',
                     !inCurrMonth && 'opacity-50'
                   )}
@@ -187,23 +184,30 @@ export const MonthView: FC = () => {
                     <div
                       key={event.id}
                       className={cn(
-                        'bg-primary-400 truncate whitespace-nowrap text-xs hover:bg-neutral-900',
+                        'relative flex flex-col gap-0.5 pl-2 hover:bg-neutral-900',
                         {
-                          'line-through opacity-50':
-                            event.timestamp < Date.now() / 1000,
                           'animate-pulse opacity-50': isFetching,
                         }
                       )}
                     >
-                      {event.category && (
-                        <div
-                          className={cn(
-                            'mr-px inline-block h-2 w-1 rounded-lg',
-                            getCategoryColor(event.category.color, 'bg')
-                          )}
-                        ></div>
-                      )}
-                      {event.title}
+                      <div
+                        className={cn(
+                          'absolute left-0 top-0 h-full w-1 rounded-lg',
+                          getCategoryColor(event.category?.color, 'bg')
+                        )}
+                      ></div>
+                      <div
+                        className={cn(
+                          'truncate whitespace-nowrap text-xs',
+                          event.datetime.getTime() < Date.now() &&
+                            'line-through opacity-50'
+                        )}
+                      >
+                        {event.title}
+                      </div>
+                      <div className="-mt-1 hidden text-xs opacity-50 md:block">
+                        {format(event.datetime, 'h:mm a')}
+                      </div>
                     </div>
                   ))}
                 </div>
