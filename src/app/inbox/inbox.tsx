@@ -17,11 +17,20 @@ import { useClientNow } from '~/utils/hooks'
 import { DisplayPicture } from '~/components/DisplayPicture'
 import { PathLink } from '~/components/ui/PathLink'
 import { type Preferences } from '~/types/preferences'
+import { FullPageLoader } from '~/components/ui/FullPageLoader'
 
 type InboxProps = {
   username: string
   userImage?: string | null
   preferences: Preferences
+}
+
+export const InboxPreferencesWrapper: FC<Omit<InboxProps, 'preferences'>> = (
+  props
+) => {
+  const { data } = api.preferences.getAll.useQuery()
+
+  return !data ? <FullPageLoader /> : <Inbox {...props} preferences={data} />
 }
 
 export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {

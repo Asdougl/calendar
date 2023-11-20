@@ -15,6 +15,8 @@ import { Select } from '~/components/ui/select'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { CATEGORY_SELECT_OPTIONS } from '~/utils/classnames'
+import { Header1 } from '~/components/ui/headers'
+import { FullPageLoader } from '~/components/ui/FullPageLoader'
 
 const PeriodForm = z.object({
   name: z.string().min(1, 'A name is required for your period'),
@@ -30,6 +32,30 @@ type PeriodForm = z.infer<typeof PeriodForm>
 
 type PeriodEditFormProps = {
   period: RouterOutputs['periods']['one']
+}
+
+export const PeriodApiWrapper: FC<{ id: string }> = ({ id }) => {
+  const { data, isLoading } = api.periods.one.useQuery(
+    { id },
+    { enabled: id !== 'new' }
+  )
+
+  const period = id !== 'new' ? data || null : null
+
+  return (
+    <div className="mx-auto grid h-full w-full max-w-2xl grid-rows-[auto_1fr] flex-col overflow-hidden">
+      {isLoading ? (
+        <FullPageLoader />
+      ) : (
+        <>
+          <header className="flex items-center justify-between px-4 py-6">
+            <Header1>{data ? data.name : 'New Period'}</Header1>
+          </header>
+          <PeriodEditForm period={period} />
+        </>
+      )}
+    </div>
+  )
 }
 
 export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period }) => {

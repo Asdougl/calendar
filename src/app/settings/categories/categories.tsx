@@ -168,19 +168,12 @@ const CategoryRow: FC<CategoryRowProps> = (props) => {
     </form>
   )
 }
-
-type CategoriesPageProps = {
-  initialCategories: RouterOutputs['category']['all']
-}
-
-export const CategoriesPage: FC<CategoriesPageProps> = ({
-  initialCategories,
-}) => {
+export const CategoriesPage: FC = () => {
   const queryClient = api.useContext()
   const session = useSession()
 
   const { data: categories } = api.category.all.useQuery(undefined, {
-    initialData: initialCategories,
+    // initialData: initialCategories,
     staleTime: time.minutes(5),
   })
 
@@ -201,6 +194,7 @@ export const CategoriesPage: FC<CategoriesPageProps> = ({
         ])
       },
       onSuccess: () => {
+        // eslint-disable-next-line no-console
         queryClient.category.all.invalidate().catch(console.warn)
       },
     })
@@ -222,6 +216,7 @@ export const CategoriesPage: FC<CategoriesPageProps> = ({
         })
       },
       onSuccess: () => {
+        // eslint-disable-next-line no-console
         queryClient.category.all.invalidate().catch(console.warn)
       },
     })
@@ -236,6 +231,7 @@ export const CategoriesPage: FC<CategoriesPageProps> = ({
         })
       },
       onSuccess: () => {
+        // eslint-disable-next-line no-console
         queryClient.category.all.invalidate().catch(console.warn)
       },
     })
@@ -250,7 +246,7 @@ export const CategoriesPage: FC<CategoriesPageProps> = ({
       </div>
       <div className="px-4">
         <ul className="flex flex-col rounded-lg border border-neutral-800">
-          {categories.map((category) => (
+          {categories?.map((category) => (
             <li
               key={category.id}
               className="flex flex-col border-b border-neutral-800 px-2 py-2 last:border-b-0"
