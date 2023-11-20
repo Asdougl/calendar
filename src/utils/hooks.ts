@@ -1,3 +1,5 @@
+'use client'
+
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { EffectCallback } from 'react'
 import { useEffect, useRef, useState } from 'react'
