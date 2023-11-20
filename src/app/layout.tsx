@@ -1,7 +1,7 @@
 import '~/styles/globals.css'
 
 import { Atkinson_Hyperlegible } from 'next/font/google'
-import { headers } from 'next/headers'
+import { cookies } from 'next/headers'
 
 import { TRPCReactProvider } from '~/trpc/react'
 
@@ -27,7 +27,9 @@ export default function RootLayout({
       <body
         className={`bg-neutral-950 font-sans text-neutral-100 ${atkinson_hyperlegible.variable}`}
       >
-        <TRPCReactProvider headers={headers()}>{children}</TRPCReactProvider>
+        <TRPCReactProvider cookies={cookies().toString()}>
+          {children}
+        </TRPCReactProvider>
       </body>
     </html>
   )
