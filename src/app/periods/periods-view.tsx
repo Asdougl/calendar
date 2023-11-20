@@ -1,3 +1,5 @@
+'use client'
+
 import { differenceInDays, format } from 'date-fns'
 import { ButtonLink } from '~/components/ui/button'
 import { Header1 } from '~/components/ui/headers'
