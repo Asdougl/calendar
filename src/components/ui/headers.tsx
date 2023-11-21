@@ -16,8 +16,7 @@ export const Header1: FC<ComponentProps<'h1'> & HeaderProps> = ({
       className={cn(
         'text-3xl font-bold',
         {
-          'inline animate-pulse rounded-full bg-neutral-800 text-transparent':
-            skeleton,
+          'animate-pulse text-neutral-600': skeleton,
         },
         className
       )}

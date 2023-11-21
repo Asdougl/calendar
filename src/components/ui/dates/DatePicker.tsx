@@ -18,7 +18,7 @@ import {
   startOfDay,
 } from 'date-fns'
 import { Button } from '../button'
-import { NumberInput } from '../input'
+import { NumberInput } from '../input/number'
 import {
   MONTH_OPTIONS,
   accessibleFormat,

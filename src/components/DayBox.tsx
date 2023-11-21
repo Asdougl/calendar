@@ -3,7 +3,8 @@ import type { FC } from 'react'
 import { useMemo } from 'react'
 import { EventDialog } from './EventDialog'
 import { EventItem } from './EventItem'
-import { cn } from '~/utils/classnames'
+import { CategoryIcon } from './CategoryIcon'
+import { cn, getCategoryColor } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
 
 export const DayBox: FC<{
@@ -11,8 +12,16 @@ export const DayBox: FC<{
   dayOfWeek: number
   events: NonNullable<RouterOutputs['event']['range']>
   isLoading: boolean
+  periods?: NonNullable<RouterOutputs['periods']['range']>
   startToday?: boolean
-}> = ({ focusDate, dayOfWeek, events, isLoading, startToday }) => {
+}> = ({
+  focusDate,
+  dayOfWeek,
+  events,
+  isLoading,
+  startToday,
+  periods = [],
+}) => {
   const day = useMemo(() => {
     return startOfDay(
       setDay(focusDate, dayOfWeek, {
@@ -46,7 +55,8 @@ export const DayBox: FC<{
         startToday && {
           'border-neutral-500': distanceToToday === 1,
           'border-neutral-600': distanceToToday === 2,
-        }
+        },
+        periods.length === 1 && getCategoryColor(periods[0]?.color, 'border')
       )}
     >
       <div className="flex justify-between">
@@ -66,6 +76,18 @@ export const DayBox: FC<{
         >
           <div className="font-bold">{format(day, 'E')}</div>
           <div className="text-sm">{format(day, 'd MMM')}</div>
+          {periods.map((period) => (
+            <CategoryIcon
+              key={period.id}
+              icon={
+                periods.length === 1
+                  ? `${period.icon} ${period.name}`
+                  : period.icon
+              }
+              color={period.color}
+              size="sm"
+            />
+          ))}
         </div>
         <EventDialog initialDate={day} />
       </div>

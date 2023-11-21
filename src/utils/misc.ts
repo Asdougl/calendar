@@ -26,3 +26,11 @@ type Entries<T> = {
 export const entries = <T extends object>(obj: T): Entries<T> => {
   return Object.entries(obj) as Entries<T>
 }
+
+export const pluralize = (
+  count: unknown[] | number,
+  singular: string,
+  plural: string
+) => {
+  return (Array.isArray(count) ? count.length : count) === 1 ? singular : plural
+}

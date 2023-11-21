@@ -5,7 +5,7 @@ import { cn, getCategoryColor } from '~/utils/classnames'
 
 const lgClassName =
   'h-8 w-8 flex-shrink-0 flex-col items-center justify-center rounded-full text-white flex'
-const smClassName = 'h-full rounded-sm px-[6px] leading-snug'
+const smClassName = 'rounded-sm px-1 leading-3 text-xs flex items-center'
 
 const categoryIconStyles = cva('text-sm', {
   variants: {
@@ -22,37 +22,38 @@ const categoryIconStyles = cva('text-sm', {
 type StyleProps = VariantProps<typeof categoryIconStyles>
 
 type CategoryIconProps = {
-  category?: Pick<Category, 'color'> | null
-  title: string
+  color?: Category['color']
+  icon: string
   className?: string
   hideWithoutCategory?: boolean
 } & Required<Pick<StyleProps, 'size'>> &
   Omit<StyleProps, 'size'>
 
 export const CategoryIcon: FC<CategoryIconProps> = ({
-  category,
-  title,
+  color,
+  icon,
   className,
   hideWithoutCategory,
   ...props
 }) => {
-  if (!category && hideWithoutCategory) return null
+  if (!color && hideWithoutCategory) return null
 
   return (
     <div
       className={cn(
         categoryIconStyles(props),
-        category
+        color
           ? [
-              getCategoryColor(category.color, 'bg'),
-              getCategoryColor(category.color, 'border'),
-              'border',
+              getCategoryColor(color, 'bg'),
+              getCategoryColor(color, 'border'),
+              getCategoryColor(color, 'alttext'),
+              'border font-bold',
             ]
           : 'bg-neutral-800',
         className
       )}
     >
-      {title[0]}
+      {icon}
     </div>
   )
 }

@@ -2,63 +2,27 @@
 
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import { signOut } from 'next-auth/react'
-import { InlineLoader } from '~/components/ui/Loader'
-import { Button, ButtonLink } from '~/components/ui/button'
-import { Header3 } from '~/components/ui/headers'
+import { useState } from 'react'
+import { TimezoneSelect } from '~/components/form/TimezoneSelect'
+import { SettingItem, SettingList } from '~/components/layout/Settings'
+import { Button } from '~/components/ui/button'
 import { Switch } from '~/components/ui/switch'
 import { api } from '~/trpc/react'
 import { Preferences } from '~/types/preferences'
-import { cn } from '~/utils/classnames'
 import { useClientNow, useClientTimezone } from '~/utils/hooks'
 
-const SettingItem = ({
-  title,
-  children,
-  skeleton,
-}: {
-  title: string
-  children: React.ReactNode
-  skeleton?: boolean
-}) => (
-  <li className="grid h-12 grid-cols-3">
-    <div className="flex items-center justify-start px-4 text-sm">
-      <span
-        className={cn(skeleton && 'animate-pulse rounded-full bg-neutral-800')}
-      >
-        {title}
-      </span>
-    </div>
-    <div className="col-span-2 flex items-center justify-center border-l border-neutral-800 text-white">
-      {skeleton ? <InlineLoader /> : children}
-    </div>
-  </li>
-)
-
-const SettingList = ({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) => (
-  <div className="px-4">
-    <div className="px-2 py-2">
-      <Header3>{title}</Header3>
-    </div>
-    <ul className="flex-grow-0 divide-y divide-neutral-800 rounded-lg border border-neutral-800">
-      {children}
-    </ul>
-  </div>
-)
-
-export const LocalSettings = () => {
+export const PreferencesSection = () => {
   const queryClient = api.useContext()
+  const [initialUpdate, setInitialUpdate] = useState(false)
 
   const { data: preferences, isInitialLoading } =
     api.preferences.getAll.useQuery()
   const { mutate: updatePreferences, isLoading: isUpdating } =
     api.preferences.update.useMutation({
       onMutate: async (data) => {
+        if (!initialUpdate) {
+          setInitialUpdate(true)
+        }
         // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
         await queryClient.preferences.getAll.cancel()
         // Snapshot the previous value
@@ -88,8 +52,11 @@ export const LocalSettings = () => {
     })
 
   return (
-    <SettingList title="App Settings">
-      <SettingItem title="Left weekends" skeleton={isInitialLoading}>
+    <SettingList
+      title="Preferences"
+      saving={initialUpdate ? (isUpdating ? true : false) : undefined}
+    >
+      <SettingItem title="Weekends left" skeleton={isInitialLoading}>
         {preferences && (
           <Switch
             checked={preferences.leftWeekends}
@@ -102,29 +69,54 @@ export const LocalSettings = () => {
           />
         )}
       </SettingItem>
-      <SettingItem title="Categories">
-        <ButtonLink
-          path="/categories"
+      <SettingItem title="Timezone" skeleton={isInitialLoading}>
+        {preferences && (
+          <TimezoneSelect
+            value={preferences.timezone}
+            disabled={isInitialLoading || isUpdating}
+            onChange={(value) => updatePreferences({ timezone: value })}
+            className="h-full rounded-none border-0"
+          />
+        )}
+      </SettingItem>
+      <SettingItem title="Logout">
+        <Button
+          onClick={() => signOut()}
           size="sm"
           intent="secondary"
-          className="w-40 text-center"
+          className="w-40"
         >
-          Edit
-        </ButtonLink>
+          Logout
+        </Button>
+      </SettingItem>
+      <SettingItem title="Developer" skeleton={isInitialLoading}>
+        {preferences && (
+          <Switch
+            checked={preferences.developer}
+            disabled={isInitialLoading || isUpdating}
+            onClick={() =>
+              updatePreferences({
+                developer: !preferences.developer,
+              })
+            }
+          />
+        )}
       </SettingItem>
     </SettingList>
   )
 }
 
-export const DebugSettings = () => {
+export const DebugSection = () => {
   const [time, setTime] = useClientNow()
+
+  const { data: preferences } = api.preferences.getAll.useQuery()
 
   const queryClient = api.useContext()
 
   const timezone = useClientTimezone()
 
-  return (
-    <SettingList title="Debug">
+  return preferences?.developer ? (
+    <SettingList title="Developer">
       <SettingItem title="Machine time">
         <div className="pr-2">{time.toLocaleString()}</div>
         <button onClick={() => setTime(new Date())}>
@@ -143,16 +135,6 @@ export const DebugSettings = () => {
           Clear
         </Button>
       </SettingItem>
-      <SettingItem title="Logout">
-        <Button
-          onClick={() => signOut()}
-          size="sm"
-          intent="secondary"
-          className="w-40"
-        >
-          Logout
-        </Button>
-      </SettingItem>
       <SettingItem title="Force Refresh">
         <Button
           onClick={() => location.reload()}
@@ -164,5 +146,5 @@ export const DebugSettings = () => {
         </Button>
       </SettingItem>
     </SettingList>
-  )
+  ) : null
 }

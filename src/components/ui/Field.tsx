@@ -24,6 +24,7 @@ type FieldProps = {
   className?: string
   condition?: LabelProps['condition']
   error?: string
+  skeleton?: boolean
 } & VariantProps<typeof fieldStyle>
 
 export const Field: FC<PropsWithChildren<FieldProps>> = ({
@@ -33,6 +34,7 @@ export const Field: FC<PropsWithChildren<FieldProps>> = ({
   condition,
   width,
   children,
+  skeleton,
   error,
 }) => {
   return (
@@ -42,7 +44,14 @@ export const Field: FC<PropsWithChildren<FieldProps>> = ({
         htmlFor={id}
         className="group-focus-within:text-neutral-50"
       >
-        {label}
+        <span
+          className={cn(
+            skeleton &&
+              'animate-pulse rounded-full bg-neutral-800 text-transparent'
+          )}
+        >
+          {label}
+        </span>
       </Label>
       {children}
       <div className="-mt-1 text-red-300">

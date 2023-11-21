@@ -1,22 +1,21 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { isBefore } from 'date-fns'
+import { differenceInDays } from 'date-fns'
 import { type FC } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
+import { createPeriod, deletePeriod, updatePeriod } from './actions'
 import { ControlledCategorySelect } from '~/components/form/CategorySelect'
 import { Field, InputField } from '~/components/ui/Field'
 import { ErrorText } from '~/components/ui/Text'
-import { Button } from '~/components/ui/button'
+import { Button, SubmitButton } from '~/components/ui/button'
 import { DateRangePicker } from '~/components/ui/dates/DateRangePicker'
 import { Select } from '~/components/ui/select'
-import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { CATEGORY_SELECT_OPTIONS } from '~/utils/classnames'
-import { Header1 } from '~/components/ui/headers'
-import { FullPageLoader } from '~/components/ui/FullPageLoader'
+import { isError, isString } from '~/utils/guards'
 
 const PeriodForm = z.object({
   name: z.string().min(1, 'A name is required for your period'),
@@ -34,57 +33,15 @@ type PeriodEditFormProps = {
   period: RouterOutputs['periods']['one']
 }
 
-export const PeriodApiWrapper: FC<{ id: string }> = ({ id }) => {
-  const { data, isLoading } = api.periods.one.useQuery(
-    { id },
-    { enabled: id !== 'new' }
-  )
-
-  const period = id !== 'new' ? data || null : null
-
-  return (
-    <div className="mx-auto grid h-full w-full max-w-2xl grid-rows-[auto_1fr] flex-col overflow-hidden">
-      {isLoading ? (
-        <FullPageLoader />
-      ) : (
-        <>
-          <header className="flex items-center justify-between px-4 py-6">
-            <Header1>{data ? data.name : 'New Period'}</Header1>
-          </header>
-          <PeriodEditForm period={period} />
-        </>
-      )}
-    </div>
-  )
-}
-
 export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period }) => {
   const router = useRouter()
-
-  const { mutate: createPeriod } = api.periods.create.useMutation({
-    onSuccess: () => {
-      router.push('/periods')
-    },
-  })
-
-  const { mutate: updatePeriod } = api.periods.update.useMutation({
-    onSuccess: () => {
-      router.push('/periods')
-    },
-  })
-
-  const { mutate: deletePeriod } = api.periods.delete.useMutation({
-    onSuccess: () => {
-      router.push('/periods')
-    },
-  })
 
   const {
     register,
     control,
     handleSubmit,
     setError,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, isSubmitting },
   } = useForm<PeriodForm>({
     resolver: zodResolver(PeriodForm),
     defaultValues: period
@@ -104,37 +61,59 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period }) => {
         },
   })
 
-  const onSubmit = handleSubmit((data) => {
-    if (isBefore(data.dates.end, data.dates.start)) {
+  const onSubmit = handleSubmit(async (data) => {
+    if (differenceInDays(data.dates.end, data.dates.start) < 0) {
       setError('dates', { message: 'End date must be after start date' })
       return
     }
 
-    if (period) {
-      updatePeriod({
-        id: period.id,
-        name: data.name,
-        color: data.color,
-        icon: data.icon,
-        categoryId: data.categoryId,
-        startDate: data.dates.start,
-        endDate: data.dates.end,
-      })
-    } else {
-      createPeriod({
-        name: data.name,
-        color: data.color,
-        icon: data.icon,
-        categoryId: data.categoryId,
-        startDate: data.dates.start,
-        endDate: data.dates.end,
+    try {
+      if (period) {
+        await updatePeriod(period.id, {
+          name: data.name,
+          color: data.color,
+          icon: data.icon,
+          categoryId: data.categoryId,
+          startDate: data.dates.start.toISOString(),
+          endDate: data.dates.end.toISOString(),
+        })
+        router.push('/periods')
+      } else {
+        await createPeriod({
+          name: data.name,
+          color: data.color,
+          icon: data.icon,
+          categoryId: data.categoryId || null,
+          startDate: data.dates.start.toISOString(),
+          endDate: data.dates.end.toISOString(),
+        })
+        router.push('/periods')
+      }
+    } catch (error) {
+      setError('root', {
+        message: isError(error)
+          ? error.message
+          : isString(error)
+          ? error
+          : 'Unknown error',
       })
     }
   })
 
-  const onDelete = () => {
+  const onDelete = async () => {
     if (period) {
-      deletePeriod({ id: period.id })
+      try {
+        await deletePeriod(period.id)
+        router.push('/periods')
+      } catch (error) {
+        setError('root', {
+          message: isError(error)
+            ? error.message
+            : isString(error)
+            ? error
+            : 'Unknown error',
+        })
+      }
     }
   }
 
@@ -190,9 +169,9 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period }) => {
       </Field>
       {errors.root && <ErrorText>{errors.root.message}</ErrorText>}
       <div className="flex gap-4">
-        <Button disabled={!isDirty} type="submit">
+        <SubmitButton loading={isSubmitting} disabled={!isDirty} type="submit">
           {period ? 'Update' : 'Create'}
-        </Button>
+        </SubmitButton>
         {period && (
           <Button intent="danger" onClick={onDelete}>
             Delete

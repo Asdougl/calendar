@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
-import { NumberInput } from '../input'
+import { NumberInput } from '../input/number'
 
 describe('Input components', () => {
   describe('<NumberInput /> component', () => {

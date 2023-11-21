@@ -133,7 +133,7 @@ export const Select = <Values extends string = string>({
             ))}
           </RadixSelect.Viewport>
           <RadixSelect.ScrollDownButton className="flex h-6 cursor-default items-center justify-center bg-neutral-950">
-            <ChevronDownIcon />
+            <ChevronDownIcon height={20} />
           </RadixSelect.ScrollDownButton>
         </RadixSelect.Content>
       </RadixSelect.Portal>

@@ -18,6 +18,9 @@ const select = {
   },
 }
 
+const isSameOrAfter = (date: Date, other: Date) =>
+  date.getTime() === other.getTime() || isAfter(date, other)
+
 export const periodsRouter = createTRPCRouter({
   range: protectedProcedure
     .input(
@@ -74,7 +77,7 @@ export const periodsRouter = createTRPCRouter({
       })
     )
     .mutation(({ ctx, input }) => {
-      if (!isAfter(input.endDate, input.startDate))
+      if (!isSameOrAfter(input.endDate, input.startDate))
         throw new Error('End date must be after start date')
 
       return ctx.db.period.create({
@@ -105,7 +108,7 @@ export const periodsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       if (input.startDate && input.endDate) {
-        if (!isAfter(input.endDate, input.startDate))
+        if (!isSameOrAfter(input.endDate, input.startDate))
           throw new Error('End date must be after start date')
 
         return ctx.db.period.update({
@@ -150,7 +153,7 @@ export const periodsRouter = createTRPCRouter({
 
         if (
           (input.startDate &&
-            !isAfter(existingPeriod.endDate, input.startDate)) ||
+            !isSameOrAfter(existingPeriod.endDate, input.startDate)) ||
           (input.endDate && !isAfter(input.endDate, existingPeriod.startDate))
         ) {
           throw new Error('End date must be after start date')

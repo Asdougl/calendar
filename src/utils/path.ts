@@ -6,7 +6,7 @@ type PathParamsMap = {
   '/inbox': null
   '/login': null
   '/settings': null
-  '/settings/categories': null
+  '/categories': null
   '/settings/debug': null
   '/week': null
   '/year': null
@@ -19,6 +19,17 @@ type PathParamsMap = {
 export type PathName = keyof PathParamsMap
 
 export type PathParams<T extends PathName> = PathParamsMap[T]
+
+export type PathLinkObject<T extends PathName> = PathParams<T> extends null
+  ? {
+      path: T
+      query?: Record<string, string>
+    }
+  : {
+      path: T
+      params: PathParams<T>
+      query?: Record<string, string>
+    }
 
 const PathFlags: Partial<
   Record<PathName, { name: Flags; fallback: PathName }>

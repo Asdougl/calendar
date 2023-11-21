@@ -5,7 +5,7 @@ import { useMemo } from 'react'
 import getDay from 'date-fns/getDay'
 import startOfDay from 'date-fns/startOfDay'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
-import { endOfDay, endOfWeek } from 'date-fns'
+import { addDays, endOfDay, endOfWeek } from 'date-fns'
 import { motion } from 'framer-motion'
 import { Header1 } from '~/components/ui/headers'
 import { time } from '~/utils/dates'
@@ -17,20 +17,12 @@ import { useClientNow } from '~/utils/hooks'
 import { DisplayPicture } from '~/components/DisplayPicture'
 import { PathLink } from '~/components/ui/PathLink'
 import { type Preferences } from '~/types/preferences'
-import { FullPageLoader } from '~/components/ui/FullPageLoader'
+import { InnerPageLayout } from '~/components/layout/PageLayout'
 
 type InboxProps = {
   username: string
   userImage?: string | null
   preferences: Preferences
-}
-
-export const InboxPreferencesWrapper: FC<Omit<InboxProps, 'preferences'>> = (
-  props
-) => {
-  const { data } = api.preferences.getAll.useQuery()
-
-  return !data ? <FullPageLoader /> : <Inbox {...props} preferences={data} />
 }
 
 export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
@@ -61,6 +53,38 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
     }
   )
 
+  const { data: periods } = api.periods.range.useQuery({
+    start: startOfDay(focusDate),
+    end: endOfDay(
+      endOfWeek(focusDate, {
+        weekStartsOn: getDay(focusDate),
+      })
+    ),
+  })
+
+  const periodsByDay = useMemo(() => {
+    if (!periods?.length) return []
+
+    const periodsByDay: NonNullable<RouterOutputs['periods']['range']>[] = []
+
+    const daysOfFocus: Date[] = []
+    for (let i = 0; i < 7; i++) {
+      daysOfFocus.push(addDays(focusDate, i))
+    }
+
+    periods.forEach((period) => {
+      daysOfFocus.forEach((day) => {
+        if (period.startDate <= day && period.endDate >= day) {
+          const thisDay = periodsByDay[getDay(day)]
+          if (thisDay) thisDay?.push(period)
+          else periodsByDay[getDay(day)] = [period]
+        }
+      })
+    })
+
+    return periodsByDay
+  }, [periods, focusDate])
+
   const eventsByDay = useMemo(() => {
     if (!events?.length) return []
 
@@ -77,17 +101,17 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
   }, [events])
 
   return (
-    <div className="mx-auto grid h-full w-full max-w-2xl grid-rows-[auto_1fr] flex-col overflow-hidden">
-      <header className="flex items-center justify-between px-4 py-6">
-        <div className="w-8">
-          <motion.button
-            whileHover={{ rotate: -25 }}
-            whileTap={{ rotate: 25 }}
-            onClick={() => queryClient.invalidate()}
-          >
-            <ArrowPathIcon height={20} className="" />
-          </motion.button>
-        </div>
+    <InnerPageLayout
+      headerLeft={
+        <motion.button
+          whileHover={{ rotate: -25 }}
+          whileTap={{ rotate: 25 }}
+          onClick={() => queryClient.invalidate()}
+        >
+          <ArrowPathIcon height={20} className="" />
+        </motion.button>
+      }
+      title={
         <div className="relative">
           <div
             className={cn(
@@ -99,21 +123,22 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
           </div>
           <Header1 className="bg-neutral-950 text-2xl">Inbox</Header1>
         </div>
-        <div className="relative w-8">
-          <PathLink
-            path="/settings"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent hover:border-neutral-600"
-          >
-            <DisplayPicture
-              src={userImage}
-              username={username}
-              className="h-8 w-8"
-            />
-          </PathLink>
-        </div>
-      </header>
+      }
+      headerRight={
+        <PathLink
+          path="/settings"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent hover:border-neutral-600"
+        >
+          <DisplayPicture
+            src={userImage}
+            username={username}
+            className="h-8 w-8"
+          />
+        </PathLink>
+      }
+    >
       <div
-        className={cn('flex gap-2 overflow-hidden px-1 pb-2', {
+        className={cn('flex flex-grow gap-2 overflow-hidden px-1 pb-2', {
           'flex-row-reverse': !preferences.leftWeekends,
         })}
       >
@@ -125,6 +150,7 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
             events={eventsByDay[6] ?? []}
             isLoading={isLoading}
             startToday
+            periods={periodsByDay[6] ?? []}
           />
           <DayBox
             focusDate={focusDate}
@@ -132,6 +158,7 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
             events={eventsByDay[0] ?? []}
             isLoading={isLoading}
             startToday
+            periods={periodsByDay[0] ?? []}
           />
         </div>
         {/* weekdays */}
@@ -142,6 +169,7 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
             events={eventsByDay[5] ?? []}
             isLoading={isLoading}
             startToday
+            periods={periodsByDay[5] ?? []}
           />
           <DayBox
             focusDate={focusDate}
@@ -149,6 +177,7 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
             events={eventsByDay[4] ?? []}
             isLoading={isLoading}
             startToday
+            periods={periodsByDay[4] ?? []}
           />
           <DayBox
             focusDate={focusDate}
@@ -156,6 +185,7 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
             events={eventsByDay[3] ?? []}
             isLoading={isLoading}
             startToday
+            periods={periodsByDay[3] ?? []}
           />
           <DayBox
             focusDate={focusDate}
@@ -163,6 +193,7 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
             events={eventsByDay[2] ?? []}
             isLoading={isLoading}
             startToday
+            periods={periodsByDay[2] ?? []}
           />
           <DayBox
             focusDate={focusDate}
@@ -170,9 +201,10 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
             events={eventsByDay[1] ?? []}
             isLoading={isLoading}
             startToday
+            periods={periodsByDay[1] ?? []}
           />
         </div>
       </div>
-    </div>
+    </InnerPageLayout>
   )
 }

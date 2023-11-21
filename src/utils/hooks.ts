@@ -49,18 +49,18 @@ export const useClientTimezone = () => {
  * A hook to return the client's date
  * @returns The current date as per the client's timezone.
  */
-export const useClientNow = ({
-  initialDate,
-  modifier,
-}: {
-  initialDate?: Date
-  modifier?: (date: Date) => Date
-}) => {
-  const [date, setDate] = useState(initialDate || new Date())
+export const useClientNow = (
+  props: {
+    initialDate?: Date
+    modifier?: (date: Date) => Date
+  } | void
+) => {
+  const [date, setDate] = useState(props?.initialDate || new Date())
   useEffect(() => {
     // resets the date based on the client's timezone
-    setDate(modifier ? modifier(new Date()) : new Date())
-  }, [modifier])
+    setDate(props?.modifier?.(new Date()) || new Date())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props?.modifier])
   return [date, setDate] as const
 }
 

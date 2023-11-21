@@ -5,17 +5,18 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
-  useLayoutEffect,
   useRef,
   useState,
 } from 'react'
 import {
+  addDays,
   addWeeks,
   endOfDay,
   endOfWeek,
   format,
   getDay,
   getWeek,
+  isSameDay,
   isSameWeek,
   setWeek,
   startOfDay,
@@ -30,18 +31,59 @@ import { time } from '~/utils/dates'
 import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
 import { cn } from '~/utils/classnames'
+import { type Preferences } from '~/types/preferences'
 
 type ViewOfAWeekProps = {
   starting: Date
   index: number
   onInView?: () => void
+  preferences: Preferences
 }
 
 const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
-  function ViewOfAWeekWithRef({ starting, onInView }, ref) {
+  function ViewOfAWeekWithRef({ starting, onInView, preferences }, ref) {
     const weekRef = useRef<HTMLDivElement>(null)
 
     useImperativeHandle(ref, () => weekRef.current!)
+
+    const { data: periods = [] } = api.periods.range.useQuery(
+      {
+        start: startOfDay(starting),
+        end: endOfDay(
+          endOfWeek(starting, {
+            weekStartsOn: 1,
+          })
+        ),
+      },
+      {
+        select: (data) => {
+          if (!data?.length) return []
+
+          const periodsByDay: (typeof data)[] = []
+
+          const daysOfFocus: Date[] = []
+          for (let i = 0; i < 7; i++) {
+            daysOfFocus.push(addDays(startOfDay(starting), i))
+          }
+
+          data.forEach((period) => {
+            daysOfFocus.forEach((day) => {
+              if (
+                isSameDay(period.startDate, day) ||
+                isSameDay(period.endDate, day) ||
+                (period.startDate <= day && period.endDate >= day)
+              ) {
+                const thisDay = periodsByDay[getDay(day)]
+                if (thisDay) thisDay?.push(period)
+                else periodsByDay[getDay(day)] = [period]
+              }
+            })
+          })
+
+          return periodsByDay
+        },
+      }
+    )
 
     const { data: events = [], isLoading } = api.event.range.useQuery(
       {
@@ -82,7 +124,12 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
     return (
       <div
         ref={weekRef}
-        className="flex h-full w-full flex-shrink-0 snap-center gap-2 overflow-hidden overflow-y-scroll px-1 pb-2"
+        className={cn(
+          'flex h-full w-full flex-shrink-0 snap-center gap-2 overflow-hidden overflow-y-scroll px-1 pb-2',
+          {
+            'flex-row-reverse': !preferences.leftWeekends,
+          }
+        )}
       >
         {/* weekend */}
         <div className="relative flex w-1/2 flex-1 flex-col gap-2 overflow-hidden">
@@ -91,12 +138,14 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             dayOfWeek={6}
             events={events[6] || []}
             isLoading={isLoading}
+            periods={periods[6]}
           />
           <DayBox
             focusDate={starting}
             dayOfWeek={0}
             events={events[0] || []}
             isLoading={isLoading}
+            periods={periods[0]}
           />
         </div>
         {/* weekdays */}
@@ -106,30 +155,35 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             dayOfWeek={5}
             events={events[5] || []}
             isLoading={isLoading}
+            periods={periods[5]}
           />
           <DayBox
             focusDate={starting}
             dayOfWeek={4}
             events={events[4] || []}
             isLoading={isLoading}
+            periods={periods[4]}
           />
           <DayBox
             focusDate={starting}
             dayOfWeek={3}
             events={events[3] || []}
             isLoading={isLoading}
+            periods={periods[3]}
           />
           <DayBox
             focusDate={starting}
             dayOfWeek={2}
             events={events[2] || []}
             isLoading={isLoading}
+            periods={periods[2]}
           />
           <DayBox
             focusDate={starting}
             dayOfWeek={1}
             events={events[1] || []}
             isLoading={isLoading}
+            periods={periods[1]}
           />
         </div>
       </div>
@@ -137,9 +191,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
   }
 )
 
-const isThisWeek = (date: Date) => getWeek(date) === getWeek(new Date())
-
-export const WeekView: FC = () => {
+export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
   const searchParams = useSearchParams()
 
   const [focusDate, setFocusDate] = useState<Date>(() => {
@@ -272,6 +324,7 @@ export const WeekView: FC = () => {
             ref={(ref) => (weeksRefs.current[i] = ref!)}
             starting={startOfDay(new Date(week))}
             index={i}
+            preferences={preferences}
             onInView={() => {
               nextUpdate.current = () => {
                 if (i === 0) {

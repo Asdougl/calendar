@@ -144,13 +144,13 @@ export default function SandboxPage() {
             <li key={event.title} className="flex items-center gap-2">
               <CategoryIcon
                 size="lg"
-                category={event.category}
-                title={event.title}
+                color={event.category?.color}
+                icon={event.title[0] || ''}
               />
               <CategoryIcon
                 size="sm"
-                category={event.category}
-                title={event.title}
+                color={event.category?.color}
+                icon={event.title[0] || ''}
               />
             </li>
           ))}

@@ -1,6 +1,12 @@
 import type { VariantProps } from 'class-variance-authority'
 import { cva } from 'class-variance-authority'
-import { forwardRef, type ComponentProps, type ElementType } from 'react'
+import {
+  forwardRef,
+  type ComponentProps,
+  type ElementType,
+  type FC,
+  type PropsWithChildren,
+} from 'react'
 import { Loader } from './Loader'
 import { PathLink, type PathLinkProps } from './PathLink'
 import { cn } from '~/utils/classnames'
@@ -64,6 +70,22 @@ export const ButtonLink = <Path extends PathName>(
   const { className, ...rest } = props
   return (
     <PathLink<Path> {...props} className={cn(button(rest), props.className)} />
+  )
+}
+
+export const SkeletonButton: FC<
+  PropsWithChildren<ButtonVariantProps & { className?: string }>
+> = ({ children, className, ...props }) => {
+  return (
+    <div
+      className={cn(
+        button(props),
+        'animate-pulse bg-neutral-800 text-transparent',
+        className
+      )}
+    >
+      {children}
+    </div>
   )
 }
 

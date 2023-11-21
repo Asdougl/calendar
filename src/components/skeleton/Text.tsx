@@ -2,7 +2,7 @@ import { type FC, type PropsWithChildren } from 'react'
 import { cn } from '~/utils/classnames'
 
 export const SkeletonText: FC<
-  PropsWithChildren<{ className?: string; skeletonized: boolean }>
+  PropsWithChildren<{ className?: string; skeletonized?: boolean }>
 > = ({ className, skeletonized = true, children }) => {
   return (
     <div
@@ -10,7 +10,7 @@ export const SkeletonText: FC<
     >
       {children}
       {skeletonized && (
-        <div className="absolute left-0 top-0 h-full w-full animate-pulse rounded-full bg-neutral-800"></div>
+        <div className="absolute left-0 top-0 my-1 h-[calc(100%-0.5rem)] w-full animate-pulse rounded-full bg-neutral-800"></div>
       )}
     </div>
   )
