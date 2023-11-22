@@ -2,12 +2,32 @@
 
 import { ArrowLeftIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
+import { cn } from '~/utils/classnames'
+import { useLastLocation } from '~/utils/context'
+import { type PathName } from '~/utils/path'
 
-export const BackButton = () => {
+export const BackButton = ({
+  whenLastLocation,
+  className,
+}: {
+  whenLastLocation?: PathName
+  className?: string
+}) => {
   const router = useRouter()
+  const lastLocation = useLastLocation()
+
+  if (whenLastLocation && lastLocation !== whenLastLocation) {
+    return null
+  }
 
   return (
-    <button className="" onClick={() => router.back()}>
+    <button
+      className={cn(
+        'translate-x-1 rounded-full bg-neutral-950 px-2 transition-transform hover:translate-x-0 hover:bg-neutral-900',
+        className
+      )}
+      onClick={() => router.back()}
+    >
       <ArrowLeftIcon height={20} />
     </button>
   )

@@ -4,6 +4,7 @@ import { Atkinson_Hyperlegible } from 'next/font/google'
 import { cookies } from 'next/headers'
 
 import { TRPCReactProvider } from '~/trpc/react'
+import { LastLocationProvider } from '~/utils/context'
 
 const atkinson_hyperlegible = Atkinson_Hyperlegible({
   subsets: ['latin'],
@@ -28,7 +29,7 @@ export default function RootLayout({
         className={`bg-neutral-950 font-sans text-neutral-100 ${atkinson_hyperlegible.variable}`}
       >
         <TRPCReactProvider cookies={cookies().toString()}>
-          {children}
+          <LastLocationProvider>{children}</LastLocationProvider>
         </TRPCReactProvider>
       </body>
     </html>

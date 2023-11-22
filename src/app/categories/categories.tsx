@@ -1,6 +1,5 @@
 'use client'
 
-import { ArrowLeftIcon } from '@heroicons/react/24/solid'
 import { type FC } from 'react'
 import { z } from 'zod'
 import { Controller, useForm } from 'react-hook-form'
@@ -8,15 +7,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as Popover from '@radix-ui/react-popover'
 import { useSession } from 'next-auth/react'
 import { SubmitButton } from '~/components/ui/button'
-import { Header1 } from '~/components/ui/headers'
 import { api } from '~/trpc/react'
 import { type RouterInputs, type RouterOutputs } from '~/trpc/shared'
 import { CategoryColors, cn, getCategoryColor } from '~/utils/classnames'
 import { Input } from '~/components/ui/input'
 import { time } from '~/utils/dates'
-import { PathLink } from '~/components/ui/PathLink'
 import { ErrorText } from '~/components/ui/Text'
 import { createTempId } from '~/utils/misc'
+import { InnerPageLayout } from '~/components/layout/PageLayout'
+import { ProfileLink } from '~/components/ui/avatar'
+import { BackButton } from '~/components/BackButton'
 
 const CategorySchema = z.object({
   name: z.string().min(1, 'Name must be at least 1 character long'),
@@ -237,13 +237,11 @@ export const CategoriesPage: FC = () => {
     })
 
   return (
-    <div className="mx-auto grid h-full w-full max-w-2xl grid-rows-[auto_1fr] overflow-hidden">
-      <div className="flex items-center justify-start gap-4 px-4 py-6">
-        <PathLink path="/settings">
-          <ArrowLeftIcon height={24} />
-        </PathLink>
-        <Header1>Family</Header1>
-      </div>
+    <InnerPageLayout
+      headerLeft={<BackButton whenLastLocation="/profile" />}
+      title="Categories"
+      headerRight={<ProfileLink />}
+    >
       <div className="px-4">
         <ul className="flex flex-col rounded-lg border border-neutral-800">
           {categories?.map((category) => (
@@ -268,6 +266,6 @@ export const CategoriesPage: FC = () => {
           </li>
         </ul>
       </div>
-    </div>
+    </InnerPageLayout>
   )
 }

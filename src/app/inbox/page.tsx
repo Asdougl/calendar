@@ -15,11 +15,7 @@ export default async function Home() {
 
   return (
     <OuterPageLayout>
-      <Inbox
-        username={session.user.name ?? ''}
-        userImage={session.user.image}
-        preferences={preferences}
-      />
+      <Inbox preferences={preferences} />
     </OuterPageLayout>
   )
 }

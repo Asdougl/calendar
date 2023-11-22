@@ -7,6 +7,8 @@ import { ButtonLink } from '~/components/ui/button'
 import { PageLayout } from '~/components/layout/PageLayout'
 import { type RouterOutputs } from '~/trpc/shared'
 import { pluralize } from '~/utils/misc'
+import { ProfileLink } from '~/components/ui/avatar'
+import { BackButton } from '~/components/BackButton'
 
 const PeriodItem = ({
   period,
@@ -69,7 +71,11 @@ export default async function PeriodsPage() {
   })
 
   return (
-    <PageLayout title="Periods">
+    <PageLayout
+      headerLeft={<BackButton whenLastLocation="/profile" />}
+      title="Periods"
+      headerRight={<ProfileLink />}
+    >
       <ul className="flex flex-col gap-2 pb-6">
         {periods?.map((period) => (
           <PeriodItem key={period.id} period={period} />

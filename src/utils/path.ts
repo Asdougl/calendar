@@ -7,12 +7,12 @@ type PathParamsMap = {
   '/login': null
   '/settings': null
   '/categories': null
-  '/settings/debug': null
   '/week': null
   '/year': null
   '/month': null
   '/periods': null
   '/periods/:id': { id: string }
+  '/profile': null
   '/todos': null
 }
 

@@ -14,18 +14,15 @@ import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn } from '~/utils/classnames'
 import { useClientNow } from '~/utils/hooks'
-import { DisplayPicture } from '~/components/DisplayPicture'
-import { PathLink } from '~/components/ui/PathLink'
 import { type Preferences } from '~/types/preferences'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
+import { ProfileLink } from '~/components/ui/avatar'
 
 type InboxProps = {
-  username: string
-  userImage?: string | null
   preferences: Preferences
 }
 
-export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
+export const Inbox: FC<InboxProps> = ({ preferences }) => {
   const [focusDate] = useClientNow({
     initialDate: startOfDay(new Date()),
     modifier: startOfDay,
@@ -125,20 +122,21 @@ export const Inbox: FC<InboxProps> = ({ username, userImage, preferences }) => {
         </div>
       }
       headerRight={
-        <PathLink
-          path="/settings"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent hover:border-neutral-600"
-        >
-          <DisplayPicture
-            src={userImage}
-            username={username}
-            className="h-8 w-8"
-          />
-        </PathLink>
+        // <PathLink
+        //   path="/settings"
+        //   className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent hover:border-neutral-600"
+        // >
+        //   <DisplayPicture
+        //     src={userImage}
+        //     username={username}
+        //     className="h-8 w-8"
+        //   />
+        // </PathLink>
+        <ProfileLink />
       }
     >
       <div
-        className={cn('flex flex-grow gap-2 overflow-hidden px-1 pb-2', {
+        className={cn('flex flex-grow gap-2 overflow-hidden', {
           'flex-row-reverse': !preferences.leftWeekends,
         })}
       >
