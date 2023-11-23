@@ -9,6 +9,7 @@ import { CategoryIcon } from './CategoryIcon'
 import { PathLink } from './ui/PathLink'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
+import { useOrigination } from '~/utils/atoms'
 
 export const DayBox: FC<{
   focusDate: Date
@@ -17,7 +18,6 @@ export const DayBox: FC<{
   isLoading: boolean
   periods?: NonNullable<RouterOutputs['periods']['range']>
   startToday?: boolean
-  origin?: string
 }> = ({
   focusDate,
   dayOfWeek,
@@ -25,7 +25,6 @@ export const DayBox: FC<{
   isLoading,
   startToday,
   periods = [],
-  origin,
 }) => {
   const day = useMemo(() => {
     return startOfDay(
@@ -51,6 +50,8 @@ export const DayBox: FC<{
   const distanceToToday = differenceInDays(day, new Date())
 
   const shouldCondense = events.length > 2 && dayOfWeek < 6
+
+  const [originating] = useOrigination()
 
   return (
     <div
@@ -86,7 +87,7 @@ export const DayBox: FC<{
               key={period.id}
               path="/periods/:id"
               params={{ id: period.id }}
-              query={{ origin: origin }}
+              query={{ origin: originating }}
             >
               <CategoryIcon
                 icon={
@@ -100,7 +101,7 @@ export const DayBox: FC<{
             </PathLink>
           ))}
         </div>
-        <EventDialog initialDate={day} origin={origin} />
+        <EventDialog initialDate={day} />
       </div>
       <ul className="flex flex-col gap-1 overflow-scroll py-1">
         {isLoading ? (
@@ -111,7 +112,6 @@ export const DayBox: FC<{
               key={event.id}
               event={event}
               condensed={shouldCondense}
-              origin={origin}
             />
           ))
         )}

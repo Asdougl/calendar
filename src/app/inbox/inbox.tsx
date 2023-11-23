@@ -13,9 +13,10 @@ import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn } from '~/utils/classnames'
-import { useClientNow } from '~/utils/hooks'
+import { useClientNow, useMountEffect } from '~/utils/hooks'
 import { type Preferences } from '~/types/preferences'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
+import { useOrigination } from '~/utils/atoms'
 
 type InboxProps = {
   preferences: Preferences
@@ -56,6 +57,12 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
         weekStartsOn: getDay(focusDate),
       })
     ),
+  })
+
+  const [, setOriginating] = useOrigination()
+
+  useMountEffect(() => {
+    setOriginating('inbox')
   })
 
   const periodsByDay = useMemo(() => {
@@ -135,7 +142,6 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[6] ?? []}
-            origin="inbox"
           />
           <DayBox
             focusDate={focusDate}
@@ -144,7 +150,6 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[0] ?? []}
-            origin="inbox"
           />
         </div>
         {/* weekdays */}
@@ -156,7 +161,6 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[5] ?? []}
-            origin="inbox"
           />
           <DayBox
             focusDate={focusDate}
@@ -165,7 +169,6 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[4] ?? []}
-            origin="inbox"
           />
           <DayBox
             focusDate={focusDate}
@@ -174,7 +177,6 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[3] ?? []}
-            origin="inbox"
           />
           <DayBox
             focusDate={focusDate}
@@ -183,7 +185,6 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[2] ?? []}
-            origin="inbox"
           />
           <DayBox
             focusDate={focusDate}
@@ -192,7 +193,6 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[1] ?? []}
-            origin="inbox"
           />
         </div>
       </div>

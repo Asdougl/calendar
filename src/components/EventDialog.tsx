@@ -24,6 +24,7 @@ import { dateFromDateAndTime, time } from '~/utils/dates'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn, getCategoryColor } from '~/utils/classnames'
+import { useOrigination } from '~/utils/atoms'
 
 const EventDialogFormSchema = z.object({
   title: z.string(),
@@ -35,7 +36,6 @@ type EventDialogFormSchema = z.infer<typeof EventDialogFormSchema>
 
 type EventDialogBaseProps = {
   disabled?: boolean
-  origin?: string
 }
 
 type UpdateEventDialogProps = EventDialogBaseProps & {
@@ -52,13 +52,14 @@ type EventDialogProps = PropsWithChildren<
 
 export const EventDialog: FC<EventDialogProps> = ({
   disabled,
-  origin,
   children,
   ...props
 }) => {
   const [open, setOpen] = useState(false)
 
   const formRef = useRef<HTMLFormElement>(null)
+
+  const [originating] = useOrigination()
 
   const queryClient = api.useContext()
 
@@ -389,7 +390,7 @@ export const EventDialog: FC<EventDialogProps> = ({
                       <ButtonLink
                         path="/events/:id"
                         params={{ id: props.event.id }}
-                        query={{ origin }}
+                        query={{ origin: originating }}
                       >
                         More
                       </ButtonLink>

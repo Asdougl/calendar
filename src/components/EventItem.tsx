@@ -7,12 +7,11 @@ import { type RouterOutputs } from '~/trpc/shared'
 export const EventItem: FC<{
   event: NonNullable<RouterOutputs['event']['range']>[number]
   condensed?: boolean
-  origin?: string
-}> = ({ event, condensed, origin }) => {
+}> = ({ event, condensed }) => {
   const inThePast = event.datetime.getTime() < new Date().getTime()
 
   return (
-    <EventDialog event={event} origin={origin}>
+    <EventDialog event={event}>
       <li
         className={cn(
           'flex items-center justify-start overflow-hidden rounded-lg px-1 hover:bg-neutral-900 md:flex-row md:items-center md:gap-1',

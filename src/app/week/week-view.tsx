@@ -33,6 +33,7 @@ import { api } from '~/trpc/react'
 import { cn } from '~/utils/classnames'
 import { type Preferences } from '~/types/preferences'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
+import { useOrigination } from '~/utils/atoms'
 
 type ViewOfAWeekProps = {
   starting: Date
@@ -46,6 +47,14 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
     const weekRef = useRef<HTMLDivElement>(null)
 
     useImperativeHandle(ref, () => weekRef.current!)
+
+    const originString = `week-${format(starting, 'yyyy-MM-dd')}`
+
+    const [, setOriginating] = useOrigination()
+
+    useEffect(() => {
+      setOriginating(originString)
+    }, [originString, setOriginating])
 
     const { data: periods = [] } = api.periods.range.useQuery(
       {
@@ -122,8 +131,6 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
       if (isInView && onInView) onInView()
     }, [isInView, onInView])
 
-    const origin = `week-${format(starting, 'yyyy-MM-dd')}`
-
     return (
       <div
         ref={weekRef}
@@ -142,7 +149,6 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[6] || []}
             isLoading={isLoading}
             periods={periods[6]}
-            origin={origin}
           />
           <DayBox
             focusDate={starting}
@@ -150,7 +156,6 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[0] || []}
             isLoading={isLoading}
             periods={periods[0]}
-            origin={origin}
           />
         </div>
         {/* weekdays */}
@@ -161,7 +166,6 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[5] || []}
             isLoading={isLoading}
             periods={periods[5]}
-            origin={origin}
           />
           <DayBox
             focusDate={starting}
@@ -169,7 +173,6 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[4] || []}
             isLoading={isLoading}
             periods={periods[4]}
-            origin={origin}
           />
           <DayBox
             focusDate={starting}
@@ -177,7 +180,6 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[3] || []}
             isLoading={isLoading}
             periods={periods[3]}
-            origin={origin}
           />
           <DayBox
             focusDate={starting}
@@ -185,7 +187,6 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[2] || []}
             isLoading={isLoading}
             periods={periods[2]}
-            origin={origin}
           />
           <DayBox
             focusDate={starting}
@@ -193,7 +194,6 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[1] || []}
             isLoading={isLoading}
             periods={periods[1]}
-            origin={origin}
           />
         </div>
       </div>
