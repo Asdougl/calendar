@@ -174,7 +174,7 @@ export default async function IndexPage() {
       <header className="sticky top-0 z-20 border-b border-neutral-800 bg-neutral-950">
         <div className="container mx-auto flex items-center justify-between px-4 py-2">
           <h1 className="font-mono text-xl">asdougl/calendar</h1>
-          <ButtonLink path="/">Login</ButtonLink>
+          <ButtonLink path="/login">Login</ButtonLink>
         </div>
       </header>
       <main className="flex-grow">

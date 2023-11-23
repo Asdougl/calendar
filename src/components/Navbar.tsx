@@ -51,7 +51,7 @@ export const Navbar: FC<{ loading?: boolean }> = () => {
   if (!data) return null
 
   return (
-    <footer className="pb-6">
+    <footer className="sticky bottom-0 bg-neutral-950 pb-6 lg:static">
       <nav className="left-0 top-0 lg:fixed lg:h-screen">
         <ul className="flex items-center justify-evenly gap-8 px-4 lg:flex-col lg:justify-start lg:py-4">
           <li className="flex h-16 items-center justify-center">

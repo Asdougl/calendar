@@ -83,7 +83,7 @@ export const TimezoneSelect: FC<TimezoneSelectProps> = ({
         </Button>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content className="relative z-10 w-screen rounded-lg border border-neutral-800 bg-neutral-950 md:w-auto">
+        <Popover.Content className="relative z-10 rounded-lg border border-neutral-800 bg-neutral-950 md:w-auto">
           {/* Search */}
           <div className="flex items-center justify-center gap-2 border-b border-neutral-800 p-2 ring-neutral-400">
             <MagnifyingGlassIcon height={18} className="text-neutral-400" />

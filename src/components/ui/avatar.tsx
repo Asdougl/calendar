@@ -50,7 +50,7 @@ export const Avatar: FC<AvatarProps> = ({ src, name, className, ...props }) => {
           alt={name}
         />
       )}
-      <RadixAvatar.Fallback className="flex h-full w-full items-center justify-center bg-neutral-200 text-sm font-semibold text-neutral-800">
+      <RadixAvatar.Fallback className="flex h-full w-full items-center justify-center bg-neutral-800 text-sm text-neutral-200">
         {fallbackName(name)}
       </RadixAvatar.Fallback>
     </RadixAvatar.Root>

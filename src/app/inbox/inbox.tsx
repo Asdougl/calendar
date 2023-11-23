@@ -16,7 +16,6 @@ import { cn } from '~/utils/classnames'
 import { useClientNow } from '~/utils/hooks'
 import { type Preferences } from '~/types/preferences'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
-import { ProfileLink } from '~/components/ui/avatar'
 
 type InboxProps = {
   preferences: Preferences
@@ -120,19 +119,6 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
           </div>
           <Header1 className="bg-neutral-950 text-2xl">Inbox</Header1>
         </div>
-      }
-      headerRight={
-        // <PathLink
-        //   path="/settings"
-        //   className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent hover:border-neutral-600"
-        // >
-        //   <DisplayPicture
-        //     src={userImage}
-        //     username={username}
-        //     className="h-8 w-8"
-        //   />
-        // </PathLink>
-        <ProfileLink />
       }
     >
       <div
