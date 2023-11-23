@@ -1,11 +1,12 @@
 'use client'
 
-import { format, getDay, getDayOfYear, setDay, startOfDay } from 'date-fns'
+import { differenceInDays, format, getDay, setDay, startOfDay } from 'date-fns'
 import type { FC } from 'react'
 import { useMemo } from 'react'
 import { EventDialog } from './EventDialog'
 import { EventItem } from './EventItem'
 import { CategoryIcon } from './CategoryIcon'
+import { PathLink } from './ui/PathLink'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
 
@@ -16,6 +17,7 @@ export const DayBox: FC<{
   isLoading: boolean
   periods?: NonNullable<RouterOutputs['periods']['range']>
   startToday?: boolean
+  origin?: string
 }> = ({
   focusDate,
   dayOfWeek,
@@ -23,6 +25,7 @@ export const DayBox: FC<{
   isLoading,
   startToday,
   periods = [],
+  origin,
 }) => {
   const day = useMemo(() => {
     return startOfDay(
@@ -45,7 +48,7 @@ export const DayBox: FC<{
     return [...allDayEvents, ...futureEvents, ...pastEvents]
   }, [events])
 
-  const distanceToToday = getDayOfYear(day) - getDayOfYear(new Date())
+  const distanceToToday = differenceInDays(day, new Date())
 
   const shouldCondense = events.length > 2 && dayOfWeek < 6
 
@@ -79,19 +82,25 @@ export const DayBox: FC<{
           <div className="font-bold">{format(day, 'E')}</div>
           <div className="text-sm">{format(day, 'd MMM')}</div>
           {periods.map((period) => (
-            <CategoryIcon
+            <PathLink
               key={period.id}
-              icon={
-                periods.length === 1
-                  ? `${period.icon} ${period.name}`
-                  : period.icon
-              }
-              color={period.color}
-              size="sm"
-            />
+              path="/periods/:id"
+              params={{ id: period.id }}
+              query={{ origin: origin }}
+            >
+              <CategoryIcon
+                icon={
+                  periods.length === 1
+                    ? `${period.icon} ${period.name}`
+                    : period.icon
+                }
+                color={period.color}
+                size="sm"
+              />
+            </PathLink>
           ))}
         </div>
-        <EventDialog initialDate={day} />
+        <EventDialog initialDate={day} origin={origin} />
       </div>
       <ul className="flex flex-col gap-1 overflow-scroll py-1">
         {isLoading ? (
@@ -102,6 +111,7 @@ export const DayBox: FC<{
               key={event.id}
               event={event}
               condensed={shouldCondense}
+              origin={origin}
             />
           ))
         )}

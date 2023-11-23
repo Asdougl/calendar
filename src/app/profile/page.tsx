@@ -1,7 +1,15 @@
 import { redirect } from 'next/navigation'
-import { ClockIcon, ListBulletIcon } from '@heroicons/react/24/solid'
+import {
+  ClockIcon,
+  ListBulletIcon,
+  TicketIcon,
+} from '@heroicons/react/24/solid'
 import { type ReactNode } from 'react'
-import { DebugSection, PreferencesSection } from './profile-sections'
+import {
+  DebugSection,
+  LogoutSection,
+  PreferencesSection,
+} from './profile-sections'
 import { PageLayout } from '~/components/layout/PageLayout'
 import { PathLink } from '~/components/ui/PathLink'
 import { getServerAuthSession } from '~/server/auth'
@@ -16,15 +24,20 @@ type ProfileLink<T extends PathName> = PathLinkObject<T> & {
 
 const LINKS = [
   {
-    path: '/categories',
-    icon: <ListBulletIcon className="mr-2 h-5 w-5" />,
-    title: 'Categories',
-  } as ProfileLink<'/categories'>,
+    path: '/events',
+    icon: <TicketIcon className="mr-2 h-5 w-5" />,
+    title: 'All Events',
+  } as ProfileLink<'/events'>,
   {
     path: '/periods',
     icon: <ClockIcon className="mr-2 h-5 w-5" />,
     title: 'Periods',
   } as ProfileLink<'/periods'>,
+  {
+    path: '/categories',
+    icon: <ListBulletIcon className="mr-2 h-5 w-5" />,
+    title: 'Categories',
+  } as ProfileLink<'/categories'>,
 ]
 
 export default async function ProfilePage() {
@@ -66,6 +79,7 @@ export default async function ProfilePage() {
         </div>
         <PreferencesSection />
         <DebugSection />
+        <LogoutSection />
       </div>
     </PageLayout>
   )

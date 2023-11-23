@@ -8,8 +8,8 @@ const fieldStyle = cva('flex flex-col gap-1', {
   variants: {
     width: {
       sm: 'w-32',
-      md: 'w-48',
-      lg: 'w-64',
+      md: 'w-full lg:w-48',
+      lg: 'w-full lg:w-64',
       full: 'w-full',
     },
   },

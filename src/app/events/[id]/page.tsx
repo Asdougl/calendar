@@ -1,14 +1,14 @@
 import { redirect } from 'next/navigation'
 import { ArrowLeftIcon } from '@heroicons/react/24/solid'
-import { PeriodEditForm } from './period-edit-form'
+import { EditEventForm } from './edit-event-form'
+import { PageLayout } from '~/components/layout/PageLayout'
 import { getServerAuthSession } from '~/server/auth'
 import { api } from '~/trpc/server'
-import { PageLayout } from '~/components/layout/PageLayout'
 import { PathLink } from '~/components/ui/PathLink'
 import { pathReplace } from '~/utils/path'
 
 type PathParams = {
-  path: '/periods' | '/week' | '/inbox'
+  path: '/events' | '/week' | '/inbox'
   query: Record<string, string | undefined> | undefined
 }
 
@@ -30,38 +30,51 @@ const decodeOrigin = (origin?: string): PathParams => {
   }
 
   return {
-    path: '/periods',
+    path: '/events',
     query: undefined,
   }
 }
 
-export default async function PeriodEdit({
+type PageParams = {
+  params: {
+    id: string
+  }
+  searchParams: {
+    origin?: string
+  }
+}
+
+export default async function EventIdPage({
   params: { id },
   searchParams: { origin },
-}: {
-  params: { id: string }
-  searchParams: { origin?: string }
-}) {
+}: PageParams) {
   const session = await getServerAuthSession()
 
   if (!session) {
     redirect('/login')
   }
 
-  const period = id !== 'new' ? await api.periods.one.query({ id }) : null
+  let event = null
+  if (id !== 'new') {
+    event = await api.event.one.query({ id })
+
+    if (!event) {
+      redirect('/events?error=not-found')
+    }
+  }
 
   const { path, query } = decodeOrigin(origin)
 
   return (
     <PageLayout
-      title={period ? 'Edit Period' : 'Create Period'}
+      title={id === 'new' ? 'New Event' : 'Update Event'}
       headerLeft={
         <PathLink path={path} query={query}>
-          <ArrowLeftIcon height={24} />
+          <ArrowLeftIcon height={20} />
         </PathLink>
       }
     >
-      <PeriodEditForm period={period} origin={pathReplace({ path, query })} />
+      <EditEventForm event={event} origin={pathReplace({ path, query })} />
     </PageLayout>
   )
 }

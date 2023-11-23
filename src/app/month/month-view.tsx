@@ -7,23 +7,26 @@ import {
   endOfDay,
   endOfMonth,
   format,
+  getDaysInMonth,
   getISOWeek,
   getMonth,
   isAfter,
   isBefore,
   isSameDay,
+  isWithinInterval,
   set,
   startOfDay,
+  startOfMonth,
   subDays,
   subMonths,
 } from 'date-fns'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid'
-import { Header1 } from '~/components/ui/headers'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { api } from '~/trpc/react'
 import { time, toCalendarDate, weekDatesOfDateRange } from '~/utils/dates'
 import { type RouterOutputs } from '~/trpc/shared'
 import { PathLink } from '~/components/ui/PathLink'
+import { InnerPageLayout } from '~/components/layout/PageLayout'
 
 export const MonthView: FC = () => {
   const [focusMonth, setFocusMonth] = useState(() => {
@@ -37,7 +40,65 @@ export const MonthView: FC = () => {
 
   const queryClient = api.useContext()
 
-  const { data, isFetching } = api.event.range.useQuery(
+  const { data: periodsByDay } = api.periods.range.useQuery(
+    {
+      start: startOfDay(subDays(focusMonth.start, 7)),
+      end: endOfDay(addDays(focusMonth.end, 7)),
+    },
+    {
+      placeholderData: () => {
+        const toReturn: RouterOutputs['periods']['range'] = []
+        const lastMonthData = queryClient.periods.range.getData({
+          start: startOfDay(subDays(subMonths(focusMonth.start, 1), 7)),
+          end: endOfDay(addDays(endOfMonth(subMonths(focusMonth.start, 1)), 7)),
+        })
+        if (lastMonthData)
+          toReturn.push(
+            ...lastMonthData.filter((period) =>
+              isAfter(
+                period.startDate,
+                subDays(focusMonth.start, 7).getTime() / 1000
+              )
+            )
+          )
+        const nextMonthData = queryClient.periods.range.getData({
+          start: startOfDay(subDays(addMonths(focusMonth.start, 1), 7)),
+          end: endOfDay(addDays(endOfMonth(addMonths(focusMonth.start, 1)), 7)),
+        })
+
+        if (nextMonthData)
+          toReturn.push(
+            ...nextMonthData.filter((period) =>
+              isBefore(
+                period.endDate,
+                addDays(focusMonth.end, 7).getTime() / 1000
+              )
+            )
+          )
+
+        return toReturn
+      },
+      select: (data) => {
+        if (!data) return {}
+        const periodsByDay: Record<string, RouterOutputs['periods']['range']> =
+          {}
+
+        for (let i = 0; i < getDaysInMonth(focusMonth.start); i++) {
+          const day = addDays(startOfMonth(focusMonth.start), i)
+          periodsByDay[format(day, 'yyyy-MM-dd')] = data.filter((period) =>
+            isWithinInterval(day, {
+              start: period.startDate,
+              end: period.endDate,
+            })
+          )
+        }
+
+        return periodsByDay
+      },
+    }
+  )
+
+  const { data: eventsByDay, isFetching } = api.event.range.useQuery(
     {
       start: startOfDay(subDays(focusMonth.start, 7)),
       end: endOfDay(addDays(focusMonth.end, 7)),
@@ -77,20 +138,19 @@ export const MonthView: FC = () => {
       },
       staleTime: time.minutes(1),
       refetchInterval: time.minutes(5),
+      select: (data) => {
+        if (!data) return {}
+        const eventsByDay: Record<string, RouterOutputs['event']['range']> = {}
+        data.forEach((event) => {
+          const dayKey = format(event.datetime, 'yyyy-MM-dd')
+          const eventsOfDay = eventsByDay[dayKey]
+          if (eventsOfDay) eventsOfDay.push(event)
+          else eventsByDay[dayKey] = [event]
+        })
+        return eventsByDay
+      },
     }
   )
-
-  const eventsByDay = useMemo(() => {
-    if (!data) return {}
-    const eventsByDay: Record<string, RouterOutputs['event']['range']> = {}
-    data.forEach((event) => {
-      const dayKey = format(event.datetime, 'yyyy-MM-dd')
-      const eventsOfDay = eventsByDay[dayKey]
-      if (eventsOfDay) eventsOfDay.push(event)
-      else eventsByDay[dayKey] = [event]
-    })
-    return eventsByDay
-  }, [data])
 
   const weekDates = useMemo(() => {
     const startOfCurrMonth = set(new Date(), {
@@ -118,14 +178,7 @@ export const MonthView: FC = () => {
   }
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-2xl flex-grow flex-col">
-      <header className="flex items-center justify-between px-4 py-6">
-        <div className="w-8"></div>
-        <Header1 className="text-2xl">
-          {format(focusMonth.start, 'MMMM yyyy')}
-        </Header1>
-        <div className="w-8"></div>
-      </header>
+    <InnerPageLayout title={format(focusMonth.start, 'MMMM yyyy')}>
       <button
         onClick={viewPrevMonth}
         className="flex w-full items-center justify-center rounded-lg py-2 hover:bg-neutral-900"
@@ -141,13 +194,16 @@ export const MonthView: FC = () => {
             path="/week"
             query={{
               start: toCalendarDate(week[0] || new Date()),
-              random: Math.random().toString(36).substring(2, 7),
             }}
             className="group flex flex-1 flex-grow"
           >
             {week.map((day, j) => {
               const eventsForDay = eventsByDay
                 ? eventsByDay[toCalendarDate(day)]
+                : []
+
+              const periodsForDay = periodsByDay
+                ? periodsByDay[toCalendarDate(day)]
                 : []
 
               const inCurrMonth = day.getMonth() === getMonth(focusMonth.start)
@@ -173,6 +229,17 @@ export const MonthView: FC = () => {
                       )}
                     >
                       {format(day, 'EE dd')}
+                    </div>
+                    <div className="flex h-full items-center justify-center">
+                      {periodsForDay?.map((period) => (
+                        <div
+                          key={period.id}
+                          className={cn(
+                            'h-2 w-2 rounded-full',
+                            getCategoryColor(period.color, 'bg')
+                          )}
+                        ></div>
+                      ))}
                     </div>
                   </div>
                   {isFetching && (!eventsForDay || eventsForDay.length < 1) && (
@@ -205,9 +272,11 @@ export const MonthView: FC = () => {
                       >
                         {event.title}
                       </div>
-                      <div className="-mt-1 hidden text-xs opacity-50 md:block">
-                        {format(event.datetime, 'h:mm a')}
-                      </div>
+                      {event.timeStatus === 'STANDARD' && (
+                        <div className="-mt-1 hidden text-xs opacity-50 md:block">
+                          {format(event.datetime, 'h:mm a')}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -222,6 +291,6 @@ export const MonthView: FC = () => {
       >
         <ChevronDownIcon height={24} />
       </button>
-    </div>
+    </InnerPageLayout>
   )
 }

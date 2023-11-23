@@ -135,6 +135,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[6] ?? []}
+            origin="inbox"
           />
           <DayBox
             focusDate={focusDate}
@@ -143,6 +144,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[0] ?? []}
+            origin="inbox"
           />
         </div>
         {/* weekdays */}
@@ -154,6 +156,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[5] ?? []}
+            origin="inbox"
           />
           <DayBox
             focusDate={focusDate}
@@ -162,6 +165,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[4] ?? []}
+            origin="inbox"
           />
           <DayBox
             focusDate={focusDate}
@@ -170,6 +174,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[3] ?? []}
+            origin="inbox"
           />
           <DayBox
             focusDate={focusDate}
@@ -178,6 +183,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[2] ?? []}
+            origin="inbox"
           />
           <DayBox
             focusDate={focusDate}
@@ -186,6 +192,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[1] ?? []}
+            origin="inbox"
           />
         </div>
       </div>

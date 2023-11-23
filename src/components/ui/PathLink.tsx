@@ -7,7 +7,7 @@ type PathLinkBasicProps<Path extends PathName> = Omit<
   'href'
 > & {
   path: Path
-  query?: Record<string, string>
+  query?: Record<string, string | undefined>
 }
 
 type PathLinkWithParamsProps<Path extends PathName> =

@@ -82,16 +82,6 @@ export const PreferencesSection = () => {
           />
         )}
       </SettingItem>
-      <SettingItem title="Logout">
-        <Button
-          onClick={() => signOut()}
-          size="sm"
-          intent="secondary"
-          className="w-40"
-        >
-          Logout
-        </Button>
-      </SettingItem>
       <SettingItem title="Developer" skeleton={isInitialLoading}>
         {preferences && (
           <Switch
@@ -151,4 +141,14 @@ export const DebugSection = () => {
       </SettingItem>
     </SettingList>
   ) : null
+}
+
+export const LogoutSection = () => {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <Button onClick={() => signOut()} intent="secondary" className="w-40">
+        Logout
+      </Button>
+    </div>
+  )
 }

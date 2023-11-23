@@ -9,7 +9,7 @@ import { usePathname } from 'next/navigation'
 import type { FC, ReactNode } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
-import { ProfileLink } from './ui/avatar'
+import { ProfileAvatar } from './ui/avatar'
 import { cn } from '~/utils/classnames'
 import {
   type PathCreatorParams,
@@ -78,8 +78,8 @@ export const Navbar: FC<{ loading?: boolean }> = () => {
           <li className="flex h-16 items-center justify-center">
             <NavBarItem
               path="/profile"
-              icon={<ProfileLink size="sm" />}
-              label="Profile"
+              icon={<ProfileAvatar size="sm" />}
+              label="profile"
             />
           </li>
         </ul>

@@ -15,7 +15,6 @@ import { time } from '~/utils/dates'
 import { ErrorText } from '~/components/ui/Text'
 import { createTempId } from '~/utils/misc'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
-import { ProfileLink } from '~/components/ui/avatar'
 import { BackButton } from '~/components/BackButton'
 
 const CategorySchema = z.object({
@@ -240,7 +239,6 @@ export const CategoriesPage: FC = () => {
     <InnerPageLayout
       headerLeft={<BackButton whenLastLocation="/profile" />}
       title="Categories"
-      headerRight={<ProfileLink />}
     >
       <div className="px-4">
         <ul className="flex flex-col rounded-lg border border-neutral-800">

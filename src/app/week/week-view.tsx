@@ -24,7 +24,7 @@ import {
   subWeeks,
 } from 'date-fns'
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useScroll, motion, useTransform, useInView } from 'framer-motion'
 import { Header1 } from '~/components/ui/headers'
 import { time } from '~/utils/dates'
@@ -122,6 +122,8 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
       if (isInView && onInView) onInView()
     }, [isInView, onInView])
 
+    const origin = `week-${format(starting, 'yyyy-MM-dd')}`
+
     return (
       <div
         ref={weekRef}
@@ -140,6 +142,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[6] || []}
             isLoading={isLoading}
             periods={periods[6]}
+            origin={origin}
           />
           <DayBox
             focusDate={starting}
@@ -147,6 +150,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[0] || []}
             isLoading={isLoading}
             periods={periods[0]}
+            origin={origin}
           />
         </div>
         {/* weekdays */}
@@ -157,6 +161,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[5] || []}
             isLoading={isLoading}
             periods={periods[5]}
+            origin={origin}
           />
           <DayBox
             focusDate={starting}
@@ -164,6 +169,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[4] || []}
             isLoading={isLoading}
             periods={periods[4]}
+            origin={origin}
           />
           <DayBox
             focusDate={starting}
@@ -171,6 +177,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[3] || []}
             isLoading={isLoading}
             periods={periods[3]}
+            origin={origin}
           />
           <DayBox
             focusDate={starting}
@@ -178,6 +185,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[2] || []}
             isLoading={isLoading}
             periods={periods[2]}
+            origin={origin}
           />
           <DayBox
             focusDate={starting}
@@ -185,6 +193,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
             events={events[1] || []}
             isLoading={isLoading}
             periods={periods[1]}
+            origin={origin}
           />
         </div>
       </div>
@@ -194,6 +203,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
 
 export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   const [focusDate, setFocusDate] = useState<Date>(() => {
     const startParam = searchParams.get('start')
@@ -211,7 +221,6 @@ export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
     format(focusDate, 'yyyy-MM-dd'),
     format(addWeeks(focusDate, 1), 'yyyy-MM-dd'),
   ])
-  const weeksRefs = useRef<HTMLDivElement[]>([])
 
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -247,7 +256,9 @@ export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
     }, 300)
   }
 
-  const viewNextWeek = () => {
+  const viewNextWeek = (push: boolean) => {
+    if (push)
+      router.push('/week?start=' + format(addWeeks(focusDate, 1), 'yyyy-MM-dd'))
     setLoadedWeeks([
       format(focusDate, 'yyyy-MM-dd'),
       format(addWeeks(focusDate, 1), 'yyyy-MM-dd'),
@@ -256,7 +267,9 @@ export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
     setFocusDate(addWeeks(focusDate, 1))
   }
 
-  const viewPrevWeek = () => {
+  const viewPrevWeek = (push: boolean) => {
+    if (push)
+      router.push('/week?start=' + format(subWeeks(focusDate, 1), 'yyyy-MM-dd'))
     setLoadedWeeks([
       format(subWeeks(focusDate, 2), 'yyyy-MM-dd'),
       format(subWeeks(focusDate, 1), 'yyyy-MM-dd'),
@@ -270,8 +283,7 @@ export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
       headerLeft={
         <button
           className="group flex h-full w-full items-center justify-center rounded-lg hover:bg-neutral-800"
-          disabled={!weeksRefs.current[0]}
-          onClick={() => viewPrevWeek()}
+          onClick={() => viewPrevWeek(true)}
         >
           <ArrowLeftIcon
             height={20}
@@ -305,8 +317,7 @@ export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
       headerRight={
         <button
           className="group flex h-full w-full items-center justify-center rounded-lg hover:bg-neutral-800"
-          disabled={!weeksRefs.current[2]}
-          onClick={() => viewNextWeek()}
+          onClick={() => viewNextWeek(true)}
         >
           <ArrowRightIcon
             height={20}
@@ -323,16 +334,24 @@ export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
         {loadedWeeks.map((week, i) => (
           <ViewOfAWeek
             key={week}
-            ref={(ref) => (weeksRefs.current[i] = ref!)}
             starting={startOfDay(new Date(week))}
             index={i}
             preferences={preferences}
             onInView={() => {
+              if (i === 0) {
+                router.push(
+                  '/week?start=' + format(subWeeks(focusDate, 1), 'yyyy-MM-dd')
+                )
+              } else if (i === 2) {
+                router.push(
+                  '/week?start=' + format(addWeeks(focusDate, 1), 'yyyy-MM-dd')
+                )
+              }
               nextUpdate.current = () => {
                 if (i === 0) {
-                  viewPrevWeek()
+                  viewPrevWeek(false)
                 } else if (i === 2) {
-                  viewNextWeek()
+                  viewNextWeek(false)
                 }
               }
             }}

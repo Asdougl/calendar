@@ -12,6 +12,8 @@ type PathParamsMap = {
   '/month': null
   '/periods': null
   '/periods/:id': { id: string }
+  '/events': null
+  '/events/:id': { id: string }
   '/profile': null
   '/todos': null
 }
@@ -40,7 +42,7 @@ const PathFlags: Partial<
 export type PathCreatorParams<Path extends PathName> = {
   path: Path
   params?: PathParams<Path>
-  query?: Record<string, string>
+  query?: Record<string, string | undefined>
 }
 
 export const pathReplace = <T extends PathName>({
@@ -60,6 +62,7 @@ export const pathReplace = <T extends PathName>({
   }
   if (query) {
     const queryString = Object.entries(query)
+      .filter(([, value]) => value !== undefined)
       .map(([key, value]) => `${key}=${value}`)
       .join('&')
     newPath = `${newPath}?${queryString}`

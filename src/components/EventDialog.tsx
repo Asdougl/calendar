@@ -13,7 +13,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { format, isValid } from 'date-fns'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Header2 } from './ui/headers'
-import { Button, SubmitButton } from './ui/button'
+import { Button, ButtonLink, SubmitButton } from './ui/button'
 import { Label } from './ui/label'
 import { Input } from './ui/input'
 import { Loader } from './ui/Loader'
@@ -33,13 +33,16 @@ const EventDialogFormSchema = z.object({
 })
 type EventDialogFormSchema = z.infer<typeof EventDialogFormSchema>
 
-type UpdateEventDialogProps = {
+type EventDialogBaseProps = {
   disabled?: boolean
+  origin?: string
+}
+
+type UpdateEventDialogProps = EventDialogBaseProps & {
   event: RouterOutputs['event']['range'][number]
 }
 
-type InsertEventDialogProps = {
-  disabled?: boolean
+type InsertEventDialogProps = EventDialogBaseProps & {
   initialDate: Date
 }
 
@@ -49,6 +52,7 @@ type EventDialogProps = PropsWithChildren<
 
 export const EventDialog: FC<EventDialogProps> = ({
   disabled,
+  origin,
   children,
   ...props
 }) => {
@@ -381,15 +385,24 @@ export const EventDialog: FC<EventDialogProps> = ({
                 )} */}
                 <div className="flex flex-grow justify-end gap-4">
                   {'event' in props && (
-                    <SubmitButton
-                      intent="danger"
-                      type="button"
-                      loading={isDeleting}
-                      onClick={() => deleteMutate({ id: props.event.id })}
-                      disabled={fullDisable}
-                    >
-                      Delete
-                    </SubmitButton>
+                    <>
+                      <ButtonLink
+                        path="/events/:id"
+                        params={{ id: props.event.id }}
+                        query={{ origin }}
+                      >
+                        More
+                      </ButtonLink>
+                      <SubmitButton
+                        intent="danger"
+                        type="button"
+                        loading={isDeleting}
+                        onClick={() => deleteMutate({ id: props.event.id })}
+                        disabled={fullDisable}
+                      >
+                        Delete
+                      </SubmitButton>
+                    </>
                   )}
                   <SubmitButton
                     loading={constructLoading}

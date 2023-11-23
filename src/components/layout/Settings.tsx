@@ -15,7 +15,10 @@ export const SettingItem = ({
   <li className="grid h-12 grid-cols-3">
     <div className="flex items-center justify-start px-4 text-sm">
       <span
-        className={cn(skeleton && 'animate-pulse rounded-full bg-neutral-800')}
+        className={cn(
+          skeleton &&
+            'animate-pulse rounded-full bg-neutral-800 text-transparent'
+        )}
       >
         {title}
       </span>

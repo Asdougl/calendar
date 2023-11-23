@@ -1,6 +1,7 @@
 import { categoryRouter } from './routers/category'
 import { periodsRouter } from './routers/periods'
 import { preferencesRouter } from './routers/preferences'
+import { profileRouter } from './routers/profile'
 import { eventRouter } from '~/server/api/routers/event'
 import { createTRPCRouter } from '~/server/api/trpc'
 
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
   category: categoryRouter,
   preferences: preferencesRouter,
   periods: periodsRouter,
+  profile: profileRouter,
 })
 
 // export type definition of API

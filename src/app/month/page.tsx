@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { MonthView } from './month-view'
-import { Navbar } from '~/components/Navbar'
 import { getServerAuthSession } from '~/server/auth'
+import { OuterPageLayout } from '~/components/layout/PageLayout'
 
 export default async function Home() {
   const session = await getServerAuthSession()
@@ -11,9 +11,8 @@ export default async function Home() {
   }
 
   return (
-    <main className="flex h-screen flex-col">
+    <OuterPageLayout>
       <MonthView />
-      <Navbar />
-    </main>
+    </OuterPageLayout>
   )
 }

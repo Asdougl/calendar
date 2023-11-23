@@ -38,6 +38,17 @@ export const eventRouter = createTRPCRouter({
         },
       })
     }),
+  one: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.event.findUnique({
+        where: {
+          id: input.id,
+          createdById: ctx.session.user.id,
+        },
+        select,
+      })
+    }),
   todos: protectedProcedure
     .input(z.object({ done: z.boolean() }))
     .query(({ ctx, input }) => {

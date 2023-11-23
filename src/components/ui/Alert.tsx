@@ -9,7 +9,7 @@ import {
 import { Header3 } from './headers'
 import { cn } from '~/utils/classnames'
 
-const alert = cva('rounded-md px-3 py-2 flex gap-4 border', {
+const alert = cva('rounded-md px-3 py-2 flex gap-4 border items-center', {
   variants: {
     level: {
       info: 'bg-blue-950 bg-opacity-50 text-blue-50 border-blue-900',
@@ -19,11 +19,19 @@ const alert = cva('rounded-md px-3 py-2 flex gap-4 border', {
     },
   },
 })
-type AlertVariantProps = VariantProps<typeof alert>
 
-export const Alert: FC<
-  { message: string; title?: string } & AlertVariantProps
-> = ({ message, title, ...props }) => {
+type AlertProps = VariantProps<typeof alert> & {
+  message: string
+  title?: string
+  className?: string
+}
+
+export const Alert: FC<AlertProps> = ({
+  message,
+  title,
+  className,
+  ...props
+}) => {
   let icon: React.ReactNode
   switch (true) {
     case props.level === 'success':
@@ -41,7 +49,7 @@ export const Alert: FC<
   }
 
   return (
-    <div className={cn(alert(props))}>
+    <div className={cn(alert(props), className)}>
       <div className="py-2">{icon}</div>
       <div className="flex flex-col">
         {title && <Header3>{title}</Header3>}

@@ -57,7 +57,7 @@ export const Avatar: FC<AvatarProps> = ({ src, name, className, ...props }) => {
   )
 }
 
-export const ProfileLink: FC<Pick<AvatarProps, 'className' | 'size'>> = ({
+export const ProfileAvatar: FC<Pick<AvatarProps, 'className' | 'size'>> = ({
   className,
   size,
 }) => {
@@ -66,6 +66,20 @@ export const ProfileLink: FC<Pick<AvatarProps, 'className' | 'size'>> = ({
   if (!data) return null
 
   return (
+    <Avatar
+      size={size || 'md'}
+      name={data.user.name || ''}
+      src={data.user.image}
+      className={className}
+    />
+  )
+}
+
+export const ProfileLink: FC<Pick<AvatarProps, 'className' | 'size'>> = ({
+  className,
+  size,
+}) => {
+  return (
     <PathLink
       path="/profile"
       className={cn(
@@ -73,11 +87,7 @@ export const ProfileLink: FC<Pick<AvatarProps, 'className' | 'size'>> = ({
         className
       )}
     >
-      <Avatar
-        size={size || 'md'}
-        name={data.user.name || ''}
-        src={data.user.image}
-      />
+      <ProfileAvatar size={size} />
     </PathLink>
   )
 }

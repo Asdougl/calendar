@@ -10,7 +10,8 @@
     "postinstall": "prisma generate",
     "lint": "next lint",
     "start": "next start",
-    "test": "vitest"
+    "test": "vitest",
+    "check": "next lint && vitest run && next build"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.18",

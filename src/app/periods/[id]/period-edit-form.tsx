@@ -1,7 +1,6 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { differenceInDays } from 'date-fns'
 import { type FC } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -31,9 +30,10 @@ type PeriodForm = z.infer<typeof PeriodForm>
 
 type PeriodEditFormProps = {
   period: RouterOutputs['periods']['one']
+  origin: string
 }
 
-export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period }) => {
+export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period, origin }) => {
   const router = useRouter()
 
   const {
@@ -62,7 +62,7 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period }) => {
   })
 
   const onSubmit = handleSubmit(async (data) => {
-    if (differenceInDays(data.dates.end, data.dates.start) < 0) {
+    if (data.dates.start > data.dates.end) {
       setError('dates', { message: 'End date must be after start date' })
       return
     }
@@ -77,7 +77,7 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period }) => {
           startDate: data.dates.start.toISOString(),
           endDate: data.dates.end.toISOString(),
         })
-        router.push('/periods')
+        router.push(origin)
       } else {
         await createPeriod({
           name: data.name,
@@ -87,7 +87,7 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period }) => {
           startDate: data.dates.start.toISOString(),
           endDate: data.dates.end.toISOString(),
         })
-        router.push('/periods')
+        router.push(origin)
       }
     } catch (error) {
       setError('root', {
@@ -104,7 +104,7 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period }) => {
     if (period) {
       try {
         await deletePeriod(period.id)
-        router.push('/periods')
+        router.push(origin)
       } catch (error) {
         setError('root', {
           message: isError(error)
