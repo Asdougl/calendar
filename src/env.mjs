@@ -19,6 +19,8 @@ export const env = createEnv({
     // Add ` on ID and SECRET if you want to make sure they're not empty
     DISCORD_CLIENT_ID: z.string(),
     DISCORD_CLIENT_SECRET: z.string(),
+    GITHUB_CLIENT_ID: z.string(),
+    GITHUB_CLIENT_SECRET: z.string(),
     // Vercel Postgres
     POSTGRES_DATABASE: z.string(),
     POSTGRES_HOST: z.string(),
