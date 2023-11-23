@@ -96,6 +96,7 @@ export const LocalSettings = () => {
             disabled={isInitialLoading || isUpdating}
             onClick={() =>
               updatePreferences({
+                ...preferences,
                 leftWeekends: !preferences.leftWeekends,
               })
             }
