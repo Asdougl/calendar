@@ -8,17 +8,18 @@ export type PageLayoutProps = {
   headerLeft?: ReactNode
   headerRight?: ReactNode
   skeleton?: boolean
+  hideNav?: boolean
 }
 
 export const OuterPageLayout: FC<
-  PropsWithChildren<Pick<PageLayoutProps, 'skeleton'>>
-> = ({ children, skeleton }) => {
+  PropsWithChildren<Pick<PageLayoutProps, 'skeleton' | 'hideNav'>>
+> = ({ children, skeleton, hideNav }) => {
   return (
-    <main className="flex h-screen flex-col px-4 md:px-0">
+    <main className="flex h-screen flex-col px-2 md:px-0">
       <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
         {children}
       </div>
-      <Navbar loading={skeleton} />
+      {!hideNav && <Navbar loading={skeleton} />}
     </main>
   )
 }

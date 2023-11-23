@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
 import { WeekView } from './week-view'
-import { Navbar } from '~/components/Navbar'
 import { getServerAuthSession } from '~/server/auth'
 import { api } from '~/trpc/server'
+import { OuterPageLayout } from '~/components/layout/PageLayout'
 
 export default async function WeekPage() {
   const session = await getServerAuthSession()
@@ -14,9 +14,8 @@ export default async function WeekPage() {
   const preferences = await api.preferences.getAll.query()
 
   return (
-    <main className="flex h-screen flex-col">
+    <OuterPageLayout>
       <WeekView preferences={preferences} />
-      <Navbar />
-    </main>
+    </OuterPageLayout>
   )
 }

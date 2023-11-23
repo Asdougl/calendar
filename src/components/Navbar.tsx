@@ -2,15 +2,15 @@
 
 import {
   CalendarDaysIcon,
-  CheckCircleIcon,
   InboxIcon,
   Squares2X2Icon,
 } from '@heroicons/react/24/solid'
 import { usePathname } from 'next/navigation'
 import type { FC, ReactNode } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { ProfileLink } from './ui/avatar'
 import { cn } from '~/utils/classnames'
-import { featureEnabled } from '~/utils/flags'
 import {
   type PathCreatorParams,
   type PathName,
@@ -40,48 +40,48 @@ const NavBarItem = <Path extends PathName>({
       )}
     >
       {icon}
-      <div className="px-1">
-        <div className="text-sm leading-none">{label}</div>
-      </div>
+      <span className="hidden lg:block">{label}</span>
     </Link>
   )
 }
 
 export const Navbar: FC<{ loading?: boolean }> = () => {
+  const { data } = useSession()
+
+  if (!data) return null
+
   return (
     <footer className="pb-6">
       <nav className="left-0 top-0 lg:fixed lg:h-screen">
         <ul className="flex items-center justify-evenly gap-8 px-4 lg:flex-col lg:justify-start lg:py-4">
-          <li>
+          <li className="flex h-16 items-center justify-center">
             <NavBarItem
               path="/inbox"
-              icon={<InboxIcon height={20} />}
-              label="Inbox"
+              icon={<InboxIcon height={22} />}
+              label="inbox"
             />
           </li>
-          <li>
+          <li className="flex h-16 items-center justify-center">
             <NavBarItem
               path="/week"
-              icon={<Squares2X2Icon height={20} />}
-              label="Week"
+              icon={<Squares2X2Icon height={22} />}
+              label="week"
             />
           </li>
-          <li>
+          <li className="flex h-16 items-center justify-center">
             <NavBarItem
               path="/month"
-              icon={<CalendarDaysIcon height={20} />}
-              label="Month"
+              icon={<CalendarDaysIcon height={22} />}
+              label="month"
             />
           </li>
-          {featureEnabled('TODOS') && (
-            <li>
-              <NavBarItem
-                path="/todos"
-                icon={<CheckCircleIcon height={20} />}
-                label="Todos"
-              />
-            </li>
-          )}
+          <li className="flex h-16 items-center justify-center">
+            <NavBarItem
+              path="/profile"
+              icon={<ProfileLink size="sm" />}
+              label="Profile"
+            />
+          </li>
         </ul>
       </nav>
     </footer>

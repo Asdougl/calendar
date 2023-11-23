@@ -101,7 +101,6 @@ export const eventRouter = createTRPCRouter({
       })
     )
     .mutation(({ ctx, input }) => {
-      console.log(input.categoryId)
       return ctx.db.event.update({
         where: {
           id: input.id,

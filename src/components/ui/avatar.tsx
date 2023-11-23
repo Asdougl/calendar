@@ -12,6 +12,7 @@ const avatar = cva(
   {
     variants: {
       size: {
+        xs: 'h-4 w-4',
         sm: 'h-6 w-6',
         md: 'h-8 w-8',
         lg: 'h-10 w-10',
@@ -56,12 +57,13 @@ export const Avatar: FC<AvatarProps> = ({ src, name, className, ...props }) => {
   )
 }
 
-export const ProfileLink: FC<Pick<AvatarProps, 'className'>> = ({
+export const ProfileLink: FC<Pick<AvatarProps, 'className' | 'size'>> = ({
   className,
+  size,
 }) => {
-  const session = useSession()
+  const { data } = useSession()
 
-  if (!session?.data) return null
+  if (!data) return null
 
   return (
     <PathLink
@@ -72,9 +74,9 @@ export const ProfileLink: FC<Pick<AvatarProps, 'className'>> = ({
       )}
     >
       <Avatar
-        size="md"
-        name={session.data.user.name || ''}
-        src={session.data.user.image}
+        size={size || 'md'}
+        name={data.user.name || ''}
+        src={data.user.image}
       />
     </PathLink>
   )

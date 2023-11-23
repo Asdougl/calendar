@@ -1,3 +1,5 @@
+'use client'
+
 import { format, getDay, getDayOfYear, setDay, startOfDay } from 'date-fns'
 import type { FC } from 'react'
 import { useMemo } from 'react'

@@ -63,6 +63,7 @@ export const PreferencesSection = () => {
             disabled={isInitialLoading || isUpdating}
             onClick={() =>
               updatePreferences({
+                ...preferences,
                 leftWeekends: !preferences.leftWeekends,
               })
             }
@@ -74,7 +75,9 @@ export const PreferencesSection = () => {
           <TimezoneSelect
             value={preferences.timezone}
             disabled={isInitialLoading || isUpdating}
-            onChange={(value) => updatePreferences({ timezone: value })}
+            onChange={(value) =>
+              updatePreferences({ ...preferences, timezone: value })
+            }
             className="h-full rounded-none border-0"
           />
         )}
@@ -96,6 +99,7 @@ export const PreferencesSection = () => {
             disabled={isInitialLoading || isUpdating}
             onClick={() =>
               updatePreferences({
+                ...preferences,
                 developer: !preferences.developer,
               })
             }

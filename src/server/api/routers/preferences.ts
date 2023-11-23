@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from '../trpc'
-import { Preferences } from '~/types/preferences'
+import { Preferences, PreferencesDefaults } from '~/types/preferences'
 
 export const preferencesRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -12,8 +12,8 @@ export const preferencesRouter = createTRPCRouter({
       },
     })
     return result?.preferences
-      ? Preferences.parse(result.preferences)
-      : Preferences.parse({})
+      ? PreferencesDefaults.parse(result.preferences)
+      : PreferencesDefaults.parse({})
   }),
   update: protectedProcedure
     .input(Preferences)
@@ -29,6 +29,6 @@ export const preferencesRouter = createTRPCRouter({
           preferences: true,
         },
       })
-      return Preferences.parse(result.preferences)
+      return PreferencesDefaults.parse(result.preferences)
     }),
 })

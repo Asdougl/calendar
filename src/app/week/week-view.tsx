@@ -32,6 +32,7 @@ import { DayBox } from '~/components/DayBox'
 import { api } from '~/trpc/react'
 import { cn } from '~/utils/classnames'
 import { type Preferences } from '~/types/preferences'
+import { InnerPageLayout } from '~/components/layout/PageLayout'
 
 type ViewOfAWeekProps = {
   starting: Date
@@ -265,20 +266,20 @@ export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
   }
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
-      <header className="flex items-center justify-between px-4 py-6">
-        <div className="flex h-full w-8">
-          <button
-            className="group flex h-full w-full items-center justify-center rounded-lg hover:bg-neutral-800"
-            disabled={!weeksRefs.current[0]}
-            onClick={() => viewPrevWeek()}
-          >
-            <ArrowLeftIcon
-              height={20}
-              className="translate-x-1 transition-transform group-hover:translate-x-0"
-            />
-          </button>
-        </div>
+    <InnerPageLayout
+      headerLeft={
+        <button
+          className="group flex h-full w-full items-center justify-center rounded-lg hover:bg-neutral-800"
+          disabled={!weeksRefs.current[0]}
+          onClick={() => viewPrevWeek()}
+        >
+          <ArrowLeftIcon
+            height={20}
+            className="translate-x-1 transition-transform group-hover:translate-x-0"
+          />
+        </button>
+      }
+      title={
         <Header1 className="relative flex h-8 items-baseline gap-2 text-2xl">
           Week of
           <div className="w-22 relative h-full overflow-hidden">
@@ -300,22 +301,23 @@ export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
             </motion.div>
           </div>
         </Header1>
-        <div className="flex h-full w-8">
-          <button
-            className="group flex h-full w-full items-center justify-center rounded-lg hover:bg-neutral-800"
-            disabled={!weeksRefs.current[2]}
-            onClick={() => viewNextWeek()}
-          >
-            <ArrowRightIcon
-              height={20}
-              className="-translate-x-1 transition-transform group-hover:translate-x-0"
-            />
-          </button>
-        </div>
-      </header>
+      }
+      headerRight={
+        <button
+          className="group flex h-full w-full items-center justify-center rounded-lg hover:bg-neutral-800"
+          disabled={!weeksRefs.current[2]}
+          onClick={() => viewNextWeek()}
+        >
+          <ArrowRightIcon
+            height={20}
+            className="-translate-x-1 transition-transform group-hover:translate-x-0"
+          />
+        </button>
+      }
+    >
       <div
         ref={containerRef}
-        className="flex h-full w-full snap-x snap-mandatory flex-nowrap gap-2 overflow-scroll px-1"
+        className="flex h-full w-full snap-x snap-mandatory flex-nowrap gap-2 overflow-scroll"
         onScroll={onScroll}
       >
         {loadedWeeks.map((week, i) => (
@@ -337,6 +339,6 @@ export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
           />
         ))}
       </div>
-    </div>
+    </InnerPageLayout>
   )
 }
