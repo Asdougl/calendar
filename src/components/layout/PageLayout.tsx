@@ -9,14 +9,22 @@ export type PageLayoutProps = {
   headerRight?: ReactNode
   skeleton?: boolean
   hideNav?: boolean
+  fullscreen?: boolean
 }
 
 export const OuterPageLayout: FC<
-  PropsWithChildren<Pick<PageLayoutProps, 'skeleton' | 'hideNav'>>
-> = ({ children, skeleton, hideNav }) => {
+  PropsWithChildren<
+    Pick<PageLayoutProps, 'skeleton' | 'hideNav' | 'fullscreen'>
+  >
+> = ({ children, skeleton, hideNav, fullscreen }) => {
   return (
     <main className="flex min-h-screen flex-col px-2 md:px-0">
-      <div className="mx-auto flex h-full w-full max-w-2xl flex-grow flex-col pb-24 lg:pb-0">
+      <div
+        className={cn(
+          'mx-auto flex h-full w-full max-w-2xl flex-grow flex-col',
+          { 'pb-24 lg:pb-0': !fullscreen }
+        )}
+      >
         {children}
       </div>
       {!hideNav && <Navbar loading={skeleton} />}
@@ -69,21 +77,11 @@ export const InnerPageLayout: FC<PropsWithChildren<PageLayoutProps>> = ({
 
 export const PageLayout: FC<PropsWithChildren<PageLayoutProps>> = ({
   children,
-  title,
-  headerLeft,
-  headerRight,
-  skeleton,
+  ...props
 }) => {
   return (
-    <OuterPageLayout skeleton={skeleton}>
-      <InnerPageLayout
-        title={title}
-        headerLeft={headerLeft}
-        headerRight={headerRight}
-        skeleton={skeleton}
-      >
-        {children}
-      </InnerPageLayout>
+    <OuterPageLayout {...props}>
+      <InnerPageLayout {...props}>{children}</InnerPageLayout>
     </OuterPageLayout>
   )
 }

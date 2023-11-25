@@ -11,7 +11,7 @@ export default async function Home() {
   }
 
   return (
-    <OuterPageLayout>
+    <OuterPageLayout fullscreen>
       <MonthView />
     </OuterPageLayout>
   )

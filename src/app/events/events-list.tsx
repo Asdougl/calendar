@@ -153,7 +153,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                       origin: direction === 'before' ? 'past' : undefined,
                     }}
                     className={cn(
-                      'group flex items-center justify-between gap-1 overflow-hidden rounded-lg px-2 py-1 transition-colors hover:bg-neutral-900',
+                      'group flex items-center justify-between gap-1 overflow-hidden rounded-lg px-2 py-1 transition-colors lg:hover:bg-neutral-900',
                       event.category?.color
                         ? getCategoryColor(event.category.color, 'bg-dull')
                         : 'bg-neutral-800'

@@ -14,7 +14,7 @@ export default async function Home() {
   const preferences = await api.preferences.getAll.query()
 
   return (
-    <OuterPageLayout>
+    <OuterPageLayout fullscreen>
       <Inbox preferences={preferences} />
     </OuterPageLayout>
   )

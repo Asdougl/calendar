@@ -14,7 +14,7 @@ export default async function WeekPage() {
   const preferences = await api.preferences.getAll.query()
 
   return (
-    <OuterPageLayout>
+    <OuterPageLayout fullscreen>
       <WeekView preferences={preferences} />
     </OuterPageLayout>
   )
