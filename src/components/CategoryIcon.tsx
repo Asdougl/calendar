@@ -39,7 +39,7 @@ export const CategoryIcon: FC<CategoryIconProps> = ({
           ? [
               getCategoryColor(color, 'bg'),
               getCategoryColor(color, 'border'),
-              getCategoryColor(color, 'alttext'),
+              getCategoryColor(color, 'alt-text'),
               'border font-bold',
             ]
           : 'bg-neutral-800',

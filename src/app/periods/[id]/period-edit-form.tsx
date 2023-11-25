@@ -5,16 +5,19 @@ import { type FC } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
-import { createPeriod, deletePeriod, updatePeriod } from './actions'
+import { differenceInDays } from 'date-fns'
+import { createPeriod, confirmDeletePeriod, updatePeriod } from './actions'
 import { ControlledCategorySelect } from '~/components/form/CategorySelect'
 import { Field, InputField } from '~/components/ui/Field'
 import { ErrorText } from '~/components/ui/Text'
-import { Button, SubmitButton } from '~/components/ui/button'
+import { SubmitButton } from '~/components/ui/button'
 import { DateRangePicker } from '~/components/ui/dates/DateRangePicker'
 import { Select } from '~/components/ui/select'
 import { type RouterOutputs } from '~/trpc/shared'
 import { CATEGORY_SELECT_OPTIONS } from '~/utils/classnames'
 import { isError, isString } from '~/utils/guards'
+import { DeleteButton } from '~/components/form/DeleteButton'
+import { api } from '~/trpc/react'
 
 const PeriodForm = z.object({
   name: z.string().min(1, 'A name is required for your period'),
@@ -41,6 +44,7 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period, origin }) => {
     control,
     handleSubmit,
     setError,
+    watch,
     formState: { errors, isDirty, isSubmitting },
   } = useForm<PeriodForm>({
     resolver: zodResolver(PeriodForm),
@@ -100,29 +104,24 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period, origin }) => {
     }
   })
 
-  const onDelete = async () => {
-    if (period) {
-      try {
-        await deletePeriod(period.id)
+  const { mutateAsync: deletePeriod, isLoading: isDeleting } =
+    api.periods.delete.useMutation({
+      onSuccess: async (data) => {
+        await confirmDeletePeriod(data.id)
         router.push(origin)
-      } catch (error) {
-        setError('root', {
-          message: isError(error)
-            ? error.message
-            : isString(error)
-            ? error
-            : 'Unknown error',
-        })
-      }
-    }
-  }
+      },
+    })
+
+  const dates = watch('dates')
+  const periodDuration = differenceInDays(dates.end, dates.start) + 1
 
   return (
-    <form onSubmit={onSubmit} className="px-2">
+    <form onSubmit={onSubmit} className="flex flex-col gap-2 px-2">
       <InputField
         label="Name"
         {...register('name')}
         error={errors.name?.message}
+        autoComplete="off"
       />
       <Field label="Color" error={errors.color?.message}>
         <Controller
@@ -153,7 +152,12 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period, origin }) => {
           name="categoryId"
         />
       </Field>
-      <Field label="Dates" id="new-period-dates" error={errors.dates?.message}>
+      <Field
+        label="Dates"
+        id="new-period-dates"
+        error={errors.dates?.message}
+        subtext={!isNaN(periodDuration) ? `${periodDuration} days` : undefined}
+      >
         <Controller
           control={control}
           name="dates"
@@ -173,9 +177,15 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period, origin }) => {
           {period ? 'Update' : 'Create'}
         </SubmitButton>
         {period && (
-          <Button intent="danger" onClick={onDelete}>
+          <DeleteButton
+            onDelete={() => deletePeriod({ id: period.id })}
+            isDeleting={isDeleting}
+            title={`Delete ${period.name}`}
+            body="Are you sure you want to delete this period? This action cannot be undone."
+            buttonText="Delete Period"
+          >
             Delete
-          </Button>
+          </DeleteButton>
         )}
       </div>
     </form>

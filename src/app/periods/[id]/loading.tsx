@@ -5,7 +5,7 @@ import { SkeletonButton } from '~/components/ui/button'
 export default function PeriodIdLoading() {
   return (
     <PageLayout title="Edit Period" skeleton>
-      <div className="px-2">
+      <div className="flex flex-col gap-2 px-2">
         <InputField label="Name" skeleton />
         <InputField label="Color" skeleton />
         <InputField label="Icon" skeleton />

@@ -43,9 +43,9 @@ export const updatePeriod = async (id: string, period: UpdateParams) => {
   revalidatePath(`/periods/${id}`)
 }
 
-export const deletePeriod = async (id: string) => {
-  await api.periods.delete.mutate({ id })
-
-  revalidatePath('/periods')
-  revalidatePath(`/periods/${id}`)
+export const confirmDeletePeriod = async (id: string) => {
+  await Promise.all([
+    revalidatePath('/periods'),
+    revalidatePath(`/periods/${id}`),
+  ])
 }

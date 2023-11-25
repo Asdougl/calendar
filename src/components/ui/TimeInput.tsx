@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FC } from 'react'
-import { Input } from './input'
+import { Input, type InputProps } from './input'
 import { cn } from '~/utils/classnames'
 
 type TimeInputProps = {
@@ -7,13 +7,14 @@ type TimeInputProps = {
   onChange: (time: string) => void
   name?: string
   className?: string
-}
+} & Pick<InputProps, 'size' | 'width' | 'error' | 'skeleton' | 'placeholder'>
 
 export const TimeInput: FC<TimeInputProps> = ({
   value,
   onChange,
   name,
   className,
+  ...props
 }) => {
   const [valid, setValid] = useState(true)
 
@@ -34,9 +35,10 @@ export const TimeInput: FC<TimeInputProps> = ({
 
   return (
     <Input
+      {...props}
       type="text"
       maxLength={4}
-      placeholder="Time"
+      placeholder={props.placeholder ?? '0000'}
       className={cn(className, { 'border-red-500': !valid })}
       name={name}
       value={value === '0000' ? '' : value}

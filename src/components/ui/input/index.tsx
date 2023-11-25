@@ -16,6 +16,7 @@ const inputStyle = cva(
         md: 'w-full md:w-48',
         lg: 'w-full lg:w-64',
         full: 'w-full',
+        auto: 'w-auto',
       },
       error: {
         true: 'ring-red-300 border-red-900',

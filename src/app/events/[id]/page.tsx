@@ -8,7 +8,7 @@ import { PathLink } from '~/components/ui/PathLink'
 import { pathReplace } from '~/utils/path'
 
 type PathParams = {
-  path: '/events' | '/week' | '/inbox'
+  path: '/events' | '/week' | '/inbox' | '/events/past'
   query: Record<string, string | undefined> | undefined
 }
 
@@ -26,6 +26,11 @@ const decodeOrigin = (origin?: string): PathParams => {
         path: '/inbox',
         query: undefined,
       }
+    } else if (origin === 'past') {
+      return {
+        path: '/events/past',
+        query: undefined,
+      }
     }
   }
 
@@ -41,12 +46,16 @@ type PageParams = {
   }
   searchParams: {
     origin?: string
+    title?: string
+    date?: string
+    time?: string
+    categoryId?: string
   }
 }
 
 export default async function EventIdPage({
   params: { id },
-  searchParams: { origin },
+  searchParams,
 }: PageParams) {
   const session = await getServerAuthSession()
 
@@ -63,7 +72,7 @@ export default async function EventIdPage({
     }
   }
 
-  const { path, query } = decodeOrigin(origin)
+  const { path, query } = decodeOrigin(searchParams.origin)
 
   return (
     <PageLayout
@@ -74,7 +83,16 @@ export default async function EventIdPage({
         </PathLink>
       }
     >
-      <EditEventForm event={event} origin={pathReplace({ path, query })} />
+      <EditEventForm
+        event={event}
+        origin={pathReplace({ path, query })}
+        wipValues={{
+          title: searchParams?.title,
+          date: searchParams?.date,
+          time: searchParams?.time,
+          categoryId: searchParams?.categoryId,
+        }}
+      />
     </PageLayout>
   )
 }

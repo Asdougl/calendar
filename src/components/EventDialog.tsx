@@ -1,30 +1,24 @@
-import {
-  CheckIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  PlusIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/solid'
+import { PlusIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import * as Dialog from '@radix-ui/react-dialog'
-import * as Select from '@radix-ui/react-select'
 import { useState, type FC, type PropsWithChildren, useRef } from 'react'
 import { z } from 'zod'
 import { Controller, useForm } from 'react-hook-form'
 import { format, isValid } from 'date-fns'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useRouter } from 'next/navigation'
 import { Header2 } from './ui/headers'
-import { Button, ButtonLink, SubmitButton } from './ui/button'
+import { Button, SubmitButton } from './ui/button'
 import { Label } from './ui/label'
 import { Input } from './ui/input'
-import { Loader } from './ui/Loader'
 import { DatePicker } from './ui/dates/DatePicker'
 import { TimeInput } from './ui/TimeInput'
 import { Alert } from './ui/Alert'
-import { dateFromDateAndTime, time } from '~/utils/dates'
+import { CategorySelect } from './form/CategorySelect'
+import { dateFromDateAndTime } from '~/utils/dates'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
-import { cn, getCategoryColor } from '~/utils/classnames'
 import { useOrigination } from '~/utils/atoms'
+import { pathReplace } from '~/utils/path'
 
 const EventDialogFormSchema = z.object({
   title: z.string(),
@@ -59,18 +53,11 @@ export const EventDialog: FC<EventDialogProps> = ({
 
   const formRef = useRef<HTMLFormElement>(null)
 
+  const router = useRouter()
+
   const [originating] = useOrigination()
 
   const queryClient = api.useContext()
-
-  const { data: categories, isLoading: isLoadingCategories } =
-    api.category.all.useQuery(undefined, {
-      staleTime: time.hours(2),
-      refetchInterval: time.hours(3),
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-    })
 
   const {
     mutate: insertMutate,
@@ -97,22 +84,11 @@ export const EventDialog: FC<EventDialogProps> = ({
   })
 
   const {
-    mutate: deleteMutate,
-    isLoading: isDeleting,
-    error: deleteError,
-  } = api.event.delete.useMutation({
-    onSuccess: async () => {
-      await queryClient.event.invalidate()
-      setOpen(false)
-      formRef.current?.reset()
-    },
-  })
-
-  const {
     handleSubmit,
     register,
     control,
     setError,
+    getValues,
     formState: { isDirty, errors },
   } = useForm<EventDialogFormSchema>({
     defaultValues: {
@@ -123,7 +99,9 @@ export const EventDialog: FC<EventDialogProps> = ({
           : format(props.initialDate, 'yyyy-MM-dd'),
       time: 'event' in props ? format(props.event.datetime, 'HHmm') : '',
       categoryId:
-        'event' in props && props.event.category ? props.event.category.id : '',
+        'event' in props && props.event.category
+          ? props.event.category.id
+          : 'none',
     },
     resolver: zodResolver(EventDialogFormSchema),
   })
@@ -182,11 +160,36 @@ export const EventDialog: FC<EventDialogProps> = ({
 
   const constructLoading = isUpdating || isInserting
 
-  const fullLoading = isLoadingCategories || constructLoading || isDeleting
+  const fullLoading = constructLoading
 
   const fullDisable = disabled || fullLoading
 
-  const fullError = insertError || updateError || deleteError
+  const fullError = insertError || updateError
+
+  const onMore = () => {
+    const values = getValues()
+
+    const search = {
+      origin: originating,
+      title: values.title || undefined,
+      date: values.date || undefined,
+      time: values.time || undefined,
+      categoryId:
+        values.categoryId && values.categoryId !== 'none'
+          ? values.categoryId
+          : undefined,
+    }
+
+    router.push(
+      pathReplace({
+        path: '/events/:id',
+        params: {
+          id: 'event' in props ? props.event.id : 'new',
+        },
+        query: search,
+      })
+    )
+  }
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -220,15 +223,16 @@ export const EventDialog: FC<EventDialogProps> = ({
             className="flex flex-col items-start gap-4"
           >
             {/* Row 1 -- title */}
-            <div className="flex w-full flex-col gap-1">
+            <div className="flex w-full gap-1">
               <Label htmlFor="event-name" className="sr-only">
                 Event name
               </Label>
               <Input
-                className="w-full"
+                className="w-full flex-grow"
                 id="event-name"
                 {...register('title')}
                 autoComplete="off"
+                placeholder="Event Name"
               />
             </div>
             <div className="flex w-full flex-col justify-between gap-4">
@@ -238,83 +242,15 @@ export const EventDialog: FC<EventDialogProps> = ({
                   control={control}
                   name="categoryId"
                   render={({ field }) => (
-                    <Select.Root
-                      value={field.value || 'none'}
-                      onValueChange={field.onChange}
-                    >
-                      <Select.Trigger asChild>
-                        <Button
-                          disabled={fullDisable}
-                          className="flex w-full flex-grow items-center justify-between gap-1 md:w-auto"
-                        >
-                          {isLoadingCategories ? (
-                            <Loader />
-                          ) : (
-                            <>
-                              <Select.Value
-                                placeholder="Category"
-                                className="placeholder:opacity-75"
-                              />
-                              <Select.Icon>
-                                <ChevronDownIcon height={16} />
-                              </Select.Icon>
-                            </>
-                          )}
-                        </Button>
-                      </Select.Trigger>
-                      <Select.Portal>
-                        <Select.Content className="relative z-10 rounded-lg border border-neutral-800 bg-neutral-950 px-1 py-2">
-                          <Select.ScrollUpButton className="SelectScrollButton">
-                            <ChevronUpIcon height={20} />
-                          </Select.ScrollUpButton>
-                          <Select.Viewport className="flex flex-col gap-1">
-                            <Select.Item
-                              value="none"
-                              className="relative pl-8 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50"
-                            >
-                              <Select.ItemText asChild>
-                                <div className="flex items-start justify-start gap-1 md:gap-2">
-                                  <div className="mt-[7px] h-2 w-2 rounded-full bg-neutral-800"></div>
-                                  Uncategorised
-                                </div>
-                              </Select.ItemText>
-                              <Select.ItemIndicator className="absolute left-0 top-1/2 -translate-y-1/2">
-                                <CheckIcon height={20} />
-                              </Select.ItemIndicator>
-                            </Select.Item>
-                            {categories?.map((category) => (
-                              <Select.Item
-                                key={category.id}
-                                value={category.id}
-                                className="relative pl-8 pr-4 text-neutral-300 hover:bg-neutral-900 hover:text-neutral-50"
-                              >
-                                <Select.ItemText asChild>
-                                  <div className="flex items-start justify-start gap-1 md:gap-2">
-                                    <div
-                                      className={cn(
-                                        'mt-[7px] h-2 w-2 rounded-full',
-                                        getCategoryColor(category.color, 'bg')
-                                      )}
-                                    ></div>
-                                    {category.name}
-                                  </div>
-                                </Select.ItemText>
-                                <Select.ItemIndicator className="absolute left-0 top-1/2 -translate-y-1/2">
-                                  <CheckIcon height={20} />
-                                </Select.ItemIndicator>
-                              </Select.Item>
-                            ))}
-                          </Select.Viewport>
-                          <Select.ScrollDownButton className="SelectScrollButton">
-                            <ChevronDownIcon />
-                          </Select.ScrollDownButton>
-                        </Select.Content>
-                      </Select.Portal>
-                    </Select.Root>
+                    <CategorySelect
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="flex-grow"
+                    />
                   )}
                 />
                 {/* Row 3 (Mobile) -- date & time */}
-                <div className="flex w-full gap-4 md:w-auto">
+                <div className="flex w-full flex-grow gap-4 md:w-auto">
                   <Controller
                     control={control}
                     name="date"
@@ -324,7 +260,7 @@ export const EventDialog: FC<EventDialogProps> = ({
                         onChange={(value) =>
                           field.onChange(format(value, 'yyyy-MM-dd'))
                         }
-                        className="flex-grow"
+                        className="w-1/2 flex-grow"
                       />
                     )}
                   />
@@ -335,76 +271,16 @@ export const EventDialog: FC<EventDialogProps> = ({
                       <TimeInput
                         value={field.value || ''}
                         onChange={field.onChange}
-                        className="w-24 flex-grow"
+                        className="w-1/2"
+                        placeholder="0000 (optional)"
                       />
                     )}
                   />
                 </div>
               </div>
               <div className="flex flex-wrap items-start justify-between gap-4">
-                {/* {featureEnabled('TODOS') && (
-                  <div className="flex h-full w-full gap-4">
-                    <label
-                      htmlFor="event-todo"
-                      className="relative flex h-full items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2 transition-colors data-[state=checked]:bg-neutral-800"
-                    >
-                      <Checkbox.Root
-                        id="event-todo"
-                        name="event-todo"
-                        defaultChecked={
-                          'event' in props && props.event.done !== null
-                        }
-                        className="flex h-4 w-4 items-center justify-center rounded bg-neutral-800"
-                        disabled
-                      >
-                        <Checkbox.Indicator>
-                          <CheckIcon height={20} className="w-3" />
-                        </Checkbox.Indicator>
-                      </Checkbox.Root>
-                      <span className="text-neutral-300">is todo</span>
-                    </label>
-                    {'event' in props && props.event.done !== null && (
-                      <label
-                        htmlFor="event-todo-done"
-                        className="relative flex h-full items-center gap-2 rounded-lg border border-neutral-800 bg-neutral-950 px-4 py-2 transition-colors data-[state=checked]:bg-neutral-800"
-                      >
-                        <Checkbox.Root
-                          id="event-todo-done"
-                          name="event-todo-done"
-                          defaultChecked={props.event.done}
-                          className="flex h-4 w-4 items-center justify-center rounded bg-neutral-800"
-                          disabled
-                        >
-                          <Checkbox.Indicator>
-                            <CheckIcon height={20} className="w-3" />
-                          </Checkbox.Indicator>
-                        </Checkbox.Root>
-                        <span className="text-neutral-300">done</span>
-                      </label>
-                    )}
-                  </div>
-                )} */}
                 <div className="flex flex-grow justify-end gap-4">
-                  {'event' in props && (
-                    <>
-                      <ButtonLink
-                        path="/events/:id"
-                        params={{ id: props.event.id }}
-                        query={{ origin: originating }}
-                      >
-                        More
-                      </ButtonLink>
-                      <SubmitButton
-                        intent="danger"
-                        type="button"
-                        loading={isDeleting}
-                        onClick={() => deleteMutate({ id: props.event.id })}
-                        disabled={fullDisable}
-                      >
-                        Delete
-                      </SubmitButton>
-                    </>
-                  )}
+                  <Button onClick={onMore}>More</Button>
                   <SubmitButton
                     loading={constructLoading}
                     intent="primary"

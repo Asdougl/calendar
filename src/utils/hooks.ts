@@ -218,3 +218,17 @@ export const useStateSet = <T>(initialValue: T[] = []) => {
     },
   } as const
 }
+
+export const useToggle = (initialState: boolean) => {
+  const [state, setState] = useState(initialState)
+
+  const toggle = (newState?: boolean) => {
+    if (newState === undefined) {
+      setState((value) => !value)
+    } else {
+      setState(newState)
+    }
+  }
+
+  return [state, toggle] as const
+}

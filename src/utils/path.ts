@@ -14,6 +14,7 @@ type PathParamsMap = {
   '/periods/:id': { id: string }
   '/events': null
   '/events/:id': { id: string }
+  '/events/past': null
   '/profile': null
   '/todos': null
 }

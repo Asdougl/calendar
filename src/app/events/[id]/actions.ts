@@ -42,9 +42,9 @@ export const updateEvent = async (id: string, event: UpdateParams) => {
   revalidatePath(`/events/${id}`)
 }
 
-export const deleteEvent = async (id: string) => {
-  await api.event.delete.mutate({ id })
-
-  revalidatePath('/events')
-  revalidatePath(`/events/${id}`)
+export const confirmDeleteEvent = async (id: string) => {
+  await Promise.all([
+    revalidatePath('/events'),
+    revalidatePath(`/events/${id}`),
+  ])
 }

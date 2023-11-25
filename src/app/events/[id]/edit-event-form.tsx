@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { type FC } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { createEvent, deleteEvent, updateEvent } from './actions'
+import { confirmDeleteEvent, createEvent, updateEvent } from './actions'
 import { ControlledCategorySelect } from '~/components/form/CategorySelect'
 import { Field, InputField } from '~/components/ui/Field'
 import { TimeInput } from '~/components/ui/TimeInput'
@@ -17,6 +17,9 @@ import { type RouterOutputs } from '~/trpc/shared'
 import { isError, isString } from '~/utils/guards'
 import { SubmitButton } from '~/components/ui/button'
 import { ErrorText } from '~/components/ui/Text'
+import { dateFromDateAndTime } from '~/utils/dates'
+import { api } from '~/trpc/react'
+import { DeleteButton } from '~/components/form/DeleteButton'
 
 const EventForm = z.object({
   title: z.string().min(1, 'A title is required for your event'),
@@ -30,14 +33,26 @@ type EventForm = z.infer<typeof EventForm>
 const statusSelectOptions = [
   { value: TimeStatus.ALL_DAY, name: 'All Day' },
   { value: TimeStatus.STANDARD, name: 'Standard' },
+  { value: TimeStatus.NO_TIME, name: 'Untimed' },
 ]
 
 type EventFormProps = {
   event: RouterOutputs['event']['one']
   origin: string
+  wipValues: Partial<{
+    title: string
+    date: string
+    time: string
+    categoryId: string
+    status: TimeStatus
+  }>
 }
 
-export const EditEventForm: FC<EventFormProps> = ({ event }) => {
+export const EditEventForm: FC<EventFormProps> = ({
+  event,
+  origin,
+  wipValues,
+}) => {
   const router = useRouter()
 
   const {
@@ -51,38 +66,41 @@ export const EditEventForm: FC<EventFormProps> = ({ event }) => {
     resolver: zodResolver(EventForm),
     defaultValues: event
       ? {
-          title: event.title,
-          date: format(event.datetime, 'yyyy-MM-dd'),
+          title: wipValues.title || event.title,
+          date: wipValues.date || format(event.datetime, 'yyyy-MM-dd'),
           time:
-            event.timeStatus === 'STANDARD'
+            wipValues.time || event.timeStatus === 'STANDARD'
               ? format(event.datetime, 'HHmm')
               : null,
-          categoryId: event.category?.id,
-          status: event.timeStatus,
+          categoryId: wipValues.categoryId || event.category?.id,
+          status: wipValues.status || event.timeStatus,
         }
-      : undefined,
+      : {
+          title: wipValues.title || '',
+          date: wipValues.date || format(new Date(), 'yyyy-MM-dd'),
+          time: wipValues.time || null,
+          categoryId: wipValues.categoryId || 'none',
+          status: wipValues.status || TimeStatus.STANDARD,
+        },
   })
 
   const onSubmit = handleSubmit(async (data) => {
     try {
+      const formattedTime =
+        data.time && /^([0-1]?[0-9]|2[0-3])[0-5][0-9]$/.test(data.time)
+          ? `${data.time.slice(0, 2)}:${data.time.slice(2)}`
+          : '12:00'
+
       if (event) {
         await updateEvent(event.id, {
-          datetime: new Date(
-            `${data.date}${
-              data.status === 'STANDARD' ? ` ${data.time || ''}` : ''
-            }`
-          ).toISOString(),
+          datetime: dateFromDateAndTime(data.date, formattedTime).toISOString(),
           title: data.title,
           categoryId: data.categoryId,
           timeStatus: data.status,
         })
       } else {
         await createEvent({
-          datetime: new Date(
-            `${data.date}${
-              data.status === 'STANDARD' ? ` ${data.time || ''}` : ''
-            }`
-          ).toISOString(),
+          datetime: dateFromDateAndTime(data.date, formattedTime).toISOString(),
           title: data.title,
           categoryId: data.categoryId || undefined,
           timeStatus: data.status,
@@ -100,12 +118,13 @@ export const EditEventForm: FC<EventFormProps> = ({ event }) => {
     }
   })
 
-  const onDelete = async () => {
-    if (event) {
-      await deleteEvent(event.id)
-      router.push(origin)
-    }
-  }
+  const { mutateAsync: mutateDelete, isLoading: isDeleting } =
+    api.event.delete.useMutation({
+      onSuccess: async (data) => {
+        await confirmDeleteEvent(data.id)
+        router.push(origin)
+      },
+    })
 
   const watchStatus = watch('status')
 
@@ -141,8 +160,8 @@ export const EditEventForm: FC<EventFormProps> = ({ event }) => {
           )}
         />
       </Field>
-      {watchStatus === TimeStatus.STANDARD && (
-        <Field label="Time" error={errors.time?.message}>
+      {watchStatus !== TimeStatus.ALL_DAY && (
+        <Field label="Time" error={errors.time?.message} condition="optional">
           <Controller
             control={control}
             name="time"
@@ -151,6 +170,7 @@ export const EditEventForm: FC<EventFormProps> = ({ event }) => {
                 value={field.value || ''}
                 onChange={field.onChange}
                 className="w-24 flex-grow"
+                placeholder=""
               />
             )}
           />
@@ -162,14 +182,16 @@ export const EditEventForm: FC<EventFormProps> = ({ event }) => {
       {errors.root && <ErrorText>{errors.root.message}</ErrorText>}
       <div className="flex items-start justify-end gap-4 lg:flex-col-reverse">
         {event && (
-          <SubmitButton
-            intent="danger"
-            loading={isSubmitting}
-            onClick={onDelete}
-            type="button"
+          <DeleteButton
+            isDeleting={isDeleting}
+            onDelete={async () => {
+              await mutateDelete({ id: event.id })
+            }}
+            title={`Delete ${event.title}`}
+            body="Are you sure you want to delete this event? This action cannot be undone."
           >
             Delete Event
-          </SubmitButton>
+          </DeleteButton>
         )}
         <SubmitButton loading={isSubmitting} disabled={!isDirty} type="submit">
           {event ? 'Update Event' : 'Create Event'}

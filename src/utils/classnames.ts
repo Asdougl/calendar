@@ -6,7 +6,13 @@ export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(...inputs))
 }
 
-type ColorProperties = 'bg' | 'text' | 'border' | 'ring' | 'alttext'
+type ColorProperties =
+  | 'bg'
+  | 'bg-dull'
+  | 'text'
+  | 'border'
+  | 'ring'
+  | 'alt-text'
 
 export const CategoryColors = [
   'yellow',
@@ -31,73 +37,83 @@ const CATEGORY_COLOR_MAP: Record<
 > = {
   yellow: {
     bg: 'bg-yellow-400',
+    'bg-dull': 'bg-yellow-900',
     text: 'text-yellow-400',
     border: 'border-yellow-400',
     ring: 'ring-yellow-400',
-    alttext: 'text-yellow-800',
+    'alt-text': 'text-yellow-800',
   },
   blue: {
     bg: 'bg-blue-400',
+    'bg-dull': 'bg-blue-900',
     text: 'text-blue-400',
     border: 'border-blue-400',
     ring: 'ring-blue-400',
-    alttext: 'text-blue-800',
+    'alt-text': 'text-blue-800',
   },
   green: {
     bg: 'bg-green-400',
+    'bg-dull': 'bg-green-900',
     text: 'text-green-400',
     border: 'border-green-400',
     ring: 'ring-green-400',
-    alttext: 'text-green-800',
+    'alt-text': 'text-green-800',
   },
   pink: {
     bg: 'bg-pink-400',
+    'bg-dull': 'bg-pink-900',
     text: 'text-pink-400',
     border: 'border-pink-400',
     ring: 'ring-pink-400',
-    alttext: 'text-pink-800',
+    'alt-text': 'text-pink-800',
   },
   purple: {
     bg: 'bg-purple-400',
+    'bg-dull': 'bg-purple-900',
     text: 'text-purple-400',
     border: 'border-purple-400',
     ring: 'ring-purple-400',
-    alttext: 'text-purple-800',
+    'alt-text': 'text-purple-800',
   },
   red: {
     bg: 'bg-red-400',
+    'bg-dull': 'bg-red-900',
     text: 'text-red-400',
     border: 'border-red-400',
     ring: 'ring-red-400',
-    alttext: 'text-red-800',
+    'alt-text': 'text-red-800',
   },
   indigo: {
     bg: 'bg-indigo-400',
+    'bg-dull': 'bg-indigo-900',
     text: 'text-indigo-400',
     border: 'border-indigo-400',
     ring: 'ring-indigo-400',
-    alttext: 'text-indigo-800',
+    'alt-text': 'text-indigo-800',
   },
   gray: {
     bg: 'bg-gray-400',
+    'bg-dull': 'bg-gray-900',
     text: 'text-gray-400',
     border: 'border-gray-400',
     ring: 'ring-gray-400',
-    alttext: 'text-gray-800',
+    'alt-text': 'text-gray-800',
   },
   orange: {
     bg: 'bg-orange-400',
+    'bg-dull': 'bg-orange-900',
     text: 'text-orange-400',
     border: 'border-orange-400',
     ring: 'ring-orange-400',
-    alttext: 'text-orange-800',
+    'alt-text': 'text-orange-800',
   },
   _none: {
     bg: 'bg-neutral-600',
-    text: 'test-neutral-200',
+    'bg-dull': 'bg-neutral-900',
+    text: 'text-neutral-400',
     border: 'border-neutral-200',
     ring: 'ring-neutral-400',
-    alttext: 'text-neutral-200',
+    'alt-text': 'text-neutral-800',
   },
 }
 

@@ -109,7 +109,7 @@ const CategoryRow: FC<CategoryRowProps> = (props) => {
                           className={cn(
                             'h-10 w-10 flex-shrink-0 flex-grow-0 rounded-lg text-xs',
                             getCategoryColor(color, 'bg'),
-                            getCategoryColor(color, 'alttext')
+                            getCategoryColor(color, 'alt-text')
                           )}
                         >
                           {color}

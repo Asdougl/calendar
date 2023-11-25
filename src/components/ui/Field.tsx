@@ -25,6 +25,7 @@ type FieldProps = {
   condition?: LabelProps['condition']
   error?: string
   skeleton?: boolean
+  subtext?: string
 } & VariantProps<typeof fieldStyle>
 
 export const Field: FC<PropsWithChildren<FieldProps>> = ({
@@ -36,6 +37,7 @@ export const Field: FC<PropsWithChildren<FieldProps>> = ({
   children,
   skeleton,
   error,
+  subtext,
 }) => {
   return (
     <div className={cn(fieldStyle({ width }), 'group', className)}>
@@ -54,8 +56,19 @@ export const Field: FC<PropsWithChildren<FieldProps>> = ({
         </span>
       </Label>
       {children}
-      <div className="-mt-1 text-red-300">
-        {error ? <span className="text-xs">{error}</span> : <>&nbsp;</>}
+      <div
+        className={cn('-mt-1 pl-1', {
+          'text-red-300': error,
+          'text-neutral-400': subtext,
+        })}
+      >
+        {error ? (
+          <span className="text-xs">{error}</span>
+        ) : subtext ? (
+          <span className="text-xs">{subtext}</span>
+        ) : (
+          <>&nbsp;</>
+        )}
       </div>
     </div>
   )

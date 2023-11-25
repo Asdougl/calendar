@@ -32,7 +32,7 @@ type Option<Values = string> = {
   color?: string
 }
 
-type SelectProps<Values = string> = {
+export type SelectProps<Values = string> = {
   defaultValue?: string
   value?: string
   name?: string
@@ -74,7 +74,9 @@ export const Select = <Values extends string = string>({
           className={cn(selectStyle(otherProps), className)}
         >
           {loading ? (
-            <Loader />
+            <div className="flex h-full w-full items-center justify-center">
+              <Loader />
+            </div>
           ) : (
             <>
               <RadixSelect.Value
@@ -115,7 +117,7 @@ export const Select = <Values extends string = string>({
               >
                 <RadixSelect.ItemText asChild>
                   <div className="flex items-start gap-2">
-                    {option.color && (
+                    {option.color !== undefined && (
                       <div
                         className={cn(
                           'mt-[7px] h-2 w-2 rounded-full',

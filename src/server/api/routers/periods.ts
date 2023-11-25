@@ -43,6 +43,9 @@ export const periodsRouter = createTRPCRouter({
           createdById: ctx.session.user.id,
         },
         select,
+        orderBy: {
+          startDate: 'asc',
+        },
       })
     }),
 

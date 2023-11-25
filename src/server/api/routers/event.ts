@@ -38,6 +38,47 @@ export const eventRouter = createTRPCRouter({
         },
       })
     }),
+  upcoming: protectedProcedure
+    .input(
+      z.object({
+        starting: z.date(),
+        direction: z.enum(['before', 'after']).default('after'),
+        limit: z.number().min(1).max(100).default(50),
+        cursor: z.string().nullish(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const items = await ctx.db.event.findMany({
+        where: {
+          createdById: ctx.session.user.id,
+          datetime:
+            input.direction === 'after'
+              ? {
+                  gte: input.starting.toISOString(),
+                }
+              : {
+                  lt: input.starting.toISOString(),
+                },
+        },
+        select,
+        orderBy: {
+          datetime: 'asc',
+        },
+        take: input.limit + 1,
+        cursor: input.cursor ? { id: input.cursor } : undefined,
+      })
+
+      let nextCursor: string | undefined = undefined
+      if (items.length > input.limit) {
+        const nextItem = items.pop()
+        nextCursor = nextItem?.id ?? undefined
+      }
+
+      return {
+        items,
+        nextCursor,
+      }
+    }),
   one: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) => {

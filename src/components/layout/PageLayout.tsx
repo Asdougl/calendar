@@ -15,8 +15,8 @@ export const OuterPageLayout: FC<
   PropsWithChildren<Pick<PageLayoutProps, 'skeleton' | 'hideNav'>>
 > = ({ children, skeleton, hideNav }) => {
   return (
-    <main className="flex h-screen flex-col px-2 md:px-0">
-      <div className="mx-auto flex h-full w-full max-w-2xl flex-col">
+    <main className="flex min-h-screen flex-col px-2 md:px-0">
+      <div className="mx-auto flex h-full w-full max-w-2xl flex-grow flex-col pb-24 lg:pb-0">
         {children}
       </div>
       {!hideNav && <Navbar loading={skeleton} />}
