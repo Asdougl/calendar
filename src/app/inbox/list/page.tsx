@@ -32,7 +32,7 @@ export default async function Home() {
           {events.map((event) => (
             <li key={event.id}>
               {format(event.datetime, 'EEEE')}, {event.title},{' '}
-              {format(event.datetime, 'HH:mm')}
+              {format(event.datetime, 'h:mm a')}
             </li>
           ))}
         </ul>

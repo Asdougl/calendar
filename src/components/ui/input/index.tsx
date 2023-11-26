@@ -24,11 +24,15 @@ const inputStyle = cva(
       skeleton: {
         true: 'animate-pulse bg-neutral-900',
       },
+      warning: {
+        true: 'ring-yellow-300 border-yellow-900',
+      },
     },
     defaultVariants: {
       size: 'md',
       width: 'lg',
       error: false,
+      warning: false,
     },
   }
 )
@@ -38,10 +42,13 @@ export type InputProps = Omit<ComponentProps<'input'>, 'ref'> &
   InputVariantProps
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  function InputWithRef({ className, error, disabled, ...props }, ref) {
+  function InputWithRef(
+    { className, error, warning, disabled, ...props },
+    ref
+  ) {
     return (
       <input
-        className={cn(inputStyle({ ...props, error }), className)}
+        className={cn(inputStyle({ ...props, error, warning }), className)}
         disabled={props.skeleton || disabled}
         {...props}
         ref={ref}

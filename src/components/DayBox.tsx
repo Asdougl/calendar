@@ -18,6 +18,7 @@ export const DayBox: FC<{
   isLoading: boolean
   periods?: NonNullable<RouterOutputs['periods']['range']>
   startToday?: boolean
+  focusEvent?: string
 }> = ({
   focusDate,
   dayOfWeek,
@@ -25,6 +26,7 @@ export const DayBox: FC<{
   isLoading,
   startToday,
   periods = [],
+  focusEvent,
 }) => {
   const day = useMemo(() => {
     return startOfDay(
@@ -48,8 +50,6 @@ export const DayBox: FC<{
   }, [events])
 
   const distanceToToday = differenceInDays(day, new Date())
-
-  const shouldCondense = events.length > 2 && dayOfWeek < 6
 
   const [originating] = useOrigination()
 
@@ -103,7 +103,7 @@ export const DayBox: FC<{
         </div>
         <EventDialog initialDate={day} />
       </div>
-      <ul className="flex flex-col gap-1 overflow-scroll py-1">
+      <ul className="flex flex-col gap-1 overflow-x-hidden py-1">
         {isLoading ? (
           <li className="my-2 h-4 w-3/4 animate-pulse rounded-full bg-neutral-900"></li>
         ) : (
@@ -111,7 +111,7 @@ export const DayBox: FC<{
             <EventItem
               key={event.id}
               event={event}
-              condensed={shouldCondense}
+              startOpen={event.id === focusEvent}
             />
           ))
         )}

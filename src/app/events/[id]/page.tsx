@@ -12,19 +12,28 @@ type PathParams = {
   query: Record<string, string | undefined> | undefined
 }
 
-const decodeOrigin = (origin?: string): PathParams => {
+const decodeOrigin = ({
+  origin,
+  eventId,
+}: {
+  origin?: string
+  eventId: string
+}): PathParams => {
   if (origin) {
     if (origin.includes('week')) {
       return {
         path: '/week',
         query: {
           start: origin.split('week-')[1],
+          event: eventId,
         },
       }
     } else if (origin === 'inbox') {
       return {
         path: '/inbox',
-        query: undefined,
+        query: {
+          event: eventId,
+        },
       }
     } else if (origin === 'past') {
       return {
@@ -72,7 +81,10 @@ export default async function EventIdPage({
     }
   }
 
-  const { path, query } = decodeOrigin(searchParams.origin)
+  const { path, query } = decodeOrigin({
+    origin: searchParams.origin,
+    eventId: id,
+  })
 
   return (
     <PageLayout

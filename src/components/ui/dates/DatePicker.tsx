@@ -38,6 +38,7 @@ type DatePickerProps = {
   max?: Date
   className?: string
   id?: string
+  disabled?: boolean
 }
 
 export const DatePicker: FC<DatePickerProps> = ({
@@ -47,6 +48,7 @@ export const DatePicker: FC<DatePickerProps> = ({
   max,
   className,
   id,
+  disabled,
 }) => {
   const [focusMonth, setFocusMonth] = useState(() => getInitialFocus(value))
   const [open, setOpen] = useState(false)
@@ -76,10 +78,22 @@ export const DatePicker: FC<DatePickerProps> = ({
 
   const today = new Date()
 
+  const toggleOpen = () => {
+    if (open) {
+      setOpen(false)
+    } else if (!disabled) {
+      setOpen(true)
+    }
+  }
+
   return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
+    <Popover.Root open={open} onOpenChange={toggleOpen}>
       <Popover.Trigger asChild>
-        <Button id={id} className={cn('flex items-center gap-2', className)}>
+        <Button
+          id={id}
+          className={cn('flex items-center gap-2', className)}
+          disabled={disabled}
+        >
           <CalendarIcon height={20} />
           <span>{displayFormat(value)}</span>
         </Button>
@@ -94,18 +108,20 @@ export const DatePicker: FC<DatePickerProps> = ({
               <button
                 type="button"
                 onClick={prevMonth}
-                className="rounded-lg px-2 hover:bg-neutral-900"
+                className="flex w-8 items-center justify-center rounded-lg hover:bg-neutral-900"
                 aria-label="Previous Month"
+                disabled={disabled}
               >
                 <ChevronLeftIcon height={18} />
               </button>
               <select
                 value={getMonth(focusMonth)}
+                disabled={disabled}
                 onChange={(e) =>
                   setFocusMonth(setMonth(focusMonth, +e.currentTarget.value))
                 }
                 aria-label="month"
-                className="rounded-lg bg-neutral-950 text-neutral-50 hover:bg-neutral-900"
+                className="w-auto flex-1 rounded-lg bg-neutral-950 px-4 text-neutral-50 hover:bg-neutral-900"
               >
                 {MONTH_OPTIONS}
               </select>
@@ -120,12 +136,12 @@ export const DatePicker: FC<DatePickerProps> = ({
                 error={!!yearError}
                 max={2100}
                 min={1901}
-                className="w-12 rounded-lg border-none bg-neutral-950 px-1 py-0 leading-tight text-neutral-50 hover:bg-neutral-900"
+                className="w-12 flex-1 rounded-lg border-none bg-neutral-950 px-4 py-0 leading-tight text-neutral-50 hover:bg-neutral-900 lg:w-12"
               />
               <button
                 type="button"
                 onClick={nextMonth}
-                className="rounded-lg px-2 hover:bg-neutral-900"
+                className="flex w-8 items-center justify-center rounded-lg hover:bg-neutral-900"
                 aria-label="Next Month"
               >
                 <ChevronRightIcon height={18} />

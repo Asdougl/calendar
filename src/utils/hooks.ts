@@ -1,8 +1,10 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useRouter as useNextRouter } from 'next/navigation'
 import type { EffectCallback } from 'react'
 import { useEffect, useRef, useState } from 'react'
+import { pathReplace } from './path'
 
 /**
  * A hook that returns a debounced value.
@@ -231,4 +233,17 @@ export const useToggle = (initialState: boolean) => {
   }
 
   return [state, toggle] as const
+}
+
+export const useRouter = () => {
+  const router = useNextRouter()
+
+  const push = (...args: Parameters<typeof pathReplace>) => {
+    router.push(pathReplace(...args))
+  }
+
+  return {
+    ...router,
+    push,
+  }
 }

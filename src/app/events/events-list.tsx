@@ -183,7 +183,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                           {format(event.datetime, 'EEEE, MMM d')}
                           {event.timeStatus === 'STANDARD' ? (
                             <div className="">
-                              - {format(event.datetime, 'HH:mm')}
+                              - {format(event.datetime, 'h:mm a')}
                             </div>
                           ) : event.timeStatus === 'ALL_DAY' ? (
                             <div className="">- All Day</div>

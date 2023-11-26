@@ -4,7 +4,15 @@ import { getServerAuthSession } from '~/server/auth'
 import { api } from '~/trpc/server'
 import { OuterPageLayout } from '~/components/layout/PageLayout'
 
-export default async function Home() {
+type InboxParams = {
+  searchParams: {
+    event?: string
+  }
+}
+
+export default async function InboxPage({
+  searchParams: { event },
+}: InboxParams) {
   const session = await getServerAuthSession()
 
   if (!session) {
@@ -15,7 +23,7 @@ export default async function Home() {
 
   return (
     <OuterPageLayout fullscreen>
-      <Inbox preferences={preferences} />
+      <Inbox preferences={preferences} eventId={event} />
     </OuterPageLayout>
   )
 }

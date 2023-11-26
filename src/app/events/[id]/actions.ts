@@ -10,6 +10,7 @@ const CreateParams = z.object({
   datetime: z.string(),
   categoryId: z.string().optional(),
   timeStatus: z.nativeEnum(TimeStatus),
+  location: z.string().nullish(),
 })
 type CreateParams = z.infer<typeof CreateParams>
 

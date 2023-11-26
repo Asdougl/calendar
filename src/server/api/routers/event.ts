@@ -7,6 +7,8 @@ const select = {
   title: true,
   datetime: true,
   timeStatus: true,
+  location: true,
+  endDateTime: true,
   category: {
     select: {
       id: true,
@@ -123,6 +125,7 @@ export const eventRouter = createTRPCRouter({
           .enum([TimeStatus.ALL_DAY, TimeStatus.NO_TIME, TimeStatus.STANDARD])
           .default(TimeStatus.STANDARD),
         categoryId: z.string().optional(),
+        location: z.string().nullish(),
         todo: z.boolean().optional(),
       })
     )
@@ -132,6 +135,7 @@ export const eventRouter = createTRPCRouter({
           title: input.title,
           datetime: input.datetime,
           timeStatus: input.timeStatus,
+          location: input.location,
           categoryId: input.categoryId,
           createdById: ctx.session.user.id,
           done: input.todo ? false : null,
@@ -148,6 +152,7 @@ export const eventRouter = createTRPCRouter({
         timeStatus: z
           .enum([TimeStatus.ALL_DAY, TimeStatus.NO_TIME, TimeStatus.STANDARD])
           .optional(),
+        location: z.string().nullish(),
         categoryId: z.string().nullable().optional(),
         done: z.boolean().nullable().optional(),
       })
@@ -162,6 +167,7 @@ export const eventRouter = createTRPCRouter({
           datetime: input.datetime,
           timeStatus: input.timeStatus,
           categoryId: input.categoryId,
+          location: input.location,
           done: input.done,
         },
         select,

@@ -19,6 +19,27 @@ type PathParamsMap = {
   '/todos': null
 }
 
+const PathParamsMap: PathParamsMap = {
+  '/': null,
+  '/inbox': null,
+  '/login': null,
+  '/settings': null,
+  '/categories': null,
+  '/week': null,
+  '/year': null,
+  '/month': null,
+  '/periods': null,
+  '/periods/:id': { id: '' },
+  '/events': null,
+  '/events/:id': { id: '' },
+  '/events/past': null,
+  '/profile': null,
+  '/todos': null,
+}
+
+export const isPath = <T extends PathName>(path: string): path is T =>
+  path in PathParamsMap
+
 export type PathName = keyof PathParamsMap
 
 export type PathParams<T extends PathName> = PathParamsMap[T]

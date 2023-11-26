@@ -135,7 +135,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
       <div
         ref={weekRef}
         className={cn(
-          'flex h-full w-full flex-shrink-0 snap-center gap-2 overflow-hidden overflow-y-scroll px-1 pb-2',
+          'flex w-full flex-shrink-0 snap-center gap-2 overflow-hidden overflow-y-scroll px-1 pb-2',
           {
             'flex-row-reverse': !preferences.leftWeekends,
           }
@@ -325,10 +325,11 @@ export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
           />
         </button>
       }
+      fullscreen
     >
       <div
         ref={containerRef}
-        className="flex h-full w-full snap-x snap-mandatory flex-nowrap gap-2 overflow-scroll"
+        className="flex h-full w-full flex-grow snap-x snap-mandatory flex-nowrap items-stretch gap-2 overflow-y-hidden overflow-x-scroll"
         onScroll={onScroll}
       >
         {loadedWeeks.map((week, i) => (

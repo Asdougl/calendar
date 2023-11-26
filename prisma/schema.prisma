@@ -39,19 +39,19 @@ model Session {
 }
 
 model User {
-    id            String     @id @default(uuid())
+    id            String    @id @default(uuid())
     name          String?
-    email         String?    @unique
+    email         String?   @unique
     emailVerified DateTime?
     image         String?
-    
-    preferences   Json?
 
-    accounts      Account[]
-    sessions      Session[]
-    Event         Event[]
-    Category      Category[]
-    Period        Period[]
+    preferences Json?
+
+    accounts Account[]
+    sessions Session[]
+    Event    Event[]
+    Category Category[]
+    Period   Period[]
 }
 
 model VerificationToken {
@@ -74,8 +74,10 @@ model Event {
     id    String @id @default(uuid())
     title String
 
-    datetime DateTime
-    timeStatus TimeStatus @default(NO_TIME)
+    datetime    DateTime
+    timeStatus  TimeStatus @default(NO_TIME)
+    location    String?
+    endDateTime DateTime?
 
     done Boolean? // for todos
 
@@ -100,12 +102,12 @@ model Category {
     createdBy   User   @relation(fields: [createdById], references: [id])
     createdById String
 
-    Event Event[]
+    Event  Event[]
     Period Period[]
 }
 
 model Period {
-    id        String @id @default(uuid())
+    id        String   @id @default(uuid())
     name      String
     color     String
     icon      String

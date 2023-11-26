@@ -11,11 +11,25 @@ type EventsByDay = Record<
   NonNullable<RouterOutputs['event']['range']>
 >
 
+type Event = RouterOutputs['event']['range'][number]
+
+const createEvent = (
+  params: Pick<Event, 'title' | 'datetime'> & Partial<Omit<Event, 'id'>>
+): Event => {
+  return {
+    id: createTempId(),
+    category: null,
+    location: '123 Fake St, Sydney',
+    endDateTime: null,
+    timeStatus: 'STANDARD',
+    ...params,
+  }
+}
+
 const createShowcaseData = (focus: Date): EventsByDay => ({
   // Sunday
   0: [
-    {
-      id: createTempId(),
+    createEvent({
       title: 'Dinner at parents',
       datetime: set(setDay(focus, 7), {
         hours: 12,
@@ -26,10 +40,9 @@ const createShowcaseData = (focus: Date): EventsByDay => ({
         color: 'blue',
         name: 'Family',
       },
-      timeStatus: 'STANDARD',
-    },
-    {
-      id: createTempId(),
+      location: '123 Fake St, Sydney',
+    }),
+    createEvent({
       title: 'Go for a run',
       datetime: set(setDay(focus, 7), {
         hours: 12,
@@ -40,20 +53,16 @@ const createShowcaseData = (focus: Date): EventsByDay => ({
         color: 'red',
         name: 'Health',
       },
-      timeStatus: 'STANDARD',
-    },
+    }),
   ],
   // Monday
   1: [
-    {
-      id: createTempId(),
+    createEvent({
       title: 'Day off',
       datetime: setDay(focus, 8),
-      category: null,
       timeStatus: 'ALL_DAY',
-    },
-    {
-      id: createTempId(),
+    }),
+    createEvent({
       title: 'Workout',
       datetime: set(setDay(focus, 8), {
         hours: 18,
@@ -64,8 +73,7 @@ const createShowcaseData = (focus: Date): EventsByDay => ({
         color: 'red',
         name: 'Health',
       },
-      timeStatus: 'STANDARD',
-    },
+    }),
   ],
   // Tuesday
   2: [],
@@ -73,18 +81,14 @@ const createShowcaseData = (focus: Date): EventsByDay => ({
   3: [],
   // Thursday
   4: [
-    {
-      id: createTempId(),
+    createEvent({
       title: 'In the office',
       datetime: set(setDay(focus, 4), {
         hours: 9,
         minutes: 0,
       }),
-      category: null,
-      timeStatus: 'STANDARD',
-    },
-    {
-      id: createTempId(),
+    }),
+    createEvent({
       title: 'Workout',
       datetime: set(setDay(focus, 4), {
         hours: 18,
@@ -95,13 +99,11 @@ const createShowcaseData = (focus: Date): EventsByDay => ({
         color: 'red',
         name: 'Health',
       },
-      timeStatus: 'STANDARD',
-    },
+    }),
   ],
   // Friday
   5: [
-    {
-      id: createTempId(),
+    createEvent({
       title: 'Get on the beers',
       datetime: set(setDay(focus, 6), {
         hours: 17,
@@ -112,23 +114,18 @@ const createShowcaseData = (focus: Date): EventsByDay => ({
         color: 'green',
         name: 'Friends',
       },
-      timeStatus: 'STANDARD',
-    },
+    }),
   ],
   // Saturday
   6: [
-    {
-      id: createTempId(),
+    createEvent({
       title: 'Go to the market',
       datetime: set(setDay(focus, 6), {
         hours: 9,
         minutes: 0,
       }),
-      category: null,
-      timeStatus: 'STANDARD',
-    },
-    {
-      id: createTempId(),
+    }),
+    createEvent({
       title: 'Lunch with friends',
       datetime: set(setDay(focus, 6), {
         hours: 12,
@@ -139,10 +136,8 @@ const createShowcaseData = (focus: Date): EventsByDay => ({
         color: 'green',
         name: 'Friends',
       },
-      timeStatus: 'STANDARD',
-    },
-    {
-      id: createTempId(),
+    }),
+    createEvent({
       title: 'Dinner with in-laws',
       datetime: set(setDay(focus, 6), {
         hours: 20,
@@ -153,8 +148,7 @@ const createShowcaseData = (focus: Date): EventsByDay => ({
         color: 'blue',
         name: 'Family',
       },
-      timeStatus: 'STANDARD',
-    },
+    }),
   ],
 })
 

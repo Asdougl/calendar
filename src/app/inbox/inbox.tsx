@@ -20,9 +20,10 @@ import { useOrigination } from '~/utils/atoms'
 
 type InboxProps = {
   preferences: Preferences
+  eventId?: string
 }
 
-export const Inbox: FC<InboxProps> = ({ preferences }) => {
+export const Inbox: FC<InboxProps> = ({ preferences, eventId }) => {
   const [focusDate] = useClientNow({
     initialDate: startOfDay(new Date()),
     modifier: startOfDay,
@@ -142,6 +143,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[6] ?? []}
+            focusEvent={eventId}
           />
           <DayBox
             focusDate={focusDate}
@@ -150,6 +152,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[0] ?? []}
+            focusEvent={eventId}
           />
         </div>
         {/* weekdays */}
@@ -161,6 +164,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[5] ?? []}
+            focusEvent={eventId}
           />
           <DayBox
             focusDate={focusDate}
@@ -169,6 +173,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[4] ?? []}
+            focusEvent={eventId}
           />
           <DayBox
             focusDate={focusDate}
@@ -177,6 +182,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[3] ?? []}
+            focusEvent={eventId}
           />
           <DayBox
             focusDate={focusDate}
@@ -185,6 +191,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[2] ?? []}
+            focusEvent={eventId}
           />
           <DayBox
             focusDate={focusDate}
@@ -193,6 +200,7 @@ export const Inbox: FC<InboxProps> = ({ preferences }) => {
             isLoading={isLoading}
             startToday
             periods={periodsByDay[1] ?? []}
+            focusEvent={eventId}
           />
         </div>
       </div>

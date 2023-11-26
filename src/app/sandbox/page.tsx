@@ -14,6 +14,7 @@ import { UncontrolledDatePicker } from '~/components/ui/dates/DatePicker'
 import { Label } from '~/components/ui/label'
 import { SkeletonText } from '~/components/skeleton/Text'
 import { UncontrolledDateRangePicker } from '~/components/ui/dates/DateRangePicker'
+import { TimeInput } from '~/components/ui/input/time'
 
 const randomEmojis = [
   '🤣',
@@ -108,6 +109,19 @@ const randomEmojis = [
   '😹',
   '😻',
 ]
+
+const TimeInputDemo = () => {
+  const [time, setTime] = useState<string | null>(null)
+  return (
+    <Field
+      label="Time Input V2"
+      className="flex flex-col items-start gap-2"
+      subtext={time || 'No time selected'}
+    >
+      <TimeInput value={time} onChange={setTime} />
+    </Field>
+  )
+}
 
 type EventExample = {
   title: string
@@ -238,6 +252,7 @@ export default function SandboxPage() {
         <Field label="Date Range Picker">
           <UncontrolledDateRangePicker />
         </Field>
+        <TimeInputDemo />
       </div>
     </main>
   )

@@ -10,7 +10,7 @@ import { z } from 'zod'
 import { confirmDeleteEvent, createEvent, updateEvent } from './actions'
 import { ControlledCategorySelect } from '~/components/form/CategorySelect'
 import { Field, InputField } from '~/components/ui/Field'
-import { TimeInput } from '~/components/ui/TimeInput'
+import { TimeInput } from '~/components/ui/input/time'
 import { DatePicker } from '~/components/ui/dates/DatePicker'
 import { Select } from '~/components/ui/select'
 import { type RouterOutputs } from '~/trpc/shared'
@@ -25,6 +25,7 @@ const EventForm = z.object({
   title: z.string().min(1, 'A title is required for your event'),
   date: z.string(),
   time: z.string().nullable(),
+  location: z.string().nullable(),
   categoryId: z.string().nullish(),
   status: z.nativeEnum(TimeStatus),
 })
@@ -32,8 +33,8 @@ type EventForm = z.infer<typeof EventForm>
 
 const statusSelectOptions = [
   { value: TimeStatus.ALL_DAY, name: 'All Day' },
-  { value: TimeStatus.STANDARD, name: 'Standard' },
-  { value: TimeStatus.NO_TIME, name: 'Untimed' },
+  { value: TimeStatus.STANDARD, name: 'Scheduled' },
+  { value: TimeStatus.NO_TIME, name: 'Unscheduled' },
 ]
 
 type EventFormProps = {
@@ -44,6 +45,7 @@ type EventFormProps = {
     date: string
     time: string
     categoryId: string
+    location: string
     status: TimeStatus
   }>
 }
@@ -54,6 +56,8 @@ export const EditEventForm: FC<EventFormProps> = ({
   wipValues,
 }) => {
   const router = useRouter()
+
+  const queryClient = api.useContext()
 
   const {
     register,
@@ -70,10 +74,11 @@ export const EditEventForm: FC<EventFormProps> = ({
           date: wipValues.date || format(event.datetime, 'yyyy-MM-dd'),
           time:
             wipValues.time || event.timeStatus === 'STANDARD'
-              ? format(event.datetime, 'HHmm')
+              ? format(event.datetime, 'HH:mm')
               : null,
           categoryId: wipValues.categoryId || event.category?.id,
           status: wipValues.status || event.timeStatus,
+          location: wipValues.location || event.location,
         }
       : {
           title: wipValues.title || '',
@@ -81,21 +86,27 @@ export const EditEventForm: FC<EventFormProps> = ({
           time: wipValues.time || null,
           categoryId: wipValues.categoryId || 'none',
           status: wipValues.status || TimeStatus.STANDARD,
+          location: wipValues.location || null,
         },
   })
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const formattedTime =
-        data.time && /^([0-1]?[0-9]|2[0-3])[0-5][0-9]$/.test(data.time)
-          ? `${data.time.slice(0, 2)}:${data.time.slice(2)}`
-          : '12:00'
+      if (data.status === 'STANDARD' && !data.time) {
+        setError('time', {
+          message: 'A valid time is required for scheduled events',
+        })
+        return
+      }
+
+      const formattedTime = data.time ? `${data.time}` : '12:00'
 
       if (event) {
         await updateEvent(event.id, {
           datetime: dateFromDateAndTime(data.date, formattedTime).toISOString(),
           title: data.title,
           categoryId: data.categoryId,
+          location: data.location,
           timeStatus: data.status,
         })
       } else {
@@ -103,9 +114,11 @@ export const EditEventForm: FC<EventFormProps> = ({
           datetime: dateFromDateAndTime(data.date, formattedTime).toISOString(),
           title: data.title,
           categoryId: data.categoryId || undefined,
+          location: data.location,
           timeStatus: data.status,
         })
       }
+      await queryClient.event.invalidate()
       router.push(origin)
     } catch (error) {
       setError('root', {
@@ -122,6 +135,7 @@ export const EditEventForm: FC<EventFormProps> = ({
     api.event.delete.useMutation({
       onSuccess: async (data) => {
         await confirmDeleteEvent(data.id)
+        await queryClient.event.invalidate()
         router.push(origin)
       },
     })
@@ -176,6 +190,11 @@ export const EditEventForm: FC<EventFormProps> = ({
           />
         </Field>
       )}
+      <InputField
+        label="Location"
+        {...register('location')}
+        condition="optional"
+      />
       <Field label="Category" error={errors.categoryId?.message}>
         <ControlledCategorySelect control={control} name="categoryId" />
       </Field>

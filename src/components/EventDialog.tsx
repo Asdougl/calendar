@@ -11,9 +11,10 @@ import { Button, SubmitButton } from './ui/button'
 import { Label } from './ui/label'
 import { Input } from './ui/input'
 import { DatePicker } from './ui/dates/DatePicker'
-import { TimeInput } from './ui/TimeInput'
+import { TimeInput } from './ui/input/time'
 import { Alert } from './ui/Alert'
 import { CategorySelect } from './form/CategorySelect'
+import { Switch } from './ui/switch'
 import { dateFromDateAndTime } from '~/utils/dates'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
@@ -24,6 +25,7 @@ const EventDialogFormSchema = z.object({
   title: z.string(),
   date: z.string(),
   time: z.string().nullable(),
+  allDay: z.boolean().default(false),
   categoryId: z.string().nullable(),
 })
 type EventDialogFormSchema = z.infer<typeof EventDialogFormSchema>
@@ -89,6 +91,7 @@ export const EventDialog: FC<EventDialogProps> = ({
     control,
     setError,
     getValues,
+    watch,
     formState: { isDirty, errors },
   } = useForm<EventDialogFormSchema>({
     defaultValues: {
@@ -97,11 +100,12 @@ export const EventDialog: FC<EventDialogProps> = ({
         'event' in props
           ? format(props.event.datetime, 'yyyy-MM-dd')
           : format(props.initialDate, 'yyyy-MM-dd'),
-      time: 'event' in props ? format(props.event.datetime, 'HHmm') : '',
+      time: 'event' in props ? format(props.event.datetime, 'h:mm a') : '',
       categoryId:
         'event' in props && props.event.category
           ? props.event.category.id
           : 'none',
+      allDay: 'event' in props ? props.event.timeStatus === 'ALL_DAY' : false,
     },
     resolver: zodResolver(EventDialogFormSchema),
   })
@@ -116,19 +120,13 @@ export const EventDialog: FC<EventDialogProps> = ({
   }
 
   const onSubmit = handleSubmit((data) => {
-    const formattedTime =
-      data.time && /^([0-1]?[0-9]|2[0-3])[0-5][0-9]$/.test(data.time)
-        ? `${data.time.slice(0, 2)}:${data.time.slice(2)}`
-        : '12:00'
+    const dateTime = dateFromDateAndTime(data.date, data.time || '12:00')
+    if (!isValid(dateTime)) {
+      setError('date', { message: 'Invalid date' })
+      return
+    }
 
     if ('event' in props) {
-      const dateTime = dateFromDateAndTime(data.date, formattedTime)
-
-      if (!isValid(dateTime)) {
-        setError('date', { message: 'Invalid date' })
-        return
-      }
-
       updateMutate({
         id: props.event.id,
         title: data.title,
@@ -140,12 +138,6 @@ export const EventDialog: FC<EventDialogProps> = ({
             : undefined,
       })
     } else {
-      const dateTime = dateFromDateAndTime(data.date, formattedTime)
-
-      if (!isValid(dateTime)) {
-        setError('date', { message: 'Invalid date' })
-        return
-      }
       insertMutate({
         title: data.title,
         timeStatus: data.time ? 'STANDARD' : 'NO_TIME',
@@ -190,6 +182,8 @@ export const EventDialog: FC<EventDialogProps> = ({
       })
     )
   }
+
+  const isAllDay = watch('allDay')
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -260,20 +254,36 @@ export const EventDialog: FC<EventDialogProps> = ({
                         onChange={(value) =>
                           field.onChange(format(value, 'yyyy-MM-dd'))
                         }
-                        className="w-1/2 flex-grow"
+                        className="flex-1"
                       />
                     )}
                   />
+                  {!isAllDay && (
+                    <Controller
+                      control={control}
+                      name="time"
+                      render={({ field }) => (
+                        <TimeInput
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          className="flex-1"
+                          placeholder="Time (optional)"
+                        />
+                      )}
+                    />
+                  )}
                   <Controller
                     control={control}
-                    name="time"
+                    name="allDay"
                     render={({ field }) => (
-                      <TimeInput
-                        value={field.value || ''}
-                        onChange={field.onChange}
-                        className="w-1/2"
-                        placeholder="0000 (optional)"
-                      />
+                      <div>
+                        <Label htmlFor="create-event-allday">All Day</Label>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          placeholder="0000 (optional)"
+                        />
+                      </div>
                     )}
                   />
                 </div>
