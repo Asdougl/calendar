@@ -17,19 +17,22 @@ import { useClientNow, useMountEffect } from '~/utils/hooks'
 import { type Preferences } from '~/types/preferences'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { useOrigination } from '~/utils/atoms'
+import { usePreferences } from '~/trpc/hooks'
 
 type InboxProps = {
-  preferences: Preferences
+  initialPreferences: Preferences
   eventId?: string
 }
 
-export const Inbox: FC<InboxProps> = ({ preferences, eventId }) => {
+export const Inbox: FC<InboxProps> = ({ initialPreferences, eventId }) => {
   const [focusDate] = useClientNow({
     initialDate: startOfDay(new Date()),
     modifier: startOfDay,
   })
 
   const queryClient = api.useContext()
+
+  const { preferences } = usePreferences(initialPreferences)
 
   const {
     data: events,
@@ -131,7 +134,10 @@ export const Inbox: FC<InboxProps> = ({ preferences, eventId }) => {
     >
       <div
         className={cn('flex flex-grow gap-2 overflow-hidden', {
-          'flex-row-reverse': !preferences.leftWeekends,
+          'flex-row-reverse':
+            preferences?.weekends === 'right' ||
+            (preferences?.weekends === 'dynamic' &&
+              (getDay(focusDate) === 0 || getDay(focusDate) === 6)),
         })}
       >
         {/* weekend */}

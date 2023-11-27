@@ -92,6 +92,7 @@ export const EventDialog: FC<EventDialogProps> = ({
     setError,
     getValues,
     watch,
+    reset,
     formState: { isDirty, errors },
   } = useForm<EventDialogFormSchema>({
     defaultValues: {
@@ -116,6 +117,8 @@ export const EventDialog: FC<EventDialogProps> = ({
       setTimeout(() => {
         document.getElementById('event-name')?.focus()
       }, 50)
+    } else {
+      reset()
     }
   }
 
@@ -187,12 +190,12 @@ export const EventDialog: FC<EventDialogProps> = ({
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Trigger
-        disabled={fullDisable}
-        className="rounded-lg px-1 ring-neutral-600 hover:bg-neutral-800 focus:outline-none focus:ring"
-        asChild={!!children}
-      >
-        {children ?? <PlusIcon height={20} />}
+      <Dialog.Trigger disabled={fullDisable} asChild>
+        {children ?? (
+          <button className="rounded-lg px-1 text-neutral-600 ring-neutral-600 hover:bg-neutral-800 focus:outline-none focus:ring lg:hover:text-neutral-50">
+            <PlusIcon height={20} />
+          </button>
+        )}
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" />
@@ -290,7 +293,9 @@ export const EventDialog: FC<EventDialogProps> = ({
               </div>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex flex-grow justify-end gap-4">
-                  <Button onClick={onMore}>More</Button>
+                  <Button type="button" onClick={onMore}>
+                    More
+                  </Button>
                   <SubmitButton
                     loading={constructLoading}
                     intent="primary"

@@ -1,7 +1,9 @@
 import {
   addDays,
+  differenceInCalendarDays,
   differenceInDays,
   endOfWeek,
+  format,
   getDate,
   getDay,
   getDayOfYear,
@@ -11,6 +13,7 @@ import {
   startOfWeek,
 } from 'date-fns'
 import { zonedTimeToUtc } from 'date-fns-tz'
+import { type RouterOutputs } from '~/trpc/shared'
 
 export const time = {
   seconds: (seconds: number) => seconds * 1000,
@@ -127,4 +130,30 @@ export const isValidDateString = (dateString: string) => {
   const date = new Date(dateString)
 
   return !isNaN(date.getTime())
+}
+
+export const daysAway = (date: Date) => {
+  const today = startOfDay(new Date())
+
+  // how far away, e.g. today, tomorrow, yesterday, in 2 days, 10 days ago
+  const days = differenceInCalendarDays(date, today)
+
+  if (days === 0) {
+    return 'today'
+  } else if (days === 1) {
+    return 'tomorrow'
+  } else if (days === -1) {
+    return 'yesterday'
+  } else if (days > 0) {
+    return `in ${days} days`
+  } else {
+    return `${Math.abs(days)} days ago`
+  }
+}
+
+export const timeFormat = (
+  date: Date,
+  preferences?: RouterOutputs['preferences']['getAll']
+) => {
+  return format(date, preferences?.timeFormat === '24' ? 'HH:mm' : 'h:mm a')
 }

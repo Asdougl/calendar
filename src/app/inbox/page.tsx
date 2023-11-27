@@ -23,7 +23,7 @@ export default async function InboxPage({
 
   return (
     <OuterPageLayout fullscreen>
-      <Inbox preferences={preferences} eventId={event} />
+      <Inbox initialPreferences={preferences} eventId={event} />
     </OuterPageLayout>
   )
 }

@@ -36,6 +36,8 @@ export const DayBox: FC<{
     )
   }, [focusDate, dayOfWeek, startToday])
 
+  const isWeekend = focusDate.getDay() === 0 || focusDate.getDay() === 6
+
   const sortedEvents = useMemo(() => {
     const pastEvents: RouterOutputs['event']['range'] = []
     const futureEvents: RouterOutputs['event']['range'] = []
@@ -56,7 +58,7 @@ export const DayBox: FC<{
   return (
     <div
       className={cn(
-        'flex-1 overflow-hidden rounded-lg border border-neutral-800 px-2 py-1',
+        'flex flex-1 flex-col overflow-hidden rounded-lg border border-neutral-800 px-1 py-1',
         { 'border-neutral-400': distanceToToday === 0 },
         startToday && {
           'border-neutral-500': distanceToToday === 1,
@@ -65,23 +67,16 @@ export const DayBox: FC<{
         periods.length === 1 && getCategoryColor(periods[0]?.color, 'border')
       )}
     >
-      <div className="flex justify-between">
-        <div
-          className={cn(
-            'flex items-baseline gap-1',
-            startToday
-              ? {
-                  'opacity-40': distanceToToday === 6,
-                  'opacity-60': distanceToToday === 5,
-                  'opacity-80': distanceToToday === 4,
-                }
-              : {
-                  'opacity-60': distanceToToday < 0,
-                }
-          )}
-        >
-          <div className="font-bold">{format(day, 'E')}</div>
-          <div className="text-sm">{format(day, 'd MMM')}</div>
+      <div className="flex justify-between px-1">
+        <div className="flex items-baseline gap-1">
+          <PathLink
+            path="/day/:date"
+            params={{ date: format(day, 'yyyy-MM-dd') }}
+            className="flex items-baseline gap-1 border-b border-transparent lg:hover:border-neutral-200"
+          >
+            <div className="font-bold">{format(day, 'E')}</div>
+            <div className="text-sm">{format(day, 'd MMM')}</div>
+          </PathLink>
           {periods.map((period) => (
             <PathLink
               key={period.id}
@@ -103,18 +98,25 @@ export const DayBox: FC<{
         </div>
         <EventDialog initialDate={day} />
       </div>
-      <ul className="flex flex-col gap-1 overflow-x-hidden py-1">
+      <ul className="flex flex-grow flex-col gap-0.5 overflow-hidden lg:gap-1">
         {isLoading ? (
           <li className="my-2 h-4 w-3/4 animate-pulse rounded-full bg-neutral-900"></li>
         ) : (
-          sortedEvents.map((event) => (
+          sortedEvents.map((event, i, array) => (
             <EventItem
               key={event.id}
               event={event}
               startOpen={event.id === focusEvent}
+              count={array.length}
+              isWeekend={isWeekend}
             />
           ))
         )}
+        <li className="w-full flex-1">
+          <EventDialog initialDate={day}>
+            <button className="h-full w-full"></button>
+          </EventDialog>
+        </li>
       </ul>
     </div>
   )

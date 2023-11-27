@@ -34,12 +34,13 @@ import { cn } from '~/utils/classnames'
 import { type Preferences } from '~/types/preferences'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { useOrigination } from '~/utils/atoms'
+import { usePreferences } from '~/trpc/hooks'
 
 type ViewOfAWeekProps = {
   starting: Date
   index: number
   onInView?: () => void
-  preferences: Preferences
+  preferences?: Preferences
 }
 
 const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
@@ -137,7 +138,7 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
         className={cn(
           'flex w-full flex-shrink-0 snap-center gap-2 overflow-hidden overflow-y-scroll px-1 pb-2',
           {
-            'flex-row-reverse': !preferences.leftWeekends,
+            'flex-row-reverse': preferences?.weekends === 'right',
           }
         )}
       >
@@ -201,9 +202,13 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
   }
 )
 
-export const WeekView: FC<{ preferences: Preferences }> = ({ preferences }) => {
+export const WeekView: FC<{ initialPreferences: Preferences }> = ({
+  initialPreferences,
+}) => {
   const searchParams = useSearchParams()
   const router = useRouter()
+
+  const { preferences } = usePreferences(initialPreferences)
 
   const [focusDate, setFocusDate] = useState<Date>(() => {
     const startParam = searchParams.get('start')

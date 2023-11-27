@@ -72,6 +72,8 @@ export default async function EventIdPage({
     redirect('/login')
   }
 
+  const preferencesPromise = api.preferences.getAll.query()
+
   let event = null
   if (id !== 'new') {
     event = await api.event.one.query({ id })
@@ -85,6 +87,9 @@ export default async function EventIdPage({
     origin: searchParams.origin,
     eventId: id,
   })
+
+  // probably done by now
+  const preferences = await preferencesPromise
 
   return (
     <PageLayout
@@ -104,6 +109,7 @@ export default async function EventIdPage({
           time: searchParams?.time,
           categoryId: searchParams?.categoryId,
         }}
+        initialPreferences={preferences}
       />
     </PageLayout>
   )

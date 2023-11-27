@@ -48,9 +48,9 @@ export const SettingList = ({
               <InlineLoader /> Saving...
             </>
           ) : (
-            <>
+            <span className="flex animate-slow-fade-out items-center gap-1">
               <CheckIcon height={16} /> Saved
-            </>
+            </span>
           )}
         </div>
       )}

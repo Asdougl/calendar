@@ -17,9 +17,10 @@ import { type RouterOutputs } from '~/trpc/shared'
 import { isError, isString } from '~/utils/guards'
 import { SubmitButton } from '~/components/ui/button'
 import { ErrorText } from '~/components/ui/Text'
-import { dateFromDateAndTime } from '~/utils/dates'
+import { dateFromDateAndTime, timeFormat } from '~/utils/dates'
 import { api } from '~/trpc/react'
 import { DeleteButton } from '~/components/form/DeleteButton'
+import { usePreferences } from '~/trpc/hooks'
 
 const EventForm = z.object({
   title: z.string().min(1, 'A title is required for your event'),
@@ -48,16 +49,20 @@ type EventFormProps = {
     location: string
     status: TimeStatus
   }>
+  initialPreferences: RouterOutputs['preferences']['getAll']
 }
 
 export const EditEventForm: FC<EventFormProps> = ({
   event,
   origin,
   wipValues,
+  initialPreferences,
 }) => {
   const router = useRouter()
 
   const queryClient = api.useContext()
+
+  const { preferences } = usePreferences(initialPreferences)
 
   const {
     register,
@@ -74,7 +79,7 @@ export const EditEventForm: FC<EventFormProps> = ({
           date: wipValues.date || format(event.datetime, 'yyyy-MM-dd'),
           time:
             wipValues.time || event.timeStatus === 'STANDARD'
-              ? format(event.datetime, 'HH:mm')
+              ? timeFormat(event.datetime, preferences)
               : null,
           categoryId: wipValues.categoryId || event.category?.id,
           status: wipValues.status || event.timeStatus,

@@ -23,12 +23,20 @@ import {
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { api } from '~/trpc/react'
-import { time, toCalendarDate, weekDatesOfDateRange } from '~/utils/dates'
+import {
+  time,
+  timeFormat,
+  toCalendarDate,
+  weekDatesOfDateRange,
+} from '~/utils/dates'
 import { type RouterOutputs } from '~/trpc/shared'
 import { PathLink } from '~/components/ui/PathLink'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
+import { usePreferences } from '~/trpc/hooks'
 
-export const MonthView: FC = () => {
+export const MonthView: FC<{
+  initialPreferences: RouterOutputs['preferences']['getAll']
+}> = ({ initialPreferences }) => {
   const [focusMonth, setFocusMonth] = useState(() => {
     const now = new Date()
     const start = startOfDay(set(now, { date: 1 }))
@@ -39,6 +47,8 @@ export const MonthView: FC = () => {
   })
 
   const queryClient = api.useContext()
+
+  const { preferences } = usePreferences(initialPreferences)
 
   const { data: periodsByDay } = api.periods.range.useQuery(
     {
@@ -274,7 +284,7 @@ export const MonthView: FC = () => {
                       </div>
                       {event.timeStatus === 'STANDARD' && (
                         <div className="-mt-1 hidden text-xs opacity-50 md:block">
-                          {format(event.datetime, 'h:mm a')}
+                          {timeFormat(event.datetime, preferences)}
                         </div>
                       )}
                     </div>

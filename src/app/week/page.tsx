@@ -15,7 +15,7 @@ export default async function WeekPage() {
 
   return (
     <OuterPageLayout fullscreen>
-      <WeekView preferences={preferences} />
+      <WeekView initialPreferences={preferences} />
     </OuterPageLayout>
   )
 }

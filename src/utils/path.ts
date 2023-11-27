@@ -15,6 +15,7 @@ type PathParamsMap = {
   '/events': null
   '/events/:id': { id: string }
   '/events/past': null
+  '/day/:date': { date: string }
   '/profile': null
   '/todos': null
 }
@@ -33,6 +34,7 @@ const PathParamsMap: PathParamsMap = {
   '/events': null,
   '/events/:id': { id: '' },
   '/events/past': null,
+  '/day/:date': { date: '' },
   '/profile': null,
   '/todos': null,
 }

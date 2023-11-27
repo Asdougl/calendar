@@ -6,10 +6,22 @@ import { useState } from 'react'
 import { TimezoneSelect } from '~/components/form/TimezoneSelect'
 import { SettingItem, SettingList } from '~/components/layout/Settings'
 import { Button } from '~/components/ui/button'
+import { Select, type SelectOption } from '~/components/ui/select'
 import { Switch } from '~/components/ui/switch'
 import { api } from '~/trpc/react'
 import { Preferences } from '~/types/preferences'
 import { useClientNow, useClientTimezone } from '~/utils/hooks'
+
+const timeFormatOptions: SelectOption<Preferences['timeFormat']>[] = [
+  { value: '12', name: '12h' },
+  { value: '24', name: '24h' },
+]
+
+const leftWeekendsOptions: SelectOption<Preferences['weekends']>[] = [
+  { value: 'left', name: 'Left Align' },
+  { value: 'right', name: 'Right Align' },
+  { value: 'dynamic', name: 'Dynamic Alignment' },
+]
 
 export const PreferencesSection = () => {
   const queryClient = api.useContext()
@@ -58,15 +70,30 @@ export const PreferencesSection = () => {
     >
       <SettingItem title="Weekends left" skeleton={isInitialLoading}>
         {preferences && (
-          <Switch
-            checked={preferences.leftWeekends}
+          <Select
+            value={preferences.weekends}
             disabled={isInitialLoading || isUpdating}
-            onClick={() =>
+            onChange={(value) =>
               updatePreferences({
                 ...preferences,
-                leftWeekends: !preferences.leftWeekends,
+                weekends: value,
               })
             }
+            className="h-full rounded-none border-0"
+            options={leftWeekendsOptions}
+          />
+        )}
+      </SettingItem>
+      <SettingItem title="Time format" skeleton={isInitialLoading}>
+        {preferences && (
+          <Select
+            value={preferences.timeFormat}
+            disabled={isInitialLoading || isUpdating}
+            onChange={(value) =>
+              updatePreferences({ ...preferences, timeFormat: value })
+            }
+            className="h-full rounded-none border-0"
+            options={timeFormatOptions}
           />
         )}
       </SettingItem>

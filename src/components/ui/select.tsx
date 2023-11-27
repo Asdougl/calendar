@@ -32,6 +32,8 @@ type Option<Values = string> = {
   color?: string
 }
 
+export type SelectOption<Values = string> = Option<Values>
+
 export type SelectProps<Values = string> = {
   defaultValue?: string
   value?: string
@@ -43,7 +45,7 @@ export type SelectProps<Values = string> = {
   defaultOption?: Option
   placeholder?: string
   id?: string
-  onChange?: (value: string) => void
+  onChange?: (value: Values) => void
 } & VariantProps<typeof selectStyle>
 
 export const Select = <Values extends string = string>({

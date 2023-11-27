@@ -10,11 +10,14 @@ import { DatePicker } from './ui/dates/DatePicker'
 import { TimeInput } from './ui/input/time'
 import { ButtonLink, SubmitButton } from './ui/button'
 import { ErrorText } from './ui/Text'
+import { MobileTimeInput } from './ui/input/mobile-time'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { api } from '~/trpc/react'
 import { useOrigination } from '~/utils/atoms'
 import { useRouter } from '~/utils/hooks'
+import { usePreferences } from '~/trpc/hooks'
+import { timeFormat } from '~/utils/dates'
 
 const ViewEventQuickEditForm = z.object({
   date: z.string(),
@@ -38,6 +41,8 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
 
   const [open, setOpen] = useState(initialOpen)
 
+  const { preferences } = usePreferences()
+
   const {
     handleSubmit,
     control,
@@ -49,7 +54,7 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
       date: format(event.datetime, 'yyyy-MM-dd'),
       time:
         event.timeStatus === 'STANDARD'
-          ? format(event.datetime, 'h:mm a')
+          ? timeFormat(event.datetime, preferences)
           : null,
     },
   })
@@ -66,7 +71,7 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
           date: format(data.datetime, 'yyyy-MM-dd'),
           time:
             data.timeStatus === 'STANDARD'
-              ? format(data.datetime, 'h:mm a')
+              ? timeFormat(data.datetime, preferences)
               : null,
         })
       }
@@ -104,7 +109,7 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
       <Dialog.Trigger asChild>{children}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/4 z-10 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 p-6">
+        <Dialog.Content className="fixed left-1/2 top-10 z-10 w-full max-w-xl -translate-x-1/2 p-6 lg:top-24">
           {/* Row 0 */}
           <div className="flex items-center justify-between">
             <Dialog.Title className="flex items-stretch gap-2">
@@ -131,8 +136,8 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
               </Dialog.Close>
             </div>
           </div>
-          {/* Update form */}
-          <form onSubmit={onSubmit} className="flex flex-col gap-2">
+          {/* Update form DESKTOP */}
+          <form onSubmit={onSubmit} className="hidden flex-col gap-2 lg:flex">
             {/* Row 2 */}
             <div className="flex gap-2 py-4">
               <Controller
@@ -163,6 +168,65 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
                 )}
               />
             </div>
+            {/* Row 3 */}
+            <div className="flex justify-between">
+              <div className="">
+                {errors.date && <ErrorText>{errors.date.message}</ErrorText>}
+                {errors.time && <ErrorText>{errors.time.message}</ErrorText>}
+                {errors.root && <ErrorText>{errors.root.message}</ErrorText>}
+              </div>
+              <div className="flex gap-2">
+                {isDirty && (
+                  <SubmitButton
+                    intent="primary"
+                    type="submit"
+                    loading={formLock}
+                  >
+                    Update
+                  </SubmitButton>
+                )}
+                <ButtonLink
+                  path="/events/:id"
+                  params={{ id: event.id }}
+                  query={{ origin: originating }}
+                >
+                  More Details
+                </ButtonLink>
+              </div>
+            </div>
+          </form>
+          {/* Update Form MOBILE */}
+          <form
+            onSubmit={onSubmit}
+            className="flex flex-col gap-2 py-4 lg:hidden"
+          >
+            {/* Row 2 */}
+            <Controller
+              control={control}
+              name="date"
+              render={({ field }) => (
+                <DatePicker
+                  disabled={formLock}
+                  value={field.value ? new Date(field.value) : new Date()}
+                  onChange={(value) =>
+                    field.onChange(format(value, 'yyyy-MM-dd'))
+                  }
+                  className="w-full flex-grow"
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="time"
+              render={({ field }) => (
+                <MobileTimeInput
+                  type={preferences?.timeFormat || '12'}
+                  disabled={formLock}
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                />
+              )}
+            />
             {/* Row 3 */}
             <div className="flex justify-between">
               <div className="">

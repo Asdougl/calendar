@@ -12,7 +12,8 @@ import { SubmitButton } from '~/components/ui/button'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn, getCategoryColor } from '~/utils/classnames'
-import { time } from '~/utils/dates'
+import { time, timeFormat } from '~/utils/dates'
+import { usePreferences } from '~/trpc/hooks'
 
 type ListEvent = RouterOutputs['event']['upcoming']['items'][number]
 
@@ -45,10 +46,17 @@ const showMonthTitle = ({
 type EventsListProps = {
   notFound?: boolean
   direction?: 'before' | 'after'
+  initialPreferences: RouterOutputs['preferences']['getAll']
 }
 
-export const EventsList = ({ notFound, direction }: EventsListProps) => {
+export const EventsList = ({
+  notFound,
+  direction,
+  initialPreferences,
+}: EventsListProps) => {
   const [starting] = useState(() => new Date())
+
+  const { preferences } = usePreferences(initialPreferences)
 
   const {
     data: events,
@@ -183,7 +191,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                           {format(event.datetime, 'EEEE, MMM d')}
                           {event.timeStatus === 'STANDARD' ? (
                             <div className="">
-                              - {format(event.datetime, 'h:mm a')}
+                              - {timeFormat(event.datetime, preferences)}
                             </div>
                           ) : event.timeStatus === 'ALL_DAY' ? (
                             <div className="">- All Day</div>

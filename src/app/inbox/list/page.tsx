@@ -5,6 +5,7 @@ import { Navbar } from '~/components/Navbar'
 import { Header1 } from '~/components/ui/headers'
 import { getServerAuthSession } from '~/server/auth'
 import { api } from '~/trpc/server'
+import { timeFormat } from '~/utils/dates'
 
 export default async function Home() {
   const session = await getServerAuthSession()
@@ -32,7 +33,7 @@ export default async function Home() {
           {events.map((event) => (
             <li key={event.id}>
               {format(event.datetime, 'EEEE')}, {event.title},{' '}
-              {format(event.datetime, 'h:mm a')}
+              {timeFormat(event.datetime, preferences)}
             </li>
           ))}
         </ul>
