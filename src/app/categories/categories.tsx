@@ -168,7 +168,7 @@ const CategoryRow: FC<CategoryRowProps> = (props) => {
   )
 }
 export const CategoriesPage: FC = () => {
-  const queryClient = api.useContext()
+  const queryClient = api.useUtils()
   const session = useSession()
 
   const { data: categories } = api.category.all.useQuery(undefined, {

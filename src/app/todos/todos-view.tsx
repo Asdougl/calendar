@@ -12,7 +12,7 @@ import { time } from '~/utils/dates'
 export const TodosView = () => {
   const [showDone, setShowDone] = useState(false)
 
-  const queryClient = api.useContext()
+  const queryClient = api.useUtils()
 
   const { data: todos } = api.event.todos.useQuery(
     { done: showDone },

@@ -59,7 +59,7 @@ export const EventDialog: FC<EventDialogProps> = ({
 
   const [originating] = useOrigination()
 
-  const queryClient = api.useContext()
+  const queryClient = api.useUtils()
 
   const {
     mutate: insertMutate,

@@ -1,6 +1,4 @@
-import { redirect } from 'next/navigation'
 import { differenceInDays, format, isSameDay } from 'date-fns'
-import { getServerAuthSession } from '~/server/auth'
 import { api } from '~/trpc/server'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { ButtonLink } from '~/components/ui/button'
@@ -8,6 +6,7 @@ import { PageLayout } from '~/components/layout/PageLayout'
 import { type RouterOutputs } from '~/trpc/shared'
 import { pluralize } from '~/utils/misc'
 import { BackButton } from '~/components/BackButton'
+import { isAuthed } from '~/utils/auth'
 
 const PeriodItem = ({
   period,
@@ -58,11 +57,7 @@ const PeriodItem = ({
 }
 
 export default async function PeriodsPage() {
-  const session = await getServerAuthSession()
-
-  if (!session) {
-    redirect('/login')
-  }
+  await isAuthed()
 
   const periods = await api.periods.range.query({
     start: new Date(),

@@ -14,25 +14,23 @@ import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn } from '~/utils/classnames'
 import { useClientNow, useMountEffect } from '~/utils/hooks'
-import { type Preferences } from '~/types/preferences'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { useOrigination } from '~/utils/atoms'
 import { usePreferences } from '~/trpc/hooks'
 
 type InboxProps = {
-  initialPreferences: Preferences
   eventId?: string
 }
 
-export const Inbox: FC<InboxProps> = ({ initialPreferences, eventId }) => {
+export const Inbox: FC<InboxProps> = ({ eventId }) => {
   const [focusDate] = useClientNow({
     initialDate: startOfDay(new Date()),
     modifier: startOfDay,
   })
 
-  const queryClient = api.useContext()
+  const queryClient = api.useUtils()
 
-  const { preferences } = usePreferences(initialPreferences)
+  const { preferences } = usePreferences()
 
   const {
     data: events,

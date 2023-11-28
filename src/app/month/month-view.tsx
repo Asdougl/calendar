@@ -34,9 +34,7 @@ import { PathLink } from '~/components/ui/PathLink'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { usePreferences } from '~/trpc/hooks'
 
-export const MonthView: FC<{
-  initialPreferences: RouterOutputs['preferences']['getAll']
-}> = ({ initialPreferences }) => {
+export const MonthView: FC = () => {
   const [focusMonth, setFocusMonth] = useState(() => {
     const now = new Date()
     const start = startOfDay(set(now, { date: 1 }))
@@ -46,9 +44,9 @@ export const MonthView: FC<{
     }
   })
 
-  const queryClient = api.useContext()
+  const queryClient = api.useUtils()
 
-  const { preferences } = usePreferences(initialPreferences)
+  const { preferences } = usePreferences()
 
   const { data: periodsByDay } = api.periods.range.useQuery(
     {
@@ -195,7 +193,12 @@ export const MonthView: FC<{
       >
         <ChevronUpIcon height={24} />
       </button>
-      <div className="flex flex-grow flex-col gap-1 overflow-scroll px-[2px]">
+      <div
+        className={cn('grid flex-grow overflow-scroll px-0.5', {
+          'grid-rows-5': weekDates.length === 5,
+          'grid-rows-4': weekDates.length === 4,
+        })}
+      >
         {weekDates.map((week, i) => (
           <PathLink
             key={
@@ -205,7 +208,7 @@ export const MonthView: FC<{
             query={{
               start: toCalendarDate(week[0] || new Date()),
             }}
-            className="group flex flex-1 flex-grow"
+            className="group grid grid-cols-7"
           >
             {week.map((day, j) => {
               const eventsForDay = eventsByDay

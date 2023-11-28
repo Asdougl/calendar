@@ -39,6 +39,8 @@ const PathParamsMap: PathParamsMap = {
   '/todos': null,
 }
 
+export const Paths = Object.keys(PathParamsMap) as Array<keyof PathParamsMap>
+
 export const isPath = <T extends PathName>(path: string): path is T =>
   path in PathParamsMap
 

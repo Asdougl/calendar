@@ -1,6 +1,12 @@
 'use client'
 
-import { differenceInDays, format, getDay, setDay, startOfDay } from 'date-fns'
+import {
+  differenceInCalendarDays,
+  format,
+  getDay,
+  setDay,
+  startOfDay,
+} from 'date-fns'
 import type { FC } from 'react'
 import { useMemo } from 'react'
 import { EventDialog } from './EventDialog'
@@ -51,7 +57,7 @@ export const DayBox: FC<{
     return [...allDayEvents, ...futureEvents, ...pastEvents]
   }, [events])
 
-  const distanceToToday = differenceInDays(day, new Date())
+  const distanceToToday = differenceInCalendarDays(day, new Date())
 
   const [originating] = useOrigination()
 
@@ -59,20 +65,23 @@ export const DayBox: FC<{
     <div
       className={cn(
         'flex flex-1 flex-col overflow-hidden rounded-lg border border-neutral-800 px-1 py-1',
-        { 'border-neutral-400': distanceToToday === 0 },
         startToday && {
+          'border-neutral-400': distanceToToday === 0,
           'border-neutral-500': distanceToToday === 1,
           'border-neutral-600': distanceToToday === 2,
         },
         periods.length === 1 && getCategoryColor(periods[0]?.color, 'border')
       )}
     >
-      <div className="flex justify-between px-1">
+      <div className="flex justify-between">
         <div className="flex items-baseline gap-1">
           <PathLink
             path="/day/:date"
             params={{ date: format(day, 'yyyy-MM-dd') }}
-            className="flex items-baseline gap-1 border-b border-transparent lg:hover:border-neutral-200"
+            className={cn(
+              'flex items-baseline gap-1 border-b border-transparent px-1 lg:hover:border-neutral-200',
+              distanceToToday === 0 && 'rounded bg-neutral-100 text-neutral-950'
+            )}
           >
             <div className="font-bold">{format(day, 'E')}</div>
             <div className="text-sm">{format(day, 'd MMM')}</div>

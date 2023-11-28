@@ -60,7 +60,7 @@ export const EditEventForm: FC<EventFormProps> = ({
 }) => {
   const router = useRouter()
 
-  const queryClient = api.useContext()
+  const queryClient = api.useUtils()
 
   const { preferences } = usePreferences(initialPreferences)
 

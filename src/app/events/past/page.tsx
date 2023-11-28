@@ -1,16 +1,8 @@
-import { redirect } from 'next/navigation'
 import { EventsList } from '../events-list'
-import { getServerAuthSession } from '~/server/auth'
-import { api } from '~/trpc/server'
+import { isAuthed } from '~/utils/auth'
 
 export default async function PastEventsPage() {
-  const session = await getServerAuthSession()
+  await isAuthed()
 
-  if (!session) {
-    redirect('/login')
-  }
-
-  const preferences = await api.preferences.getAll.query()
-
-  return <EventsList direction="before" initialPreferences={preferences} />
+  return <EventsList direction="before" />
 }

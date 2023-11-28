@@ -2,10 +2,10 @@ import { redirect } from 'next/navigation'
 import { ArrowLeftIcon } from '@heroicons/react/24/solid'
 import { EditEventForm } from './edit-event-form'
 import { PageLayout } from '~/components/layout/PageLayout'
-import { getServerAuthSession } from '~/server/auth'
 import { api } from '~/trpc/server'
 import { PathLink } from '~/components/ui/PathLink'
 import { pathReplace } from '~/utils/path'
+import { isAuthed } from '~/utils/auth'
 
 type PathParams = {
   path: '/events' | '/week' | '/inbox' | '/events/past'
@@ -66,11 +66,7 @@ export default async function EventIdPage({
   params: { id },
   searchParams,
 }: PageParams) {
-  const session = await getServerAuthSession()
-
-  if (!session) {
-    redirect('/login')
-  }
+  await isAuthed()
 
   const preferencesPromise = api.preferences.getAll.query()
 

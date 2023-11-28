@@ -1,7 +1,5 @@
-import { redirect } from 'next/navigation'
 import { EventsList } from './events-list'
-import { getServerAuthSession } from '~/server/auth'
-import { api } from '~/trpc/server'
+import { isAuthed } from '~/utils/auth'
 
 type PageParams = {
   searchParams: {
@@ -12,18 +10,7 @@ type PageParams = {
 export default async function EventsPage({
   searchParams: { error },
 }: PageParams) {
-  const session = await getServerAuthSession()
+  await isAuthed()
 
-  if (!session) {
-    redirect('/login')
-  }
-
-  const preferences = await api.preferences.getAll.query()
-
-  return (
-    <EventsList
-      notFound={error === 'not-found'}
-      initialPreferences={preferences}
-    />
-  )
+  return <EventsList notFound={error === 'not-found'} />
 }

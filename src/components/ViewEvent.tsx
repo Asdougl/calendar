@@ -59,7 +59,7 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
     },
   })
 
-  const queryClient = api.useContext()
+  const queryClient = api.useUtils()
 
   const { mutateAsync: updateEvent } = api.event.update.useMutation({
     onSuccess: async () => {
@@ -80,11 +80,17 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
 
   const [originating] = useOrigination()
 
-  const onSubmit = handleSubmit((data) => {
-    return updateEvent({
+  const onSubmit = handleSubmit(async (data) => {
+    await updateEvent({
       id: event.id,
-      datetime: new Date(`${data.date}T${data.time || '00:00'}`),
+      datetime: new Date(`${data.date}T${data.time || '12:00'}`),
+      timeStatus: data.time
+        ? 'STANDARD'
+        : event.timeStatus === 'STANDARD'
+        ? 'NO_TIME'
+        : event.timeStatus,
     })
+    setOpen(false)
   })
 
   const changeOpen = () => {

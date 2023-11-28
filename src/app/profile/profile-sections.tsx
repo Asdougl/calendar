@@ -24,7 +24,7 @@ const leftWeekendsOptions: SelectOption<Preferences['weekends']>[] = [
 ]
 
 export const PreferencesSection = () => {
-  const queryClient = api.useContext()
+  const queryClient = api.useUtils()
   const [initialUpdate, setInitialUpdate] = useState(false)
 
   const { data: preferences, isInitialLoading } =
@@ -132,7 +132,7 @@ export const DebugSection = () => {
 
   const { data: preferences } = api.preferences.getAll.useQuery()
 
-  const queryClient = api.useContext()
+  const queryClient = api.useUtils()
 
   const timezone = useClientTimezone()
 

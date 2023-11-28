@@ -1,11 +1,10 @@
-import { redirect } from 'next/navigation'
 import { ArrowLeftIcon } from '@heroicons/react/24/solid'
 import { PeriodEditForm } from './period-edit-form'
-import { getServerAuthSession } from '~/server/auth'
 import { api } from '~/trpc/server'
 import { PageLayout } from '~/components/layout/PageLayout'
 import { PathLink } from '~/components/ui/PathLink'
 import { pathReplace } from '~/utils/path'
+import { isAuthed } from '~/utils/auth'
 
 type PathParams = {
   path: '/periods' | '/week' | '/inbox'
@@ -42,11 +41,7 @@ export default async function PeriodEdit({
   params: { id: string }
   searchParams: { origin?: string }
 }) {
-  const session = await getServerAuthSession()
-
-  if (!session) {
-    redirect('/login')
-  }
+  await isAuthed()
 
   const period = id !== 'new' ? await api.periods.one.query({ id }) : null
 

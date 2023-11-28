@@ -11,7 +11,7 @@ export default async function LoginPage({
   const session = await getServerAuthSession()
 
   if (session) {
-    redirect('/')
+    redirect('/inbox')
   }
 
   return (

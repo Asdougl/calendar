@@ -202,13 +202,11 @@ const ViewOfAWeek = forwardRef<HTMLDivElement, ViewOfAWeekProps>(
   }
 )
 
-export const WeekView: FC<{ initialPreferences: Preferences }> = ({
-  initialPreferences,
-}) => {
+export const WeekView: FC = () => {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const { preferences } = usePreferences(initialPreferences)
+  const { preferences } = usePreferences()
 
   const [focusDate, setFocusDate] = useState<Date>(() => {
     const startParam = searchParams.get('start')
@@ -287,7 +285,7 @@ export const WeekView: FC<{ initialPreferences: Preferences }> = ({
     <InnerPageLayout
       headerLeft={
         <button
-          className="group flex h-full w-full items-center justify-center rounded-lg hover:bg-neutral-800"
+          className="group flex w-full items-center justify-center rounded-lg hover:bg-neutral-800"
           onClick={() => viewPrevWeek(true)}
         >
           <ArrowLeftIcon

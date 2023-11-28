@@ -28,7 +28,7 @@ export const Debugger: FC = () => {
   const [open, setOpen] = useState(false)
   const [time, setTime] = useState(new Date().toLocaleString())
 
-  const queryClient = api.useContext()
+  const queryClient = api.useUtils()
 
   const timezone = useClientTimezone()
 

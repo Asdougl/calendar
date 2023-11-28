@@ -1,21 +1,13 @@
-import { redirect } from 'next/navigation'
 import { MonthView } from './month-view'
-import { getServerAuthSession } from '~/server/auth'
 import { OuterPageLayout } from '~/components/layout/PageLayout'
-import { api } from '~/trpc/server'
+import { isAuthed } from '~/utils/auth'
 
 export default async function Home() {
-  const session = await getServerAuthSession()
-
-  if (!session) {
-    redirect('/login')
-  }
-
-  const preferences = await api.preferences.getAll.query()
+  await isAuthed()
 
   return (
     <OuterPageLayout fullscreen>
-      <MonthView initialPreferences={preferences} />
+      <MonthView />
     </OuterPageLayout>
   )
 }

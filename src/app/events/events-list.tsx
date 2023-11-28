@@ -46,17 +46,12 @@ const showMonthTitle = ({
 type EventsListProps = {
   notFound?: boolean
   direction?: 'before' | 'after'
-  initialPreferences: RouterOutputs['preferences']['getAll']
 }
 
-export const EventsList = ({
-  notFound,
-  direction,
-  initialPreferences,
-}: EventsListProps) => {
+export const EventsList = ({ notFound, direction }: EventsListProps) => {
   const [starting] = useState(() => new Date())
 
-  const { preferences } = usePreferences(initialPreferences)
+  const { preferences } = usePreferences()
 
   const {
     data: events,

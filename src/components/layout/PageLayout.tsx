@@ -41,9 +41,9 @@ export const InnerPageLayout: FC<PropsWithChildren<PageLayoutProps>> = ({
 }) => {
   return (
     <>
-      <header className="flex items-center justify-between px-4 py-6">
+      <header className="flex items-stretch justify-between px-4 py-6">
         <div
-          className={cn('flex h-full w-8', {
+          className={cn('flex w-8', {
             'opacity-0': !headerLeft,
             'animate-pulse rounded-full bg-neutral-800': skeleton && headerLeft,
           })}
@@ -61,7 +61,7 @@ export const InnerPageLayout: FC<PropsWithChildren<PageLayoutProps>> = ({
           title
         )}
         <div
-          className={cn('flex h-full w-8', {
+          className={cn('flex w-8', {
             'opacity-0': !headerRight,
             'animate-pulse rounded-full bg-neutral-800':
               skeleton && headerRight,

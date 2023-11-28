@@ -1,18 +1,13 @@
 import { addDays, endOfDay, format, startOfDay } from 'date-fns'
 import { zonedTimeToUtc } from 'date-fns-tz'
-import { redirect } from 'next/navigation'
 import { Navbar } from '~/components/Navbar'
 import { Header1 } from '~/components/ui/headers'
-import { getServerAuthSession } from '~/server/auth'
 import { api } from '~/trpc/server'
+import { isAuthed } from '~/utils/auth'
 import { timeFormat } from '~/utils/dates'
 
 export default async function Home() {
-  const session = await getServerAuthSession()
-
-  if (!session) {
-    redirect('/login')
-  }
+  await isAuthed()
 
   const preferences = await api.preferences.getAll.query()
 

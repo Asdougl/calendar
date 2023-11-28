@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import {
   ArchiveBoxIcon,
   ClockIcon,
@@ -13,10 +12,10 @@ import {
 } from './profile-sections'
 import { PageLayout } from '~/components/layout/PageLayout'
 import { PathLink } from '~/components/ui/PathLink'
-import { getServerAuthSession } from '~/server/auth'
 import { Avatar } from '~/components/ui/avatar'
 import { Header2 } from '~/components/ui/headers'
 import { type PathLinkObject, type PathName } from '~/utils/path'
+import { isAuthed } from '~/utils/auth'
 
 type ProfileLink<T extends PathName> = PathLinkObject<T> & {
   icon: ReactNode
@@ -49,23 +48,15 @@ const LINKS = [
 ]
 
 export default async function ProfilePage() {
-  const session = await getServerAuthSession()
-
-  if (!session) {
-    redirect('/login')
-  }
+  const user = await isAuthed()
 
   return (
     <PageLayout
       title={
-        session.user.name ? (
+        user.name ? (
           <div className="flex flex-col items-center justify-center gap-2">
-            <Avatar
-              size="xl"
-              src={session.user.image}
-              name={session.user.name}
-            />{' '}
-            <Header2>{session.user.name}</Header2>
+            <Avatar size="xl" src={user.image} name={user.name} />{' '}
+            <Header2>{user.name}</Header2>
           </div>
         ) : (
           'Profile'
