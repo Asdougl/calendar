@@ -1,21 +1,24 @@
+'use client'
+
+import { useSession } from 'next-auth/react'
+import { redirect, useSearchParams } from 'next/navigation'
 import { Inbox } from './inbox'
+import Loading from './loading'
 import { OuterPageLayout } from '~/components/layout/PageLayout'
-import { isAuthed } from '~/utils/auth'
 
-type InboxParams = {
-  searchParams: {
-    event?: string
+export default function InboxPage() {
+  const searchParams = useSearchParams()
+  const { status } = useSession()
+
+  if (status === 'loading') {
+    return <Loading />
+  } else if (status === 'unauthenticated') {
+    redirect('/login')
   }
-}
-
-export default async function InboxPage({
-  searchParams: { event },
-}: InboxParams) {
-  await isAuthed()
 
   return (
     <OuterPageLayout fullscreen>
-      <Inbox eventId={event} />
+      <Inbox eventId={searchParams.get('event') ?? undefined} />
     </OuterPageLayout>
   )
 }

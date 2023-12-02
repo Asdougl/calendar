@@ -3,6 +3,7 @@
 import { ClockIcon, PlusIcon } from '@heroicons/react/24/solid'
 import { format, isSameMonth, startOfMonth } from 'date-fns'
 import { Fragment, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { SkeletonDivider, SkeletonEvent } from './skeleton'
 import { BackButton } from '~/components/BackButton'
 import { PageLayout } from '~/components/layout/PageLayout'
@@ -51,6 +52,9 @@ type EventsListProps = {
 export const EventsList = ({ notFound, direction }: EventsListProps) => {
   const [starting] = useState(() => new Date())
 
+  const searchParams = useSearchParams()
+  const query = searchParams.get('q') ?? undefined
+
   const { preferences } = usePreferences()
 
   const {
@@ -64,6 +68,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
       starting: starting,
       limit: 10,
       direction,
+      query,
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -96,6 +101,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
       {notFound && (
         <Alert level="error" message="Event not found" className="mb-4" />
       )}
+      {query && <PathLink path="/events">Clear</PathLink>}
       <ul className="flex flex-col gap-2">
         {isLoading && (
           <>
@@ -216,7 +222,8 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
               </SubmitButton>
             ) : (
               <span className="px-2 pt-6 italic text-neutral-500">
-                No more {direction === 'before' ? 'past' : 'upcoming'} events
+                No more {direction === 'before' ? 'past' : 'upcoming'} events{' '}
+                {query && `for "${query}"`}
               </span>
             )}
           </li>

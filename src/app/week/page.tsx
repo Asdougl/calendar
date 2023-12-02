@@ -1,13 +1,18 @@
-import { WeekView } from './week-view'
-import { OuterPageLayout } from '~/components/layout/PageLayout'
-import { isAuthed } from '~/utils/auth'
+'use client'
 
-export default async function WeekPage() {
-  await isAuthed()
+import { useSession } from 'next-auth/react'
+import { redirect } from 'next/navigation'
+import { WeekViewSimple } from './week-view-simple'
+import Loading from './loading'
 
-  return (
-    <OuterPageLayout fullscreen>
-      <WeekView />
-    </OuterPageLayout>
-  )
+export default function WeekPage() {
+  const { status } = useSession()
+
+  if (status === 'loading') {
+    return <Loading />
+  } else if (status === 'unauthenticated') {
+    redirect('/login')
+  }
+
+  return <WeekViewSimple />
 }

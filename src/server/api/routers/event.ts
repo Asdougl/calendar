@@ -47,6 +47,7 @@ export const eventRouter = createTRPCRouter({
         direction: z.enum(['before', 'after']).default('after'),
         limit: z.number().min(1).max(100).default(50),
         cursor: z.string().nullish(),
+        query: z.string().nullish(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -61,6 +62,12 @@ export const eventRouter = createTRPCRouter({
               : {
                   lt: input.starting.toISOString(),
                 },
+          title: input.query
+            ? {
+                contains: input.query,
+                mode: 'insensitive',
+              }
+            : undefined,
         },
         select,
         orderBy: {

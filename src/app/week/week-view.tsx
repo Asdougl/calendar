@@ -208,8 +208,9 @@ export const WeekView: FC = () => {
 
   const { preferences } = usePreferences()
 
+  const startParam = searchParams.get('start')
+
   const [focusDate, setFocusDate] = useState<Date>(() => {
-    const startParam = searchParams.get('start')
     const startParamDate = startParam ? new Date(startParam) : new Date()
 
     return setWeek(
@@ -236,6 +237,26 @@ export const WeekView: FC = () => {
       containerRef.current.scrollLeft = containerRef.current.scrollWidth / 3
     }
   }, [loadedWeeks])
+
+  useEffect(() => {
+    if (startParam) {
+      const startParamDate = new Date(startParam)
+      const startParamWeek = setWeek(
+        startOfWeek(startOfDay(startParamDate), {
+          weekStartsOn: 1,
+        }),
+        getWeek(startParamDate)
+      )
+      if (!isSameWeek(startParamWeek, focusDate)) {
+        setLoadedWeeks([
+          format(subWeeks(startParamWeek, 1), 'yyyy-MM-dd'),
+          format(startParamWeek, 'yyyy-MM-dd'),
+          format(addWeeks(startParamWeek, 1), 'yyyy-MM-dd'),
+        ])
+        setFocusDate(startParamWeek)
+      }
+    }
+  }, [startParam, focusDate])
 
   const { scrollXProgress } = useScroll({
     container: containerRef,

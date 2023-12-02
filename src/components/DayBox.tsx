@@ -79,12 +79,25 @@ export const DayBox: FC<{
             path="/day/:date"
             params={{ date: format(day, 'yyyy-MM-dd') }}
             className={cn(
-              'flex items-baseline gap-1 border-b border-transparent px-1 lg:hover:border-neutral-200',
-              distanceToToday === 0 && 'rounded bg-neutral-100 text-neutral-950'
+              'group flex items-center gap-1 border-b border-transparent px-1'
             )}
           >
-            <div className="font-bold">{format(day, 'E')}</div>
-            <div className="text-sm">{format(day, 'd MMM')}</div>
+            {distanceToToday === 0 && (
+              <span className="relative flex h-2 w-2 items-center justify-center">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neutral-50 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-neutral-50"></span>
+              </span>
+            )}
+            <div
+              className={cn('lg:hover:underline', {
+                'line-through opacity-50': distanceToToday < 0,
+              })}
+            >
+              <span className="font-bold">{format(day, 'E')}</span>{' '}
+              <span className="text-sm font-normal">
+                {format(day, 'd MMM')}
+              </span>
+            </div>
           </PathLink>
           {periods.map((period) => (
             <PathLink
@@ -105,7 +118,7 @@ export const DayBox: FC<{
             </PathLink>
           ))}
         </div>
-        <EventDialog initialDate={day} />
+        {distanceToToday >= 0 && <EventDialog initialDate={day} />}
       </div>
       <ul className="flex flex-grow flex-col gap-0.5 overflow-hidden lg:gap-1">
         {isLoading ? (
@@ -121,11 +134,13 @@ export const DayBox: FC<{
             />
           ))
         )}
-        <li className="w-full flex-1">
-          <EventDialog initialDate={day}>
-            <button className="h-full w-full"></button>
-          </EventDialog>
-        </li>
+        {distanceToToday >= 0 && (
+          <li className="w-full flex-1">
+            <EventDialog initialDate={day}>
+              <button className="h-full w-full"></button>
+            </EventDialog>
+          </li>
+        )}
       </ul>
     </div>
   )

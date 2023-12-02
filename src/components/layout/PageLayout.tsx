@@ -1,6 +1,7 @@
 import { type ReactNode, type FC, type PropsWithChildren } from 'react'
 import { Navbar } from '../Navbar'
 import { Header1 } from '../ui/headers'
+import { CommandBar } from '../CommandBar'
 import { cn } from '~/utils/classnames'
 
 export type PageLayoutProps = {
@@ -28,6 +29,7 @@ export const OuterPageLayout: FC<
         {children}
       </div>
       {!hideNav && <Navbar loading={skeleton} />}
+      <CommandBar />
     </main>
   )
 }

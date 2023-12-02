@@ -117,7 +117,7 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
         <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" />
         <Dialog.Content className="fixed left-1/2 top-10 z-10 w-full max-w-xl -translate-x-1/2 p-6 lg:top-24">
           {/* Row 0 */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-stretch justify-between">
             <Dialog.Title className="flex items-stretch gap-2">
               <div
                 className={cn(
@@ -130,17 +130,22 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
               <div className="flex flex-col">
                 <div className="text-2xl font-bold">{event.title}</div>
                 {event.location && (
-                  <div className="text-sm text-neutral-400">
+                  <a
+                    href={`https://google.com/maps?q=${encodeURIComponent(
+                      event.location
+                    )}`}
+                    className="text-sm text-neutral-400 underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     {event.location}
-                  </div>
+                  </a>
                 )}
               </div>
             </Dialog.Title>
-            <div className="flex h-full flex-col">
-              <Dialog.Close className="flex h-6 w-6 items-center justify-center rounded-full ring-neutral-600 hover:bg-neutral-800 focus:outline-none focus:ring">
-                <XMarkIcon height={20} />
-              </Dialog.Close>
-            </div>
+            <Dialog.Close className="flex items-center justify-center rounded-lg px-4 ring-neutral-600 hover:bg-neutral-800 focus:outline-none focus:ring">
+              <XMarkIcon height={20} />
+            </Dialog.Close>
           </div>
           {/* Update form DESKTOP */}
           <form onSubmit={onSubmit} className="hidden flex-col gap-2 lg:flex">
