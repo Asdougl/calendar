@@ -8,7 +8,7 @@ import { format } from 'date-fns'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { DatePicker } from './ui/dates/DatePicker'
 import { TimeInput } from './ui/input/time'
-import { ButtonLink, SubmitButton } from './ui/button'
+import { Button, ButtonLink, SubmitButton } from './ui/button'
 import { ErrorText } from './ui/Text'
 import { MobileTimeInput } from './ui/input/mobile-time'
 import { type RouterOutputs } from '~/trpc/shared'
@@ -40,6 +40,7 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
   const searchParams = useSearchParams()
 
   const [open, setOpen] = useState(initialOpen)
+  const [editTime, setEditTime] = useState(event.timeStatus === 'STANDARD')
 
   const { preferences } = usePreferences()
 
@@ -105,6 +106,7 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
       })
     }
     setOpen(!open)
+    if (event.timeStatus === 'NO_TIME') setEditTime(false)
     reset()
   }
 
@@ -165,19 +167,21 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
                   />
                 )}
               />
-              <Controller
-                control={control}
-                name="time"
-                render={({ field }) => (
-                  <TimeInput
-                    disabled={formLock}
-                    value={field.value || ''}
-                    onChange={field.onChange}
-                    className="w-1/2"
-                    placeholder="Time (optional)"
-                  />
-                )}
-              />
+              {editTime && (
+                <Controller
+                  control={control}
+                  name="time"
+                  render={({ field }) => (
+                    <TimeInput
+                      disabled={formLock}
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                      className="w-1/2"
+                      placeholder="Time (optional)"
+                    />
+                  )}
+                />
+              )}
             </div>
             {/* Row 3 */}
             <div className="flex justify-between">
@@ -187,6 +191,9 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
                 {errors.root && <ErrorText>{errors.root.message}</ErrorText>}
               </div>
               <div className="flex gap-2">
+                {event.timeStatus === 'NO_TIME' && !editTime && (
+                  <Button onClick={() => setEditTime(true)}>Add a time</Button>
+                )}
                 {isDirty && (
                   <SubmitButton
                     intent="primary"
@@ -226,18 +233,20 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
                 />
               )}
             />
-            <Controller
-              control={control}
-              name="time"
-              render={({ field }) => (
-                <MobileTimeInput
-                  type={preferences?.timeFormat || '12'}
-                  disabled={formLock}
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                />
-              )}
-            />
+            {editTime && (
+              <Controller
+                control={control}
+                name="time"
+                render={({ field }) => (
+                  <MobileTimeInput
+                    type={preferences?.timeFormat || '12'}
+                    disabled={formLock}
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
+            )}
             {/* Row 3 */}
             <div className="flex justify-between">
               <div className="">
@@ -254,6 +263,9 @@ export const ViewEvent: FC<PropsWithChildren<ViewEventProps>> = ({
                   >
                     Update
                   </SubmitButton>
+                )}
+                {event.timeStatus === 'NO_TIME' && !editTime && (
+                  <Button onClick={() => setEditTime(true)}>Add a time</Button>
                 )}
                 <ButtonLink
                   path="/events/:id"

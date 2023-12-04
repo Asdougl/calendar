@@ -123,7 +123,7 @@ export const EditEventForm: FC<EventFormProps> = ({
           timeStatus: data.status,
         })
       }
-      await queryClient.event.invalidate()
+      await queryClient.event.range.invalidate()
       router.push(origin)
     } catch (error) {
       setError('root', {

@@ -178,6 +178,9 @@ export const CATEGORY_SELECT_OPTIONS: CategoryColorOption[] = [
   },
 ]
 
+/**
+ * @deprecated use `color` instead
+ */
 export const getCategoryColor = (
   colorName: string | undefined,
   property: ColorProperties
@@ -188,3 +191,11 @@ export const getCategoryColor = (
     return CATEGORY_COLOR_MAP._none[property]
   }
 }
+
+export const color =
+  (...properties: ColorProperties[]) =>
+  (colorName: string | undefined) => {
+    return clsx(
+      properties.map((property) => getCategoryColor(colorName, property))
+    )
+  }

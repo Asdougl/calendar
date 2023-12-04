@@ -271,7 +271,8 @@ export const WeekViewSimple = () => {
                 <span
                   className={cn(
                     'text-neutral-200',
-                    isSameWeek(prevWeek, now) && 'underline'
+                    isSameWeek(prevWeek, now, { weekStartsOn: 1 }) &&
+                      'underline'
                   )}
                 >
                   {format(prevWeek, 'MMM dd')}
@@ -279,7 +280,8 @@ export const WeekViewSimple = () => {
                 <span
                   className={cn(
                     'text-neutral-200',
-                    isSameWeek(focusDate, now) && 'underline'
+                    isSameWeek(focusDate, now, { weekStartsOn: 1 }) &&
+                      'underline'
                   )}
                 >
                   {format(focusDate, 'MMM dd')}
@@ -287,7 +289,8 @@ export const WeekViewSimple = () => {
                 <span
                   className={cn(
                     'text-neutral-200',
-                    isSameWeek(nextWeek, now) && 'underline'
+                    isSameWeek(nextWeek, now, { weekStartsOn: 1 }) &&
+                      'underline'
                   )}
                 >
                   {format(nextWeek, 'MMM dd')}

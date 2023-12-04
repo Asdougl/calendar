@@ -6,6 +6,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { format, isValid } from 'date-fns'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
+import { TimeStatus } from '@prisma/client'
 import { Header2 } from './ui/headers'
 import { Button, SubmitButton } from './ui/button'
 import { Label } from './ui/label'
@@ -14,18 +15,22 @@ import { DatePicker } from './ui/dates/DatePicker'
 import { TimeInput } from './ui/input/time'
 import { Alert } from './ui/Alert'
 import { CategorySelect } from './form/CategorySelect'
-import { Switch } from './ui/switch'
+import { TabSelect } from './ui/tab-select'
+import { MobileTimeInput } from './ui/input/mobile-time'
 import { dateFromDateAndTime } from '~/utils/dates'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { useOrigination } from '~/utils/atoms'
 import { pathReplace } from '~/utils/path'
+import { usePreferences } from '~/trpc/hooks'
+import { useViewport } from '~/utils/hooks'
+import { BREAKPOINTS } from '~/utils/constants'
 
 const EventDialogFormSchema = z.object({
   title: z.string(),
   date: z.string(),
   time: z.string().nullable(),
-  allDay: z.boolean().default(false),
+  type: z.nativeEnum(TimeStatus),
   categoryId: z.string().nullable(),
 })
 type EventDialogFormSchema = z.infer<typeof EventDialogFormSchema>
@@ -46,6 +51,12 @@ type EventDialogProps = PropsWithChildren<
   UpdateEventDialogProps | InsertEventDialogProps
 >
 
+const EVENT_TYPE_OPTIONS = [
+  { label: 'Scheduled', value: 'STANDARD' },
+  { label: 'Unscheduled', value: 'NO_TIME' },
+  { label: 'All Day', value: 'ALL_DAY' },
+] as const
+
 export const EventDialog: FC<EventDialogProps> = ({
   disabled,
   children,
@@ -60,6 +71,10 @@ export const EventDialog: FC<EventDialogProps> = ({
   const [originating] = useOrigination()
 
   const queryClient = api.useUtils()
+
+  const { preferences } = usePreferences()
+
+  const { width } = useViewport()
 
   const {
     mutate: insertMutate,
@@ -95,7 +110,7 @@ export const EventDialog: FC<EventDialogProps> = ({
     reset,
     formState: { isDirty, errors },
   } = useForm<EventDialogFormSchema>({
-    defaultValues: {
+    values: {
       title: 'event' in props ? props.event.title : '',
       date:
         'event' in props
@@ -106,7 +121,7 @@ export const EventDialog: FC<EventDialogProps> = ({
         'event' in props && props.event.category
           ? props.event.category.id
           : 'none',
-      allDay: 'event' in props ? props.event.timeStatus === 'ALL_DAY' : false,
+      type: 'event' in props ? props.event.timeStatus : 'STANDARD',
     },
     resolver: zodResolver(EventDialogFormSchema),
   })
@@ -123,6 +138,11 @@ export const EventDialog: FC<EventDialogProps> = ({
   }
 
   const onSubmit = handleSubmit((data) => {
+    if (data.type === 'STANDARD' && !data.time) {
+      setError('time', { message: 'Time is required' })
+      return
+    }
+
     const dateTime = dateFromDateAndTime(data.date, data.time || '12:00')
     if (!isValid(dateTime)) {
       setError('date', { message: 'Invalid date' })
@@ -186,7 +206,7 @@ export const EventDialog: FC<EventDialogProps> = ({
     )
   }
 
-  const isAllDay = watch('allDay')
+  const eventType = watch('type')
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -199,7 +219,7 @@ export const EventDialog: FC<EventDialogProps> = ({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/4 z-10 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 p-6">
+        <Dialog.Content className="fixed left-1/2 top-10 z-10 w-full max-w-xl -translate-x-1/2 p-6 lg:top-24">
           {/* Row 0 */}
           <div className="flex justify-between pb-2">
             <Dialog.Title asChild>
@@ -234,7 +254,7 @@ export const EventDialog: FC<EventDialogProps> = ({
             </div>
             <div className="flex w-full flex-col justify-between gap-4">
               {/* Row 2 -- category */}
-              <div className="flex flex-grow flex-wrap gap-4">
+              <div className="flex flex-grow flex-col gap-4 lg:flex-row">
                 <Controller
                   control={control}
                   name="categoryId"
@@ -242,54 +262,68 @@ export const EventDialog: FC<EventDialogProps> = ({
                     <CategorySelect
                       value={field.value}
                       onChange={field.onChange}
+                      className="flex-1"
+                    />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name="date"
+                  render={({ field }) => (
+                    <DatePicker
+                      value={field.value ? new Date(field.value) : new Date()}
+                      onChange={(value) =>
+                        field.onChange(format(value, 'yyyy-MM-dd'))
+                      }
+                      className="flex-1"
+                    />
+                  )}
+                />
+              </div>
+              {/* Row 3 (Mobile) -- date & time */}
+              <div className="flex w-full flex-grow flex-wrap gap-4 md:w-auto">
+                <Controller
+                  control={control}
+                  name="type"
+                  render={({ field }) => (
+                    <TabSelect
+                      options={EVENT_TYPE_OPTIONS}
+                      value={field.value}
+                      onChange={field.onChange}
                       className="flex-grow"
                     />
                   )}
                 />
-                {/* Row 3 (Mobile) -- date & time */}
-                <div className="flex w-full flex-grow gap-4 md:w-auto">
+              </div>
+              <div className="w-full">
+                {eventType === 'STANDARD' && (
                   <Controller
                     control={control}
-                    name="date"
-                    render={({ field }) => (
-                      <DatePicker
-                        value={field.value ? new Date(field.value) : new Date()}
-                        onChange={(value) =>
-                          field.onChange(format(value, 'yyyy-MM-dd'))
-                        }
-                        className="flex-1"
-                      />
-                    )}
-                  />
-                  {!isAllDay && (
-                    <Controller
-                      control={control}
-                      name="time"
-                      render={({ field }) => (
+                    name="time"
+                    render={({ field }) =>
+                      width > BREAKPOINTS.lg ? (
                         <TimeInput
                           value={field.value || ''}
                           onChange={field.onChange}
-                          className="flex-1"
-                          placeholder="Time (optional)"
+                          className="hidden flex-1 lg:block"
+                          placeholder={
+                            preferences?.timeFormat === '24'
+                              ? 'Time e.g. 14:00'
+                              : 'Time e.g. 2:00 pm'
+                          }
+                          width="full"
                         />
-                      )}
-                    />
-                  )}
-                  <Controller
-                    control={control}
-                    name="allDay"
-                    render={({ field }) => (
-                      <div>
-                        <Label htmlFor="create-event-allday">All Day</Label>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          placeholder="0000 (optional)"
+                      ) : (
+                        <MobileTimeInput
+                          type={preferences?.timeFormat || '12'}
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          className="flex-1 lg:hidden"
                         />
-                      </div>
-                    )}
+                      )
+                    }
                   />
-                </div>
+                )}
               </div>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex flex-grow justify-end gap-4">

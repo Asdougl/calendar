@@ -13,6 +13,7 @@ import { SkeletonText } from '~/components/skeleton/Text'
 import { UncontrolledDateRangePicker } from '~/components/ui/dates/DateRangePicker'
 import { TimeInput } from '~/components/ui/input/time'
 import { MobileTimeInput } from '~/components/ui/input/mobile-time'
+import { TabSelect } from '~/components/ui/tab-select'
 
 const TimeInputDemo = () => {
   const [time, setTime] = useState<string | null>(null)
@@ -40,6 +41,26 @@ const MobileTimeInputDemo = () => {
       <Switch
         checked={type === '12'}
         onCheckedChange={() => setType((type) => (type === '12' ? '24' : '12'))}
+      />
+    </Field>
+  )
+}
+
+const TAB_OPTIONS = [
+  { label: 'Foo', value: 'foo' },
+  { label: 'Bar', value: 'bar' },
+  { label: 'Baz', value: 'baz' },
+] as const
+
+const TabSelectDemo = () => {
+  const [value, setValue] = useState('foo')
+
+  return (
+    <Field label="Tab Select" subtext={value}>
+      <TabSelect
+        options={TAB_OPTIONS}
+        value={value}
+        onChange={(value) => setValue(value)}
       />
     </Field>
   )
@@ -161,6 +182,7 @@ export default function SandboxPage() {
         </Field>
         <TimeInputDemo />
         <MobileTimeInputDemo />
+        <TabSelectDemo />
       </div>
       <div className="flex flex-col py-12">
         <h1 className="text-4xl">Demo Form</h1>

@@ -1,15 +1,30 @@
 import { useState, type FC, useEffect } from 'react'
 import { Spinner } from '../spinner'
+import { cn } from '~/utils/classnames'
 
 const HOURS_12 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const HOURS_24 = [...Array(24).keys()]
-const MINUTES = [...Array(60).keys()].map((i) => i.toString().padStart(2, '0'))
+const MINUTES = [
+  '00',
+  '05',
+  '10',
+  '15',
+  '20',
+  '25',
+  '30',
+  '35',
+  '40',
+  '45',
+  '50',
+  '55',
+]
 
 type MobileTimeInputProps = {
   value: string | null
   onChange: (value: string | null) => void
   type: '12' | '24'
   disabled?: boolean
+  className?: string
 }
 
 type UpdateMap = {
@@ -26,9 +41,10 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
   onChange,
   type,
   disabled,
+  className,
 }) => {
   const [hours, setHours] = useState<number>(() => {
-    if (!value) return 1
+    if (!value) return type === '12' ? 8 : 0
     const match = value.match(TIME_REGEX)
     if (!match) return 1
     const rawHours = match[1]
@@ -37,7 +53,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
     return type === '12' ? (hours > 12 ? hours - 12 : hours) : hours
   })
   const [minutes, setMinutes] = useState<number>(() => {
-    if (!value) return 1
+    if (!value) return 0
     const match = value.match(TIME_REGEX)
     if (!match) return 1
     const rawMinutes = match[2]
@@ -117,7 +133,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
   }
 
   return (
-    <div className="flex justify-center gap-2">
+    <div className={cn('flex justify-center gap-2', className)}>
       <Spinner
         options={type === '12' ? HOURS_12 : HOURS_24}
         value={hours}

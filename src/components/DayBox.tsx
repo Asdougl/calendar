@@ -11,11 +11,10 @@ import type { FC } from 'react'
 import { useMemo } from 'react'
 import { EventDialog } from './EventDialog'
 import { EventItem } from './EventItem'
-import { CategoryIcon } from './CategoryIcon'
 import { PathLink } from './ui/PathLink'
-import { cn, getCategoryColor } from '~/utils/classnames'
+import { ViewPeriod } from './ViewPeriod'
+import { cn } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
-import { useOrigination } from '~/utils/atoms'
 
 export const DayBox: FC<{
   focusDate: Date
@@ -59,8 +58,6 @@ export const DayBox: FC<{
 
   const distanceToToday = differenceInCalendarDays(day, new Date())
 
-  const [originating] = useOrigination()
-
   return (
     <div
       className={cn(
@@ -69,8 +66,7 @@ export const DayBox: FC<{
           'border-neutral-400': distanceToToday === 0,
           'border-neutral-500': distanceToToday === 1,
           'border-neutral-600': distanceToToday === 2,
-        },
-        periods.length === 1 && getCategoryColor(periods[0]?.color, 'border')
+        }
       )}
     >
       <div className="flex justify-between">
@@ -100,22 +96,11 @@ export const DayBox: FC<{
             </div>
           </PathLink>
           {periods.map((period) => (
-            <PathLink
-              key={period.id}
-              path="/periods/:id"
-              params={{ id: period.id }}
-              query={{ origin: originating }}
-            >
-              <CategoryIcon
-                icon={
-                  periods.length === 1
-                    ? `${period.icon} ${period.name}`
-                    : period.icon
-                }
-                color={period.color}
-                size="sm"
-              />
-            </PathLink>
+            <ViewPeriod key={period.id} period={period}>
+              <button type="button" className="text-xs">
+                {period.icon}
+              </button>
+            </ViewPeriod>
           ))}
         </div>
         {distanceToToday >= 0 && <EventDialog initialDate={day} />}

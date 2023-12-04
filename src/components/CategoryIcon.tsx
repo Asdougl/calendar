@@ -1,7 +1,7 @@
 import { type Category } from '@prisma/client'
 import { type VariantProps, cva } from 'class-variance-authority'
 import { type FC } from 'react'
-import { cn, getCategoryColor } from '~/utils/classnames'
+import { cn, color } from '~/utils/classnames'
 
 const categoryIconStyles = cva('text-sm', {
   variants: {
@@ -22,6 +22,8 @@ type CategoryIconProps = {
 } & Required<Pick<StyleProps, 'size'>> &
   Omit<StyleProps, 'size'>
 
+const getColors = color('bg-dull', 'alt-text')
+
 export const CategoryIcon: FC<CategoryIconProps> = ({
   color,
   icon,
@@ -35,14 +37,7 @@ export const CategoryIcon: FC<CategoryIconProps> = ({
     <div
       className={cn(
         categoryIconStyles(props),
-        color
-          ? [
-              getCategoryColor(color, 'bg'),
-              getCategoryColor(color, 'border'),
-              getCategoryColor(color, 'alt-text'),
-              'border font-bold',
-            ]
-          : 'bg-neutral-800',
+        color ? [getColors(color), 'font-bold'] : 'bg-neutral-800',
         className
       )}
     >

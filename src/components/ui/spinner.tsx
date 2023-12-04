@@ -8,6 +8,7 @@ type SpinnerProps<T extends string | number> = {
   debug?: boolean
   disabled?: boolean
   size?: 'sm' | 'md' | 'lg' | 'auto'
+  className?: string
 }
 
 export const Spinner = <T extends string | number>({
@@ -17,6 +18,7 @@ export const Spinner = <T extends string | number>({
   debug,
   disabled,
   size = 'md',
+  className,
 }: SpinnerProps<T>) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const updateTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -53,7 +55,12 @@ export const Spinner = <T extends string | number>({
   }, [value, options])
 
   return (
-    <div className="relative overflow-hidden rounded-lg border border-neutral-800">
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-lg border border-neutral-800',
+        className
+      )}
+    >
       <div
         ref={scrollRef}
         onScroll={onScroll}
@@ -72,7 +79,6 @@ export const Spinner = <T extends string | number>({
                 'w-6 text-lg': size === 'sm',
                 'w-14 text-xl': size === 'md',
                 'w-20 text-xl': size === 'lg',
-                'w-auto text-base': size === 'auto',
               }
             )}
           >

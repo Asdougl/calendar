@@ -1,12 +1,12 @@
 import {
   addDays,
   differenceInCalendarDays,
+  differenceInCalendarWeeks,
   differenceInDays,
   endOfWeek,
   format,
   getDate,
   getDay,
-  getDayOfYear,
   getUnixTime,
   set,
   startOfDay,
@@ -36,11 +36,9 @@ export const getMonthDates = (year: number, month: number) => {
   })
 
   // number of weeks in a month when week starts on Monday
-  const weeks = Math.ceil(
-    (getDayOfYear(endOfWeek(lastOfMonth, { weekStartsOn: 1 })) -
-      getDayOfYear(startOfWeek(firstOfMonth, { weekStartsOn: 1 }))) /
-      7
-  )
+  const weeks = differenceInCalendarWeeks(lastOfMonth, firstOfMonth, {
+    weekStartsOn: 1,
+  })
 
   let focusDay = set(new Date(), {
     year,

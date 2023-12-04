@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter as useNextRouter } from 'next/navigation'
 import type { EffectCallback } from 'react'
 import { useEffect, useRef, useState } from 'react'
+import throttle from 'lodash/throttle'
 import { pathReplace } from './path'
 
 /**
@@ -246,4 +247,28 @@ export const useRouter = () => {
     ...router,
     push,
   }
+}
+
+export const useViewport = () => {
+  const [viewport, setViewport] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  })
+
+  useEffect(() => {
+    const handleResize = throttle(() => {
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
+    }, 100)
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
+
+  return viewport
 }

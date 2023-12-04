@@ -47,9 +47,14 @@ type ButtonVariantProps = VariantProps<typeof button>
 type ButtonProps<T extends ElementType> = ButtonVariantProps & ComponentProps<T>
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps<'button'>>(
-  function FwdButton({ className, ...props }, ref) {
+  function FwdButton({ className, type = 'submit', ...props }, ref) {
     return (
-      <button {...props} ref={ref} className={cn(button(props), className)} />
+      <button
+        {...props}
+        type={type}
+        ref={ref}
+        className={cn(button(props), className)}
+      />
     )
   }
 )

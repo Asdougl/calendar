@@ -4,14 +4,13 @@ import { SkeletonText } from '~/components/skeleton/Text'
 import { Header1 } from '~/components/ui/headers'
 import { cn } from '~/utils/classnames'
 
-const PLACEHOLDER_WEEKS = [
-  Array(6).fill(null),
-  Array(6).fill(null),
-  Array(6).fill(null),
-  Array(6).fill(null),
-]
+const createPlaceholders = (count: number) => {
+  return Array(Math.abs(count)).fill(Array(7).fill(null)) as null[][]
+}
 
-export default function MonthView() {
+export default function MonthView({ weekCount = 4 }) {
+  const weeks = createPlaceholders(weekCount)
+
   return (
     <main className="flex h-screen flex-col">
       <div className="mx-auto flex h-full w-full max-w-2xl flex-grow flex-col">
@@ -29,9 +28,9 @@ export default function MonthView() {
           />
         </div>
         <div className="flex flex-grow flex-col gap-[2px] overflow-scroll px-[2px]">
-          {PLACEHOLDER_WEEKS.map((week, i) => (
+          {weeks.map((week, i) => (
             <div key={i} className="group flex flex-1 flex-grow">
-              {week.map((day, j) => {
+              {week.map((_, j) => {
                 return (
                   <div
                     key={j}

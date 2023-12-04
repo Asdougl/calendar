@@ -189,7 +189,7 @@ export const MonthView: FC = () => {
     <InnerPageLayout title={format(focusMonth.start, 'MMMM yyyy')}>
       <button
         onClick={viewPrevMonth}
-        className="flex w-full items-center justify-center rounded-lg py-2 hover:bg-neutral-900"
+        className="flex w-full items-center justify-center rounded-lg py-1 hover:bg-neutral-900"
       >
         <ChevronUpIcon height={24} />
       </button>
@@ -233,22 +233,22 @@ export const MonthView: FC = () => {
                 >
                   {/* needs to be wrapped in a flex because parent can't be a flex */}
                   {/* if we want the event title to overflow into ellipsis */}
-                  <div className="flex">
+                  <div className="flex justify-between">
                     <div
                       className={cn(
                         'px-1 text-xs',
                         isSameDay(day, new Date()) &&
-                          'rounded-full bg-neutral-50 text-neutral-950'
+                          'rounded-lg bg-neutral-50 text-neutral-950'
                       )}
                     >
-                      {format(day, 'EE dd')}
+                      {format(day, 'dd')}
                     </div>
                     <div className="flex h-full items-center justify-center">
                       {periodsForDay?.map((period) => (
                         <div
                           key={period.id}
                           className={cn(
-                            'h-2 w-2 rounded-full',
+                            'h-2 w-2 rounded-sm',
                             getCategoryColor(period.color, 'bg')
                           )}
                         ></div>
@@ -264,7 +264,7 @@ export const MonthView: FC = () => {
                     <div
                       key={event.id}
                       className={cn(
-                        'relative flex flex-col gap-0.5 pl-2 hover:bg-neutral-900',
+                        'relative flex flex-col gap-0.5 pl-1 hover:bg-neutral-900',
                         {
                           'animate-pulse opacity-50': isFetching,
                         }
@@ -272,7 +272,7 @@ export const MonthView: FC = () => {
                     >
                       <div
                         className={cn(
-                          'absolute left-0 top-0 h-full w-1 rounded-lg',
+                          'absolute left-0 top-0 h-full w-0.5 rounded-lg',
                           getCategoryColor(event.category?.color, 'bg')
                         )}
                       ></div>
@@ -300,7 +300,7 @@ export const MonthView: FC = () => {
       </div>
       <button
         onClick={viewNextMonth}
-        className="flex w-full items-center justify-center rounded-lg py-2 hover:bg-neutral-900"
+        className="flex w-full items-center justify-center rounded-lg py-1 hover:bg-neutral-900"
       >
         <ChevronDownIcon height={24} />
       </button>
