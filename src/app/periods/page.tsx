@@ -1,4 +1,10 @@
-import { differenceInDays, format, isSameDay } from 'date-fns'
+import {
+  addYears,
+  differenceInDays,
+  format,
+  isSameDay,
+  subDays,
+} from 'date-fns'
 import { api } from '~/trpc/server'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { ButtonLink } from '~/components/ui/button'
@@ -60,8 +66,8 @@ export default async function PeriodsPage() {
   await isAuthed()
 
   const periods = await api.periods.range.query({
-    start: new Date(),
-    end: new Date(),
+    start: subDays(new Date(), 1),
+    end: addYears(new Date(), 1),
   })
 
   return (

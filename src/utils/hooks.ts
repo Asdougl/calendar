@@ -1,10 +1,11 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useRouter as useNextRouter } from 'next/navigation'
+import { useRouter as useNextRouter, useSearchParams } from 'next/navigation'
 import type { EffectCallback } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import throttle from 'lodash/throttle'
+import { startOfDay } from 'date-fns'
 import { pathReplace } from './path'
 
 /**
@@ -271,4 +272,31 @@ export const useViewport = () => {
   }, [])
 
   return viewport
+}
+
+export const useClientDate = () => {
+  const [date, setDate] = useState<Date | null>(null)
+
+  useEffect(() => {
+    setDate(startOfDay(new Date()))
+  }, [])
+
+  return [date, setDate] as const
+}
+
+export const useClientParamDate = (param: string) => {
+  const searchParams = useSearchParams()
+
+  const paramValue = searchParams.get(param)
+
+  const [date, setDate] = useState<Date | null>(null)
+
+  useEffect(() => {
+    if (!paramValue) return
+    const date = new Date(paramValue)
+    if (isNaN(date.getTime())) return
+    setDate(startOfDay(date))
+  }, [paramValue])
+
+  return [date, setDate] as const
 }

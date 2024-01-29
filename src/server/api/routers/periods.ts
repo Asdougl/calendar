@@ -20,23 +20,50 @@ const select = {
 export const periodsRouter = createTRPCRouter({
   range: protectedProcedure
     .input(
-      z.object({
-        start: z.date(),
-        end: z.date(),
-      })
+      z
+        .object({
+          start: z.date(),
+          end: z.date(),
+        })
+        .optional()
     )
     .query(({ ctx, input }) => {
+      if (!input) return []
+
+      // Scenario 1: start and end are both in the range
+      // Scenario 2: start is in the range
+      // Scenario 3: end is in the range
+
       return ctx.db.period.findMany({
         where: {
           OR: [
-            {
-              endDate: {
-                gte: input.start,
-              },
-            },
+            // Scenario 1
             {
               startDate: {
+                lte: input.start,
+              },
+              endDate: {
+                gte: input.end,
+              },
+            },
+            // Scenario 2
+            {
+              startDate: {
+                lte: input.start,
+              },
+              endDate: {
+                gte: input.start,
                 lte: input.end,
+              },
+            },
+            // Scenario 3
+            {
+              startDate: {
+                gte: input.start,
+                lte: input.end,
+              },
+              endDate: {
+                gte: input.end,
               },
             },
           ],

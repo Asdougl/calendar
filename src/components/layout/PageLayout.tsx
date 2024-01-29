@@ -19,11 +19,15 @@ export const OuterPageLayout: FC<
   >
 > = ({ children, skeleton, hideNav, fullscreen }) => {
   return (
-    <main className="flex min-h-screen flex-col px-2 md:px-0">
+    <main
+      className={cn('flex min-h-screen flex-col px-2 md:px-0', {
+        'h-screen': fullscreen,
+      })}
+    >
       <div
         className={cn(
           'mx-auto flex h-full w-full max-w-2xl flex-grow flex-col',
-          { 'pb-24 lg:pb-0': !fullscreen }
+          { 'pb-24 lg:pb-0': !fullscreen, 'overflow-hidden': fullscreen }
         )}
       >
         {children}
@@ -43,7 +47,7 @@ export const InnerPageLayout: FC<PropsWithChildren<PageLayoutProps>> = ({
 }) => {
   return (
     <>
-      <header className="flex items-stretch justify-between px-4 py-6">
+      <header className="flex items-stretch justify-between px-4 py-4">
         <div
           className={cn('flex w-8', {
             'opacity-0': !headerLeft,

@@ -5,7 +5,7 @@ import { type FC } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
-import { differenceInDays } from 'date-fns'
+import { differenceInDays, endOfDay, startOfDay } from 'date-fns'
 import { createPeriod, confirmDeletePeriod, updatePeriod } from './actions'
 import { ControlledCategorySelect } from '~/components/form/CategorySelect'
 import { Field, InputField } from '~/components/ui/Field'
@@ -66,7 +66,10 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period, origin }) => {
   })
 
   const onSubmit = handleSubmit(async (data) => {
-    if (data.dates.start > data.dates.end) {
+    const start = startOfDay(data.dates.start)
+    const end = endOfDay(data.dates.end)
+
+    if (start > end) {
       setError('dates', { message: 'End date must be after start date' })
       return
     }
@@ -78,8 +81,8 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period, origin }) => {
           color: data.color,
           icon: data.icon,
           categoryId: data.categoryId,
-          startDate: data.dates.start.toISOString(),
-          endDate: data.dates.end.toISOString(),
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
         })
         router.push(origin)
       } else {
@@ -88,8 +91,8 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period, origin }) => {
           color: data.color,
           icon: data.icon,
           categoryId: data.categoryId || null,
-          startDate: data.dates.start.toISOString(),
-          endDate: data.dates.end.toISOString(),
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
         })
         router.push(origin)
       }

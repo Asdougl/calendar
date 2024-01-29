@@ -140,6 +140,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
         onChange={updateHours}
         disabled={disabled}
         size="lg"
+        className="flex-1"
       />
       <Spinner
         options={MINUTES}
@@ -147,6 +148,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
         onChange={updateMinutes}
         disabled={disabled}
         size="lg"
+        className="flex-1"
       />
       {type === '12' && (
         <Spinner
@@ -155,6 +157,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
           onChange={updateMeridiem}
           disabled={disabled}
           size="lg"
+          className="flex-1"
         />
       )}
     </div>

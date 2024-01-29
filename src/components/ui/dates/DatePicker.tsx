@@ -18,7 +18,6 @@ import {
   startOfDay,
 } from 'date-fns'
 import { Button } from '../button'
-import { NumberInput } from '../input/number'
 import {
   MONTH_OPTIONS,
   accessibleFormat,
@@ -28,6 +27,7 @@ import {
   isDisabled,
   stdFormat,
 } from './common'
+import { YearInput } from './YearInput'
 import { cn } from '~/utils/classnames'
 import { getMonthDates } from '~/utils/dates'
 
@@ -52,7 +52,6 @@ export const DatePicker: FC<DatePickerProps> = ({
 }) => {
   const [focusMonth, setFocusMonth] = useState(() => getInitialFocus(value))
   const [open, setOpen] = useState(false)
-  const [yearError, setYearError] = useState<'min' | 'max' | null>(null)
 
   const monthDates = useMemo(() => {
     return getMonthDates(getYear(focusMonth), getMonth(focusMonth))
@@ -126,16 +125,12 @@ export const DatePicker: FC<DatePickerProps> = ({
                 {MONTH_OPTIONS}
               </select>
               {/* rework this because it's shit */}
-              <NumberInput
+              <YearInput
                 aria-label="year"
                 value={getYear(focusMonth)}
-                onChange={(value, error) => {
+                onBlur={(value) => {
                   setFocusMonth(setYear(focusMonth, value))
-                  setYearError(error ?? null)
                 }}
-                error={!!yearError}
-                max={2100}
-                min={1901}
                 className="w-12 flex-1 rounded-lg border-none bg-neutral-950 px-4 py-0 leading-tight text-neutral-50 hover:bg-neutral-900 lg:w-12"
               />
               <button

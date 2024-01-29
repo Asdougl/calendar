@@ -103,30 +103,45 @@ export default function SandboxPage() {
             <SubmitButton intent="primary" loading>
               Primary
             </SubmitButton>
+            <Button intent="primary" disabled>
+              Primary
+            </Button>
           </div>
           <div className="flex gap-2">
             <Button intent="secondary">Secondary</Button>
             <SubmitButton intent="secondary" loading>
               Secondary
             </SubmitButton>
+            <Button intent="secondary" disabled>
+              Secondary
+            </Button>
           </div>
           <div className="flex gap-2">
             <Button intent="tertiary">Tertiary</Button>
             <SubmitButton intent="tertiary" loading>
               Tertiary
             </SubmitButton>
+            <Button intent="tertiary" disabled>
+              Tertiary
+            </Button>
           </div>
           <div className="flex gap-2">
             <Button intent="danger">Danger</Button>
             <SubmitButton intent="danger" loading>
               Danger
             </SubmitButton>
+            <Button intent="danger" disabled>
+              Danger
+            </Button>
           </div>
           <div className="flex gap-2">
             <Button intent="success">Success</Button>
             <SubmitButton intent="success" loading>
               Success
             </SubmitButton>
+            <Button intent="success" disabled>
+              Success
+            </Button>
           </div>
         </div>
         <div className="flex flex-col items-start gap-2">

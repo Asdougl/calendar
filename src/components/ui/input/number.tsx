@@ -1,4 +1,4 @@
-import { type ChangeEvent, forwardRef, useState } from 'react'
+import { type ChangeEvent, forwardRef, useState, useEffect } from 'react'
 import { Input, type InputProps } from '.'
 import { exists } from '~/utils/guards'
 
@@ -19,6 +19,10 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     ref
   ) {
     const [internalValue, setInternalValue] = useState(value.toString())
+
+    useEffect(() => {
+      setInternalValue(value.toString())
+    }, [value])
 
     const onInternalChange = (e: ChangeEvent<HTMLInputElement>) => {
       const value = e.currentTarget.value

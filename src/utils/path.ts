@@ -4,6 +4,7 @@ import { type Flags, featureEnabled } from './flags'
 type PathParamsMap = {
   '/': null
   '/inbox': null
+  '/7-days': null
   '/login': null
   '/settings': null
   '/categories': null
@@ -23,6 +24,7 @@ type PathParamsMap = {
 const PathParamsMap: PathParamsMap = {
   '/': null,
   '/inbox': null,
+  '/7-days': null,
   '/login': null,
   '/settings': null,
   '/categories': null,

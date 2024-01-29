@@ -15,6 +15,36 @@ import {
 import { zonedTimeToUtc } from 'date-fns-tz'
 import { type RouterOutputs } from '~/trpc/shared'
 
+const seconds = (seconds: number) => seconds * 1000
+const minutes = (minutes: number) => seconds(minutes * 60)
+const hours = (hours: number) => minutes(hours * 60)
+const days = (days: number) => hours(days * 24)
+const weeks = (weeks: number) => days(weeks * 7)
+
+export const Duration = {
+  seconds,
+  minutes,
+  hours,
+  days,
+  weeks,
+  create: ({
+    seconds: secondCount = 0,
+    minutes: minuteCount = 0,
+    hours: hoursCount = 0,
+    days: daysCount = 0,
+    weeks: weeksCount = 0,
+  }) => {
+    return (
+      seconds(secondCount) +
+      minutes(minuteCount) +
+      hours(hoursCount) +
+      days(daysCount) +
+      weeks(weeksCount)
+    )
+  },
+} as const
+
+/** @deprecated */
 export const time = {
   seconds: (seconds: number) => seconds * 1000,
   minutes: (minutes: number) => minutes * 60 * 1000,
@@ -36,9 +66,12 @@ export const getMonthDates = (year: number, month: number) => {
   })
 
   // number of weeks in a month when week starts on Monday
-  const weeks = differenceInCalendarWeeks(lastOfMonth, firstOfMonth, {
-    weekStartsOn: 1,
-  })
+  const dayOfFirstOfMonth = getDay(firstOfMonth)
+  const weeks = Math.ceil(
+    (differenceInDays(lastOfMonth, firstOfMonth) +
+      (dayOfFirstOfMonth < 1 ? dayOfFirstOfMonth + 7 : dayOfFirstOfMonth)) /
+      7
+  )
 
   let focusDay = set(new Date(), {
     year,

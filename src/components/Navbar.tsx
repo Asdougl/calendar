@@ -63,9 +63,9 @@ export const Navbar: FC<{ loading?: boolean }> = () => {
           </li>
           <li className="flex h-16 items-center justify-center">
             <NavBarItem
-              path="/week"
+              path="/7-days"
               icon={<Squares2X2Icon height={22} />}
-              label="week"
+              label="7 Days"
             />
           </li>
           <li className="flex h-16 items-center justify-center">

@@ -34,3 +34,7 @@ export const pluralize = (
 ) => {
   return (Array.isArray(count) ? count.length : count) === 1 ? singular : plural
 }
+
+export const wait = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}

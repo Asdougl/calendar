@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { TimeStatus } from '@prisma/client'
+import { addDays } from 'date-fns'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
+import { eventSort } from '~/utils/sort'
 
 const select = {
   id: true,
@@ -20,8 +22,10 @@ const select = {
 
 export const eventRouter = createTRPCRouter({
   range: protectedProcedure
-    .input(z.object({ start: z.date(), end: z.date() }))
+    .input(z.object({ start: z.date(), end: z.date() }).optional())
     .query(({ ctx, input }) => {
+      if (!input) return []
+
       return ctx.db.event.findMany({
         where: {
           createdById: ctx.session.user.id,
@@ -39,6 +43,34 @@ export const eventRouter = createTRPCRouter({
           datetime: 'asc',
         },
       })
+    }),
+  progressive: protectedProcedure
+    .input(z.object({ start: z.date(), cursor: z.number().nullish() }))
+    .query(async ({ ctx, input }) => {
+      const cursor = input.cursor ?? 0
+
+      const items = await ctx.db.event.findMany({
+        where: {
+          createdById: ctx.session.user.id,
+          OR: [
+            {
+              datetime: {
+                gte: addDays(input.start, cursor).toISOString(),
+                lt: addDays(input.start, cursor + 3).toISOString(),
+              },
+            },
+          ],
+        },
+        select,
+        orderBy: {
+          datetime: 'asc',
+        },
+      })
+
+      return {
+        events: items.sort(eventSort),
+        nextCursor: cursor + 3,
+      }
     }),
   upcoming: protectedProcedure
     .input(
@@ -131,7 +163,7 @@ export const eventRouter = createTRPCRouter({
         timeStatus: z
           .enum([TimeStatus.ALL_DAY, TimeStatus.NO_TIME, TimeStatus.STANDARD])
           .default(TimeStatus.STANDARD),
-        categoryId: z.string().optional(),
+        categoryId: z.string().nullish(),
         location: z.string().nullish(),
         todo: z.boolean().optional(),
       })
@@ -160,8 +192,8 @@ export const eventRouter = createTRPCRouter({
           .enum([TimeStatus.ALL_DAY, TimeStatus.NO_TIME, TimeStatus.STANDARD])
           .optional(),
         location: z.string().nullish(),
-        categoryId: z.string().nullable().optional(),
-        done: z.boolean().nullable().optional(),
+        categoryId: z.string().nullish(),
+        done: z.boolean().nullish(),
       })
     )
     .mutation(({ ctx, input }) => {

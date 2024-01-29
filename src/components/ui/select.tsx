@@ -69,7 +69,7 @@ export const Select = <Values extends string = string>({
       name={name}
       onValueChange={onChange}
     >
-      <RadixSelect.Trigger asChild>
+      <RadixSelect.Trigger asChild disabled={disabled}>
         <Button
           id={id}
           disabled={disabled}

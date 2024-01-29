@@ -1,3 +1,4 @@
+import { ChevronUpIcon } from '@heroicons/react/24/solid'
 import { useEffect, useRef } from 'react'
 import { cn } from '~/utils/classnames'
 
@@ -57,7 +58,7 @@ export const Spinner = <T extends string | number>({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-lg border border-neutral-800',
+        'group relative overflow-hidden rounded-lg border border-neutral-800',
         className
       )}
     >
@@ -65,28 +66,54 @@ export const Spinner = <T extends string | number>({
         ref={scrollRef}
         onScroll={onScroll}
         className={cn(
-          'relative h-32 snap-y overflow-scroll bg-neutral-950 py-8',
+          'relative flex h-32 snap-y flex-col overflow-scroll bg-neutral-950 py-8',
           disabled ? 'pointer-events-none' : 'cursor-pointer'
         )}
       >
         {options.map((option) => (
-          <div
+          <button
             key={option}
+            type="button"
+            onClick={() => onChange(option)}
+            disabled={value === option || disabled}
             className={cn(
               'snap-center border-y border-neutral-800 px-4 py-4 text-center font-mono',
               disabled ? 'text-neutral-600' : 'text-neutral-50',
               {
                 'w-6 text-lg': size === 'sm',
-                'w-14 text-xl': size === 'md',
-                'w-20 text-xl': size === 'lg',
+                'w-12 text-xl': size === 'md',
+                'w-18 text-xl': size === 'lg',
               }
             )}
           >
             {option}
-          </div>
+          </button>
         ))}
       </div>
-      <div className="pointer-events-none absolute left-0 top-0 h-full w-full bg-gradient-to-b from-neutral-950 via-transparent to-neutral-950"></div>
+      <div className="pointer-events-none absolute left-0 top-0 flex h-full w-full flex-col items-center justify-between bg-gradient-to-b from-neutral-950 via-transparent to-neutral-950 py-1.5">
+        {!disabled && (
+          <>
+            <ChevronUpIcon
+              height={20}
+              className={cn(
+                'opacity-0',
+                value &&
+                  options.indexOf(value) > 0 &&
+                  'md:group-hover:opacity-100'
+              )}
+            />
+            <ChevronUpIcon
+              height={20}
+              className={cn(
+                'rotate-180 opacity-0',
+                value &&
+                  options.indexOf(value) < options.length - 1 &&
+                  'md:group-hover:opacity-100'
+              )}
+            />
+          </>
+        )}
+      </div>
       {debug && (
         <div className="absolute left-0 top-1/2 h-1 w-full border-t border-red-500"></div>
       )}

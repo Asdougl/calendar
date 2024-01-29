@@ -57,15 +57,18 @@ export const DayBox: FC<{
   }, [events])
 
   const distanceToToday = differenceInCalendarDays(day, new Date())
+  const distanceToFocus = differenceInCalendarDays(day, focusDate)
+
+  const borderDistance = startToday ? distanceToFocus : distanceToToday
 
   return (
     <div
       className={cn(
         'flex flex-1 flex-col overflow-hidden rounded-lg border border-neutral-800 px-1 py-1',
         startToday && {
-          'border-neutral-400': distanceToToday === 0,
-          'border-neutral-500': distanceToToday === 1,
-          'border-neutral-600': distanceToToday === 2,
+          'border-neutral-400': borderDistance === 0,
+          'border-neutral-500': borderDistance === 1,
+          'border-neutral-600': borderDistance === 2,
         }
       )}
     >

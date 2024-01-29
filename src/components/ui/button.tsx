@@ -18,7 +18,7 @@ const button = cva(
     variants: {
       intent: {
         primary:
-          'bg-neutral-50 text-neutral-950 border-blue-500 hover:bg-neutral-200 ring-neutral-100 disabled:text-neutral-600 disabled:hover:bg-neutral-50 disabled:border-neutral-300 disabled:ring-neutral-100',
+          'bg-neutral-50 text-neutral-950 border-blue-500 lg:hover:bg-neutral-200 ring-neutral-100 disabled:text-neutral-400 disabled:bg-neutral-200 disabled:hover:bg-neutral-50 disabled:border-neutral-300 disabled:ring-neutral-100',
         secondary:
           'bg-neutral-700 text-neutral-50 border-neutral-800 hover:bg-neutral-600 ring-neutral-200 disabled:text-neutral-600 disabled:hover:bg-neutral-700 disabled:border-neutral-800 disabled:ring-neutral-200',
         tertiary:
