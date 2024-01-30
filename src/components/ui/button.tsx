@@ -44,7 +44,8 @@ const button = cva(
 )
 type ButtonVariantProps = VariantProps<typeof button>
 
-type ButtonProps<T extends ElementType> = ButtonVariantProps & ComponentProps<T>
+export type ButtonProps<T extends ElementType> = ButtonVariantProps &
+  ComponentProps<T>
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps<'button'>>(
   function FwdButton({ className, type = 'submit', ...props }, ref) {

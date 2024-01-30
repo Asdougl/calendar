@@ -65,7 +65,7 @@ export const NextSevenDays: FC = () => {
               <CheckIcon height={20} />
             )}
           </div>
-          <Header1 className="relative bg-neutral-950 text-2xl">7 Days</Header1>
+          <Header1 className="relative bg-neutral-950 text-2xl">Inbox</Header1>
         </div>
       }
     >

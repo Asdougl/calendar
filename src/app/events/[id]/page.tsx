@@ -6,6 +6,7 @@ import { api } from '~/trpc/server'
 import { PathLink } from '~/components/ui/PathLink'
 import { pathReplace } from '~/utils/path'
 import { isAuthed } from '~/utils/auth'
+import { EventForm } from '~/components/form/event/event-form'
 
 type PathParams = {
   path: '/events' | '/week' | '/inbox' | '/events/past'
@@ -68,24 +69,19 @@ export default async function EventIdPage({
 }: PageParams) {
   await isAuthed()
 
-  const preferencesPromise = api.preferences.getAll.query()
-
   let event = null
   if (id !== 'new') {
     event = await api.event.one.query({ id })
+  }
 
-    if (!event) {
-      redirect('/events?error=not-found')
-    }
+  if (!event) {
+    redirect('/events?error=not-found')
   }
 
   const { path, query } = decodeOrigin({
     origin: searchParams.origin,
     eventId: id,
   })
-
-  // probably done by now
-  const preferences = await preferencesPromise
 
   return (
     <PageLayout
@@ -96,16 +92,16 @@ export default async function EventIdPage({
         </PathLink>
       }
     >
-      <EditEventForm
+      <EventForm
         event={event}
-        origin={pathReplace({ path, query })}
+        expanded
+        labels
         wipValues={{
           title: searchParams?.title,
           date: searchParams?.date,
           time: searchParams?.time,
           categoryId: searchParams?.categoryId,
         }}
-        initialPreferences={preferences}
       />
     </PageLayout>
   )

@@ -6,7 +6,7 @@ import { Button, SubmitButton } from '../ui/button'
 import { useToggle } from '~/utils/hooks'
 
 type DeleteButtonProps = {
-  onDelete: () => Promise<unknown>
+  onDelete: () => Promise<unknown> | void
   isDeleting?: boolean
   title: string
   body?: string

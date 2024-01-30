@@ -72,6 +72,36 @@ export const eventRouter = createTRPCRouter({
         nextCursor: cursor + 3,
       }
     }),
+  export: protectedProcedure.query(({ ctx }) => {
+    return ctx.db.event.findMany({
+      where: {
+        createdById: ctx.session.user.id,
+      },
+    })
+  }),
+  import: protectedProcedure
+    .input(
+      z.array(
+        z.object({
+          title: z.string(),
+          datetime: z.date(),
+          timeStatus: z.nativeEnum(TimeStatus),
+          location: z.string().nullish(),
+          categoryId: z.string().nullish(),
+          done: z.boolean().nullish(),
+          createdAt: z.date(),
+          updatedAt: z.date(),
+        })
+      )
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.db.event.createMany({
+        data: input.map((event) => ({
+          ...event,
+          createdById: ctx.session.user.id,
+        })),
+      })
+    }),
   upcoming: protectedProcedure
     .input(
       z.object({

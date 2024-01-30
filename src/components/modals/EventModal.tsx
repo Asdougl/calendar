@@ -79,7 +79,37 @@ export const EventModal: FC = () => {
             </Dialog.Close>
           </div>
           {isFetching ? (
-            <div className="h-96 animate-pulse rounded-lg bg-neutral-800" />
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-4">
+                <div className="w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
+                  Event Title
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
+                  Event Date
+                </div>
+                <div className="w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
+                  Event Category
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
+                  Event Time Options
+                </div>
+                <div className="h-24 w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
+                  Event Time Editor
+                </div>
+              </div>
+              <div className="flex justify-end gap-4">
+                <div className="animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
+                  More
+                </div>
+                <div className="animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
+                  Submit
+                </div>
+              </div>
+            </div>
           ) : event ? (
             <EventForm event={event} onSubmit={() => onOpenChange(false)} />
           ) : (

@@ -3,12 +3,11 @@
 import {
   CalendarDaysIcon,
   InboxIcon,
-  Squares2X2Icon,
+  QueueListIcon,
 } from '@heroicons/react/24/solid'
 import { usePathname } from 'next/navigation'
 import type { FC, ReactNode } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
 import { ProfileAvatar } from './ui/avatar'
 import { cn } from '~/utils/classnames'
 import {
@@ -46,10 +45,6 @@ const NavBarItem = <Path extends PathName>({
 }
 
 export const Navbar: FC<{ loading?: boolean }> = () => {
-  const { data } = useSession()
-
-  if (!data) return null
-
   return (
     <footer className="sticky bottom-0 bg-neutral-950 pb-6 lg:static">
       <nav className="left-0 top-0 lg:fixed lg:h-screen">
@@ -63,16 +58,16 @@ export const Navbar: FC<{ loading?: boolean }> = () => {
           </li>
           <li className="flex h-16 items-center justify-center">
             <NavBarItem
-              path="/7-days"
-              icon={<Squares2X2Icon height={22} />}
-              label="7 Days"
+              path="/month"
+              icon={<CalendarDaysIcon height={22} />}
+              label="month"
             />
           </li>
           <li className="flex h-16 items-center justify-center">
             <NavBarItem
-              path="/month"
-              icon={<CalendarDaysIcon height={22} />}
-              label="month"
+              path="/events"
+              icon={<QueueListIcon height={22} />}
+              label="events"
             />
           </li>
           <li className="flex h-16 items-center justify-center">
