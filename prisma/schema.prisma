@@ -28,6 +28,7 @@ model Account {
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
+    @@index([userId])
 }
 
 model Session {
@@ -36,6 +37,8 @@ model Session {
     userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
 }
 
 model User {
@@ -89,6 +92,9 @@ model Event {
 
     category   Category? @relation(fields: [categoryId], references: [id])
     categoryId String?
+
+    @@index([createdById])
+    @@index([categoryId])
 }
 
 model Category {
@@ -104,6 +110,8 @@ model Category {
 
     Event  Event[]
     Period Period[]
+
+    @@index([createdById])
 }
 
 model Period {
@@ -122,4 +130,7 @@ model Period {
 
     category   Category? @relation(fields: [categoryId], references: [id])
     categoryId String?
+
+    @@index([createdById])
+    @@index([categoryId])
 }
