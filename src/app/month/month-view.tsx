@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FC, useMemo } from 'react'
+import { type FC, useMemo } from 'react'
 import {
   addDays,
   addMonths,
@@ -20,11 +20,11 @@ import {
   subDays,
   subMonths,
 } from 'date-fns'
-import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid'
-import { cn, getCategoryColor } from '~/utils/classnames'
+import { ChevronLeftIcon } from '@heroicons/react/24/solid'
+import { cn, color } from '~/utils/classnames'
 import { api } from '~/trpc/react'
 import {
-  time,
+  Duration,
   timeFormat,
   toCalendarDate,
   weekDatesOfDateRange,
@@ -33,16 +33,22 @@ import { type RouterOutputs } from '~/trpc/shared'
 import { PathLink } from '~/components/ui/PathLink'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { usePreferences } from '~/trpc/hooks'
+import { createClientDateRangeHook } from '~/utils/hooks'
+import { stdFormat } from '~/components/ui/dates/common'
+
+const useMonthDate = createClientDateRangeHook({
+  param: 'of',
+  initialState: { start: new Date(), end: new Date() }, // set on server, untrusted
+  processor: (date) => ({
+    start: startOfMonth(date),
+    end: endOfMonth(date),
+  }),
+})
+
+const colorBg = color('bg')
 
 export const MonthView: FC = () => {
-  const [focusMonth, setFocusMonth] = useState(() => {
-    const now = new Date()
-    const start = startOfDay(set(now, { date: 1 }))
-    return {
-      start: start,
-      end: endOfMonth(start),
-    }
-  })
+  const [focusMonth, focusMounted] = useMonthDate()
 
   const queryClient = api.useUtils()
 
@@ -54,6 +60,9 @@ export const MonthView: FC = () => {
       end: endOfDay(addDays(focusMonth.end, 7)),
     },
     {
+      enabled: focusMounted,
+      staleTime: Duration.minutes(5),
+      refetchInterval: Duration.minutes(10),
       placeholderData: () => {
         const toReturn: RouterOutputs['periods']['range'] = []
         const lastMonthData = queryClient.periods.range.getData({
@@ -112,8 +121,12 @@ export const MonthView: FC = () => {
       end: endOfDay(addDays(focusMonth.end, 7)),
     },
     {
+      enabled: focusMounted,
       placeholderData: () => {
         const toReturn: RouterOutputs['event']['range'] = []
+
+        if (!focusMonth) return toReturn
+
         const lastMonthData = queryClient.event.range.getData({
           start: startOfDay(subDays(subMonths(focusMonth.start, 1), 7)),
           end: endOfDay(addDays(endOfMonth(subMonths(focusMonth.start, 1)), 7)),
@@ -144,8 +157,8 @@ export const MonthView: FC = () => {
 
         return toReturn
       },
-      staleTime: time.minutes(1),
-      refetchInterval: time.minutes(5),
+      staleTime: Duration.minutes(1),
+      refetchInterval: Duration.minutes(5),
       select: (data) => {
         if (!data) return {}
         const eventsByDay: Record<string, RouterOutputs['event']['range']> = {}
@@ -171,28 +184,28 @@ export const MonthView: FC = () => {
     return weekDatesOfDateRange(startOfCurrMonth, endOfCurrMonth)
   }, [focusMonth.start])
 
-  const viewNextMonth = () => {
-    setFocusMonth((prev) => ({
-      start: addMonths(prev.start, 1),
-      end: addMonths(prev.end, 1),
-    }))
-  }
-
-  const viewPrevMonth = () => {
-    setFocusMonth((prev) => ({
-      start: subMonths(prev.start, 1),
-      end: subMonths(prev.end, 1),
-    }))
-  }
-
   return (
-    <InnerPageLayout title={format(focusMonth.start, 'MMMM yyyy')}>
-      <button
-        onClick={viewPrevMonth}
-        className="flex w-full items-center justify-center rounded-lg py-1 hover:bg-neutral-900"
-      >
-        <ChevronUpIcon height={24} />
-      </button>
+    <InnerPageLayout
+      title={format(focusMonth.start, 'MMMM yyyy')}
+      headerRight={
+        <div className="flex gap-2">
+          <PathLink
+            path="/month"
+            query={{ of: stdFormat(addMonths(focusMonth.start, -1)) }}
+            className="flex items-center justify-center"
+          >
+            <ChevronLeftIcon height={20} className="" />
+          </PathLink>
+          <PathLink
+            path="/month"
+            query={{ of: stdFormat(addMonths(focusMonth.start, 1)) }}
+            className="flex items-center justify-center"
+          >
+            <ChevronLeftIcon height={20} className="rotate-180" />
+          </PathLink>
+        </div>
+      }
+    >
       <div
         className={cn('grid flex-grow overflow-scroll px-0.5', {
           'grid-rows-5': weekDates.length === 5,
@@ -206,7 +219,7 @@ export const MonthView: FC = () => {
             }
             path="/week"
             query={{
-              start: toCalendarDate(week[0] || new Date()),
+              of: toCalendarDate(week[0] || new Date()),
             }}
             className="group grid grid-cols-7"
           >
@@ -249,7 +262,7 @@ export const MonthView: FC = () => {
                           key={period.id}
                           className={cn(
                             'h-2 w-2 rounded-sm',
-                            getCategoryColor(period.color, 'bg')
+                            colorBg(period.color)
                           )}
                         ></div>
                       ))}
@@ -273,7 +286,7 @@ export const MonthView: FC = () => {
                       <div
                         className={cn(
                           'absolute left-0 top-0 h-full w-0.5 rounded-lg',
-                          getCategoryColor(event.category?.color, 'bg')
+                          colorBg(event.category?.color)
                         )}
                       ></div>
                       <div
@@ -298,12 +311,6 @@ export const MonthView: FC = () => {
           </PathLink>
         ))}
       </div>
-      <button
-        onClick={viewNextMonth}
-        className="flex w-full items-center justify-center rounded-lg py-1 hover:bg-neutral-900"
-      >
-        <ChevronDownIcon height={24} />
-      </button>
     </InnerPageLayout>
   )
 }

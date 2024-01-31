@@ -6,6 +6,7 @@ import { XMarkIcon } from '@heroicons/react/24/solid'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Header2 } from '../ui/headers'
 import { EventForm } from '../form/event/event-form'
+import { stdFormat } from '../ui/dates/common'
 import { cn, color } from '~/utils/classnames'
 import { api } from '~/trpc/react'
 import { Duration } from '~/utils/dates'
@@ -17,7 +18,11 @@ const getInitialDate = (date: string | null) => {
   return initialDate
 }
 
-export const EventModal: FC = () => {
+type EventModalProps = {
+  date?: Date
+}
+
+export const EventModal: FC<EventModalProps> = ({ date }) => {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -39,6 +44,10 @@ export const EventModal: FC = () => {
 
       url.searchParams.delete('event')
       url.searchParams.delete('date')
+
+      if (date) {
+        url.searchParams.set('of', stdFormat(date))
+      }
 
       router.push(url.toString())
     }

@@ -300,3 +300,39 @@ export const useClientParamDate = (param: string) => {
 
   return [date, setDate] as const
 }
+
+export const createClientDateRangeHook =
+  <T>({
+    param,
+    initialState,
+    processor,
+  }: {
+    param?: string
+    initialState: T
+    processor: (date: Date) => T
+  }) =>
+  () => {
+    const searchParams = useSearchParams()
+
+    const paramValue = param ? searchParams.get(param) : null
+
+    const [date, setDate] = useState<T>(initialState)
+
+    const mountedRef = useRef(false)
+
+    useEffect(() => {
+      mountedRef.current = true
+      if (!paramValue) {
+        setDate(processor(new Date()))
+        return
+      }
+      const date = new Date(paramValue)
+      if (isNaN(date.getTime())) {
+        setDate(processor(new Date()))
+        return
+      }
+      setDate(processor(date))
+    }, [paramValue])
+
+    return [date, mountedRef.current, setDate] as const
+  }

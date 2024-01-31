@@ -2,15 +2,14 @@
 
 import { endOfWeek, getDay, startOfDay } from 'date-fns'
 import { type FC } from 'react'
-import { ArrowPathIcon, CheckIcon } from '@heroicons/react/24/solid'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { api } from '~/trpc/react'
 import { Duration } from '~/utils/dates'
-import { cn } from '~/utils/classnames'
 import { Header1 } from '~/components/ui/headers'
 import { useClientDate } from '~/utils/hooks'
 import { SevenDays } from '~/components/SevenDays'
 import { createPeriodsByDaySorter, eventsByDay } from '~/utils/sort'
+import { RefreshIcon } from '~/components/RefreshIcon'
 
 export const NextSevenDays: FC = () => {
   const [focusDate] = useClientDate()
@@ -47,24 +46,13 @@ export const NextSevenDays: FC = () => {
     <InnerPageLayout
       fullscreen
       headerLeft={
-        <button onClick={() => queryClient.event.range.invalidate(queryArg)}>
-          <ArrowPathIcon height={20} className="" />
-        </button>
+        <RefreshIcon
+          onClick={() => queryClient.event.range.invalidate(queryArg)}
+          loading={isFetching}
+        />
       }
       title={
         <div className="relative z-10">
-          <div
-            className={cn(
-              'absolute left-1/2 top-0 -z-10 -translate-x-1/2 rounded-full bg-neutral-950 p-1 shadow-lg transition-transform delay-200',
-              isFetching ? 'translate-y-8' : 'translate-y-0'
-            )}
-          >
-            {isFetching ? (
-              <ArrowPathIcon height={20} className="animate-spin" />
-            ) : (
-              <CheckIcon height={20} />
-            )}
-          </div>
           <Header1 className="relative bg-neutral-950 text-2xl">Inbox</Header1>
         </div>
       }

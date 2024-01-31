@@ -1,10 +1,17 @@
 'use client'
 
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
-import { addDays, endOfDay, format, startOfDay, subDays } from 'date-fns'
+import {
+  ArrowLeftIcon,
+  ChevronLeftIcon,
+  PlusIcon,
+} from '@heroicons/react/24/solid'
+import { addDays, endOfDay, format, startOfDay } from 'date-fns'
 import { type FC } from 'react'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
+import { EventModal } from '~/components/modals/EventModal'
+import { Loader } from '~/components/ui/Loader'
 import { PathLink } from '~/components/ui/PathLink'
+import { stdFormat } from '~/components/ui/dates/common'
 import { Header1, Header2 } from '~/components/ui/headers'
 import { usePreferences } from '~/trpc/hooks'
 import { api } from '~/trpc/react'
@@ -30,17 +37,23 @@ export const DateEvents: FC<{
       headerLeft={
         !isLoading ? (
           <PathLink
-            path="/day/:date"
-            params={{ date: format(subDays(date, 1), 'yyyy-MM-dd') }}
+            path="/week"
+            query={{ of: stdFormat(date) }}
+            className="flex items-center justify-center"
           >
             <ArrowLeftIcon height={20} />
           </PathLink>
         ) : (
-          <ArrowLeftIcon height={20} className="opacity-50" />
+          <div className="flex items-center justify-center">
+            <ArrowLeftIcon height={20} className="opacity-50" />
+          </div>
         )
       }
       title={
         <div className="flex flex-col items-center">
+          <Header2 className="text-base font-normal text-neutral-500">
+            {format(date, 'EEEE')}
+          </Header2>
           <Header1 className="relative flex h-8 items-baseline gap-2 text-2xl">
             {format(date, 'do MMM yyyy')}
           </Header1>
@@ -51,26 +64,41 @@ export const DateEvents: FC<{
       }
       headerRight={
         !isLoading ? (
-          <PathLink
-            path="/day/:date"
-            params={{ date: format(addDays(date, 1), 'yyyy-MM-dd') }}
-          >
-            <ArrowRightIcon height={20} />
-          </PathLink>
+          <div className="flex gap-2">
+            <PathLink
+              path="/day/:date"
+              params={{ date: stdFormat(addDays(date, -1)) }}
+              className="flex items-center justify-center"
+            >
+              <ChevronLeftIcon height={20} className="" />
+            </PathLink>
+            <PathLink
+              path="/day/:date"
+              params={{ date: stdFormat(addDays(date, 1)) }}
+              className="flex items-center justify-center"
+            >
+              <ChevronLeftIcon height={20} className="rotate-180" />
+            </PathLink>
+          </div>
         ) : (
-          <ArrowRightIcon height={20} className="opacity-50" />
+          <div className="flex gap-2">
+            <div className="flex items-center justify-center opacity-50">
+              <ChevronLeftIcon height={20} className="" />
+            </div>
+            <div className="flex items-center justify-center opacity-50">
+              <ChevronLeftIcon height={20} className="rotate-180" />
+            </div>
+          </div>
         )
       }
     >
-      <ul className="flex flex-col gap-2">
+      <ul className="flex min-h-[120px] flex-col gap-2">
         {events?.map((event) => (
           <li key={event.id}>
             <PathLink
-              path="/events/:id"
-              params={{ id: event.id }}
-              query={{
-                origin: `day-${formattedDay}`,
-              }}
+              path="/day/:date"
+              params={{ date: formattedDay }}
+              query={{ event: event.id }}
               className={cn(
                 'group flex items-center justify-between gap-1 overflow-hidden rounded-lg px-2 py-1 transition-colors lg:hover:bg-neutral-900',
                 event.category?.color
@@ -116,8 +144,32 @@ export const DateEvents: FC<{
             </PathLink>
           </li>
         ))}
-        {events?.length === 0 && <li>No events {inXDays}</li>}
+        {events?.length === 0 && (
+          <li className="flex flex-col items-center justify-center py-10 lg:py-20">
+            <div className="text-xl">😴</div>
+            <div className="italic text-neutral-500">
+              Nothing on for this day
+            </div>
+          </li>
+        )}
+        {isLoading && (
+          <li className="flex flex-col items-center justify-center py-10 lg:py-20">
+            <div className="text-xl">
+              <Loader />
+            </div>
+          </li>
+        )}
       </ul>
+      <PathLink
+        path="/day/:date"
+        params={{ date: formattedDay }}
+        query={{ event: 'new' }}
+        className="flex items-center justify-center gap-2 rounded-lg px-2 py-3 text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-neutral-50"
+      >
+        <PlusIcon height={16} />
+        <span>Add Event</span>
+      </PathLink>
+      <EventModal date={date} />
     </InnerPageLayout>
   )
 }

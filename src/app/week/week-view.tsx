@@ -1,16 +1,14 @@
 'use client'
 
 import { ArrowLeftIcon, ChevronLeftIcon } from '@heroicons/react/24/solid'
-import { addWeeks, endOfWeek, setWeek, startOfDay, startOfWeek } from 'date-fns'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { addWeeks, endOfWeek, startOfWeek } from 'date-fns'
 import { SevenDays } from '~/components/SevenDays'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { PathLink } from '~/components/ui/PathLink'
 import { stdFormat } from '~/components/ui/dates/common'
 import { api } from '~/trpc/react'
 import { Duration } from '~/utils/dates'
-import { useClientDate, useClientParamDate } from '~/utils/hooks'
+import { createClientDateRangeHook } from '~/utils/hooks'
 import { createPeriodsByDaySorter, eventsByDay } from '~/utils/sort'
 
 const weekFormat = new Intl.DateTimeFormat('default', {
@@ -18,70 +16,79 @@ const weekFormat = new Intl.DateTimeFormat('default', {
   day: 'numeric',
 })
 
+const useWeekDate = createClientDateRangeHook({
+  param: 'of',
+  initialState: {
+    start: startOfWeek(new Date(), { weekStartsOn: 1 }),
+    end: endOfWeek(new Date(), { weekStartsOn: 1 }),
+  },
+  processor: (date) => {
+    return {
+      start: startOfWeek(date, { weekStartsOn: 1 }),
+      end: endOfWeek(date, { weekStartsOn: 1 }),
+    }
+  },
+})
+
 export const WeekView = () => {
-  const [focusDate] = useClientParamDate('start')
+  const [focusWeek, focusMounted] = useWeekDate()
 
-  const router = useRouter()
-
-  const queryArg = focusDate
-    ? {
-        start: startOfWeek(focusDate, { weekStartsOn: 1 }),
-        end: endOfWeek(focusDate, { weekStartsOn: 1 }),
-      }
-    : undefined
-
-  const { data: events, isFetching } = api.event.range.useQuery(queryArg, {
-    enabled: !!focusDate,
+  const { data: events, isFetching } = api.event.range.useQuery(focusWeek, {
+    enabled: focusMounted,
     refetchOnWindowFocus: false,
     staleTime: Duration.minutes(5),
     refetchInterval: Duration.minutes(10),
     select: eventsByDay,
   })
 
-  const { data: periods } = api.periods.range.useQuery(queryArg, {
-    enabled: !!focusDate,
+  const { data: periods } = api.periods.range.useQuery(focusWeek, {
+    enabled: focusMounted,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     staleTime: Duration.minutes(10),
     refetchInterval: Duration.minutes(15),
-    select: createPeriodsByDaySorter(focusDate),
+    select: createPeriodsByDaySorter(focusWeek.start),
   })
 
   return (
     <InnerPageLayout
       fullscreen
       headerLeft={
-        <button onClick={() => router.back()}>
+        <PathLink
+          path="/month"
+          query={{ of: stdFormat(focusWeek.start) }}
+          className="flex items-center justify-center"
+        >
           <ArrowLeftIcon height={20} className="" />
-        </button>
+        </PathLink>
       }
       headerRight={
-        queryArg ? (
-          <div className="flex gap-2">
-            <PathLink
-              path="/week"
-              query={{ start: stdFormat(addWeeks(queryArg.start, -1)) }}
-              className="flex items-center justify-center"
-            >
-              <ChevronLeftIcon height={20} className="" />
-            </PathLink>
-            <PathLink
-              path="/week"
-              query={{ start: stdFormat(addWeeks(queryArg.start, 1)) }}
-              className="flex items-center justify-center"
-            >
-              <ChevronLeftIcon height={20} className="rotate-180" />
-            </PathLink>
-          </div>
-        ) : undefined
+        <div className="flex gap-2">
+          <PathLink
+            path="/week"
+            query={{ of: stdFormat(addWeeks(focusWeek.start, -1)) }}
+            className="flex items-center justify-center"
+          >
+            <ChevronLeftIcon height={20} className="" />
+          </PathLink>
+          <PathLink
+            path="/week"
+            query={{ of: stdFormat(addWeeks(focusWeek.start, 1)) }}
+            className="flex items-center justify-center"
+          >
+            <ChevronLeftIcon height={20} className="rotate-180" />
+          </PathLink>
+        </div>
       }
       title={
-        queryArg ? `Week of ${weekFormat.format(queryArg.start)}` : 'Loading...'
+        focusMounted
+          ? `Week of ${weekFormat.format(focusWeek.start)}`
+          : 'Loading...'
       }
     >
-      {focusDate && (
+      {focusMounted && (
         <SevenDays
-          focusDate={focusDate}
+          focusDate={focusWeek.start}
           events={events}
           loading={isFetching}
           periods={periods}

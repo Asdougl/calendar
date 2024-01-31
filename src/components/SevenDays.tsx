@@ -65,6 +65,14 @@ const eventItemTime = (event: RouterOutputs['event']['range'][number]) => {
   return timeFormat.format(event.datetime)
 }
 
+const eventLink = (id: string) => {
+  const url = new URL(window.location.href)
+
+  url.searchParams.set('event', id)
+
+  return url.toString()
+}
+
 const DayOfWeek: FC<DayOfWeekProps> = ({
   baseDate,
   dayOfWeek,
@@ -133,7 +141,7 @@ const DayOfWeek: FC<DayOfWeekProps> = ({
             {eventsForDay.map((event) => (
               <Link
                 key={event.id}
-                href={`${pathname}?event=${event.id}`}
+                href={eventLink(event.id)}
                 className="flex flex-shrink-0 items-center justify-between overflow-hidden rounded text-sm lg:text-base lg:hover:bg-neutral-900"
               >
                 <div className="flex items-center gap-0.5 overflow-hidden">
@@ -252,7 +260,7 @@ export const SevenDays: FC<SevenDaysProps> = ({
           />
         </div>
       </div>
-      <EventModal />
+      <EventModal date={focusDate} />
     </>
   )
 }

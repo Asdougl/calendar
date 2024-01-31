@@ -5,7 +5,6 @@ import { format, isSameMonth, startOfMonth } from 'date-fns'
 import { Fragment, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { SkeletonDivider, SkeletonEvent } from './skeleton'
-import { BackButton } from '~/components/BackButton'
 import { PageLayout } from '~/components/layout/PageLayout'
 import { Alert } from '~/components/ui/Alert'
 import { PathLink } from '~/components/ui/PathLink'
@@ -15,6 +14,8 @@ import { type RouterOutputs } from '~/trpc/shared'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { time, timeFormat } from '~/utils/dates'
 import { usePreferences } from '~/trpc/hooks'
+import { EventModal } from '~/components/modals/EventModal'
+import { stdFormat } from '~/components/ui/dates/common'
 
 type ListEvent = RouterOutputs['event']['upcoming']['items'][number]
 
@@ -79,7 +80,6 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
 
   return (
     <PageLayout
-      headerLeft={!isLoading && <BackButton whenLastLocation="/profile" />}
       title={direction === 'before' ? 'Past Events' : 'Upcoming Events'}
       headerRight={
         !isLoading && (
@@ -127,39 +127,34 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                   page,
                   lastPage: pages[i - 1]?.items,
                 }) && (
-                  <li className="w-full pt-6">
+                  <li className="flex w-full items-center justify-between pt-6">
                     <PathLink
-                      path="/events/:id"
-                      params={{ id: 'new' }}
-                      query={{
-                        date: format(
-                          isSameMonth(starting, event.datetime)
-                            ? starting
-                            : startOfMonth(event.datetime),
-                          'yyyy-MM-dd'
-                        ),
-                        origin: direction === 'before' ? 'past' : undefined,
-                      }}
-                      className="group flex items-center justify-between gap-1 text-neutral-300 hover:text-neutral-50"
+                      path="/month"
+                      query={{ of: stdFormat(startOfMonth(event.datetime)) }}
+                      className="rounded px-2 text-lg font-semibold text-neutral-300 lg:hover:bg-neutral-800"
                     >
-                      <div className="text-lg font-semibold text-neutral-300">
-                        {format(event.datetime, 'MMMM yyyy')}
-                      </div>
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="opacity-0 transition-opacity group-hover:opacity-100">
-                          Event in {format(event.datetime, 'MMM')}
-                        </span>
-                        <PlusIcon height={20} />
-                      </div>
+                      {format(event.datetime, 'MMMM yyyy')}
+                    </PathLink>
+                    <PathLink
+                      path={direction === 'before' ? '/events/past' : '/events'}
+                      query={{
+                        event: 'new',
+                        date: stdFormat(startOfMonth(event.datetime)),
+                      }}
+                      className="group flex items-center justify-between gap-1 rounded px-2 text-neutral-300 hover:text-neutral-50 lg:hover:bg-neutral-800"
+                    >
+                      <span className="opacity-0 transition-opacity lg:group-hover:opacity-100">
+                        Add Event in {format(event.datetime, 'MMM')}
+                      </span>
+                      <PlusIcon height={20} />
                     </PathLink>
                   </li>
                 )}
                 <li>
                   <PathLink
-                    path="/events/:id"
-                    params={{ id: event.id }}
+                    path={direction === 'before' ? '/events/past' : '/events'}
                     query={{
-                      origin: direction === 'before' ? 'past' : undefined,
+                      event: event.id,
                     }}
                     className={cn(
                       'group flex items-center justify-between gap-1 overflow-hidden rounded-lg px-2 py-1 transition-colors lg:hover:bg-neutral-900',
@@ -212,14 +207,16 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
         {!isLoading && (
           <li className="pt-6">
             {hasNextPage ? (
-              <SubmitButton
-                type="button"
-                loading={isFetchingNextPage}
-                disabled={isFetchingNextPage}
-                onClick={() => fetchNextPage()}
-              >
-                See more
-              </SubmitButton>
+              <div className="flex items-center justify-center">
+                <SubmitButton
+                  type="button"
+                  loading={isFetchingNextPage}
+                  disabled={isFetchingNextPage}
+                  onClick={() => fetchNextPage()}
+                >
+                  See more
+                </SubmitButton>
+              </div>
             ) : (
               <span className="px-2 pt-6 italic text-neutral-500">
                 No more {direction === 'before' ? 'past' : 'upcoming'} events{' '}
@@ -229,6 +226,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
           </li>
         )}
       </ul>
+      <EventModal />
     </PageLayout>
   )
 }
