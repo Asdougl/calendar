@@ -1,7 +1,13 @@
 'use client'
 
 import { ClockIcon, PlusIcon } from '@heroicons/react/24/solid'
-import { format, isSameMonth, startOfMonth } from 'date-fns'
+import {
+  format,
+  isBefore,
+  isSameMonth,
+  startOfDay,
+  startOfMonth,
+} from 'date-fns'
 import { Fragment, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { SkeletonDivider, SkeletonEvent } from './skeleton'
@@ -51,7 +57,7 @@ type EventsListProps = {
 }
 
 export const EventsList = ({ notFound, direction }: EventsListProps) => {
-  const [starting] = useState(() => new Date())
+  const [starting] = useState(() => startOfDay(new Date()))
 
   const searchParams = useSearchParams()
   const query = searchParams.get('q') ?? undefined
@@ -173,7 +179,13 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                       <div className="flex flex-col overflow-hidden">
                         <div
                           className={cn(
-                            'flex-grow-0 truncate text-left text-lg leading-snug'
+                            'flex-grow-0 truncate text-left text-lg leading-snug',
+                            {
+                              'text-neutral-500 line-through': isBefore(
+                                event.datetime,
+                                new Date()
+                              ),
+                            }
                           )}
                         >
                           {event.title}

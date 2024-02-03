@@ -6,48 +6,55 @@ import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { api } from '~/trpc/react'
 import { Duration } from '~/utils/dates'
 import { Header1 } from '~/components/ui/headers'
-import { useClientDate } from '~/utils/hooks'
+import { createClientDateRangeHook } from '~/utils/hooks'
 import { SevenDays } from '~/components/SevenDays'
 import { createPeriodsByDaySorter, eventsByDay } from '~/utils/sort'
 import { RefreshIcon } from '~/components/RefreshIcon'
 
+const useClientDate = createClientDateRangeHook({
+  initialState: { start: new Date(), end: new Date() },
+  processor: (date) => {
+    return {
+      start: startOfDay(date),
+      end: endOfWeek(date, { weekStartsOn: getDay(date) }),
+    }
+  },
+})
+
 export const NextSevenDays: FC = () => {
-  const [focusDate] = useClientDate()
+  const [focusDate, focusMounted] = useClientDate()
 
   const queryClient = api.useUtils()
 
-  const queryArg = focusDate
-    ? {
-        start: startOfDay(focusDate),
-        end: endOfWeek(focusDate, { weekStartsOn: getDay(focusDate) }),
-      }
-    : undefined
-
-  const { data: events, isFetching } = api.event.range.useQuery(queryArg, {
-    enabled: !!focusDate,
+  const {
+    data: events,
+    isLoading,
+    isFetching,
+  } = api.event.range.useQuery(focusDate, {
+    enabled: focusMounted,
     refetchOnWindowFocus: false,
     staleTime: Duration.minutes(5),
     refetchInterval: Duration.minutes(10),
     select: eventsByDay,
   })
 
-  const { data: periods } = api.periods.range.useQuery(queryArg, {
-    enabled: !!focusDate,
+  const { data: periods } = api.periods.range.useQuery(focusDate, {
+    enabled: focusMounted,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     staleTime: Duration.minutes(10),
     refetchInterval: Duration.minutes(15),
-    select: createPeriodsByDaySorter(focusDate),
+    select: createPeriodsByDaySorter(focusDate.start),
   })
 
-  const loading = isFetching
+  const loading = isLoading
 
   return (
     <InnerPageLayout
       fullscreen
       headerLeft={
         <RefreshIcon
-          onClick={() => queryClient.event.range.invalidate(queryArg)}
+          onClick={() => queryClient.event.range.invalidate(focusDate)}
           loading={isFetching}
         />
       }
@@ -59,10 +66,12 @@ export const NextSevenDays: FC = () => {
     >
       {focusDate && (
         <SevenDays
-          focusDate={focusDate}
+          start={focusDate.start}
+          end={focusDate.end}
           events={events}
           periods={periods}
           loading={loading}
+          weekStart={getDay(focusDate.start)}
         />
       )}
     </InnerPageLayout>

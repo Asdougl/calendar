@@ -33,7 +33,7 @@ const useWeekDate = createClientDateRangeHook({
 export const WeekView = () => {
   const [focusWeek, focusMounted] = useWeekDate()
 
-  const { data: events, isFetching } = api.event.range.useQuery(focusWeek, {
+  const { data: events, isLoading } = api.event.range.useQuery(focusWeek, {
     enabled: focusMounted,
     refetchOnWindowFocus: false,
     staleTime: Duration.minutes(5),
@@ -88,11 +88,12 @@ export const WeekView = () => {
     >
       {focusMounted && (
         <SevenDays
-          focusDate={focusWeek.start}
+          start={focusWeek.start}
+          end={focusWeek.end}
           events={events}
-          loading={isFetching}
+          loading={isLoading}
           periods={periods}
-          outlines={false}
+          outlines={true}
         />
       )}
     </InnerPageLayout>
