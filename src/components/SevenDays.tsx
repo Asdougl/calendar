@@ -414,7 +414,7 @@ export const SevenDays: FC<SevenDaysProps> = ({
           </div>
         </DndContext>
       </div>
-      <EventModal date={start} />
+      <EventModal />
     </>
   )
 }

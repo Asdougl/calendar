@@ -18,11 +18,7 @@ const getInitialDate = (date: string | null) => {
   return initialDate
 }
 
-type EventModalProps = {
-  date?: Date
-}
-
-export const EventModal: FC<EventModalProps> = ({ date }) => {
+export const EventModal: FC = () => {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -38,15 +34,15 @@ export const EventModal: FC<EventModalProps> = ({ date }) => {
     }
   )
 
-  const onOpenChange = (value: boolean) => {
+  const onOpenChange = (value: boolean, jumpTo?: Date) => {
     if (!value) {
       const url = new URL(window.location.href)
 
       url.searchParams.delete('event')
       url.searchParams.delete('date')
 
-      if (date) {
-        url.searchParams.set('of', stdFormat(date))
+      if (jumpTo) {
+        url.searchParams.set('of', stdFormat(jumpTo))
       }
 
       router.push(url.toString())
@@ -124,7 +120,7 @@ export const EventModal: FC<EventModalProps> = ({ date }) => {
           ) : (
             <EventForm
               date={getInitialDate(searchParams.get('date'))}
-              onSubmit={() => onOpenChange(false)}
+              onSubmit={(eventDate) => onOpenChange(false, eventDate)}
             />
           )}
         </Dialog.Content>

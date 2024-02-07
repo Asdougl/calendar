@@ -45,7 +45,7 @@ type CreateEventFormProps = {
 }
 
 type EventFormProps = {
-  onSubmit?: () => void
+  onSubmit?: (eventDate?: Date) => void
   expanded?: boolean
   labels?: boolean
   wipValues?: Partial<UpdateEventFormValues>
@@ -169,7 +169,7 @@ export const EventForm: FC<EventFormProps> = ({
       await createMutateAsync(payload)
     }
 
-    onFinish?.()
+    onFinish?.(payload.datetime)
   })
 
   const timeStatus = watch('type')

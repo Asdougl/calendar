@@ -169,7 +169,7 @@ export const DateEvents: FC<{
         <PlusIcon height={16} />
         <span>Add Event</span>
       </PathLink>
-      <EventModal date={date} />
+      <EventModal />
     </InnerPageLayout>
   )
 }
