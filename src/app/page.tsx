@@ -189,11 +189,11 @@ export default async function IndexPage() {
                   size="xl"
                   intent="primary"
                   path="/login"
-                  query={{ origin: 'sign-up' }}
+                  query={{ from: 'sign-up' }}
                 >
                   Sign up
                 </ButtonLink>
-                <ButtonLink size="xl" path="/login" query={{ origin: 'login' }}>
+                <ButtonLink size="xl" path="/login" query={{ from: 'login' }}>
                   Login
                 </ButtonLink>
               </section>

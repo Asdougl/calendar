@@ -2,7 +2,6 @@
 
 import { differenceInCalendarDays, set, setDay } from 'date-fns'
 import { type FC } from 'react'
-import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { PlusIcon } from '@heroicons/react/24/solid'
 import {
@@ -17,10 +16,16 @@ import {
 import { PathLink } from './ui/PathLink'
 import { stdFormat } from './ui/dates/common'
 import { EventModal } from './modals/EventModal'
+import { PeriodModal } from './modals/PeriodModal'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn, color } from '~/utils/classnames'
 import { eventSort } from '~/utils/sort'
 import { api } from '~/trpc/react'
+import {
+  SEARCH_PARAMS_NEW,
+  createUpdatedSearchParams,
+} from '~/utils/searchParams'
+import { warn } from '~/utils/logging'
 
 const timeFormat = new Intl.DateTimeFormat('default', {
   hour: 'numeric',
@@ -98,7 +103,8 @@ const EventItem = ({
         ></div>
         <span
           className={cn('truncate', {
-            'text-neutral-500 line-through': event.datetime < now,
+            'text-neutral-500 line-through':
+              event.timeStatus === 'STANDARD' && event.datetime < now,
           })}
         >
           {event.title}
@@ -128,12 +134,24 @@ const eventItemTime = (event: RouterOutputs['event']['range'][number]) => {
   return timeFormat.format(event.datetime)
 }
 
-const eventLink = (id: string) => {
-  const url = new URL(window.location.href)
+const eventLink = (id: string, date?: Date) => {
+  return createUpdatedSearchParams({
+    update: {
+      event: id,
+      date: date ? stdFormat(date) : undefined,
+    },
+    remove: ['period'],
+  })
+}
 
-  url.searchParams.set('event', id)
-
-  return url.toString()
+const periodLink = (id: string, date?: Date) => {
+  return createUpdatedSearchParams({
+    update: {
+      period: id,
+      date: date ? stdFormat(date) : undefined,
+    },
+    remove: ['event'],
+  })
 }
 
 const DayOfWeek: FC<DayOfWeekProps> = ({
@@ -145,8 +163,6 @@ const DayOfWeek: FC<DayOfWeekProps> = ({
   outlines = true,
   weekStart = 1,
 }) => {
-  const pathname = usePathname()
-
   const date = setDay(baseDate, dayOfWeek, { weekStartsOn: weekStart })
 
   const { setNodeRef, isOver } = useDroppable({
@@ -179,19 +195,18 @@ const DayOfWeek: FC<DayOfWeekProps> = ({
     >
       <div className="flex w-full items-center justify-between px-0.5 pt-0.5 md:px-2 md:pt-2">
         <DayOfWeekLabel date={date} />
-        <div className="px-1 pt-1">
+        <div className="flex items-center gap-2 px-1 pt-1">
           {periodsForDay.map((period) => (
-            <PathLink
+            <Link
               key={period.id}
-              path="/periods/:id"
-              params={{ id: period.id }}
+              href={periodLink(period.id)}
               className={cn(
                 'flex h-4 w-4 items-center justify-center rounded-sm text-xs',
                 color('bg')(period.color)
               )}
             >
               {period.icon}
-            </PathLink>
+            </Link>
           ))}
         </div>
       </div>
@@ -215,7 +230,7 @@ const DayOfWeek: FC<DayOfWeekProps> = ({
             ))}
             {distanceToStart >= 0 && (
               <Link
-                href={`${pathname}?event=new&date=${stdFormat(date)}`}
+                href={eventLink(SEARCH_PARAMS_NEW, date)}
                 className={cn(
                   'flex flex-shrink-0 flex-grow flex-col justify-end rounded text-xs lg:hover:bg-neutral-900',
                   { 'pointer-events-none -z-10': isOver }
@@ -294,7 +309,7 @@ export const SevenDays: FC<SevenDaysProps> = ({
       }
     },
     onSuccess: () => {
-      queryClient.event.range.invalidate({ start, end }).catch(console.warn)
+      queryClient.event.range.invalidate({ start, end }).catch(warn)
     },
     onError: (err, variables, context) => {
       if (context?.previousValue) {
@@ -415,6 +430,7 @@ export const SevenDays: FC<SevenDaysProps> = ({
         </DndContext>
       </div>
       <EventModal />
+      <PeriodModal />
     </>
   )
 }

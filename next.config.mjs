@@ -14,6 +14,7 @@ const withBundleAnalyzer = bundleAnaylzer({
 
 /** @type {import("next").NextConfig} */
 const config = {
+  output: 'standalone',
   logging: {
     fetches: {
       fullUrl: true,

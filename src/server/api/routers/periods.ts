@@ -18,6 +18,17 @@ const select = {
 }
 
 export const periodsRouter = createTRPCRouter({
+  all: protectedProcedure.query(({ ctx }) => {
+    return ctx.db.period.findMany({
+      where: {
+        createdById: ctx.session.user.id,
+      },
+      select,
+      orderBy: {
+        startDate: 'asc',
+      },
+    })
+  }),
   range: protectedProcedure
     .input(
       z
@@ -30,37 +41,27 @@ export const periodsRouter = createTRPCRouter({
     .query(({ ctx, input }) => {
       if (!input) return []
 
-      // Scenario 1: start and end are both in the range
-      // Scenario 2: start is in the range
-      // Scenario 3: end is in the range
-
       return ctx.db.period.findMany({
         where: {
           OR: [
-            // Scenario 1
             {
+              // Start date in the range
               startDate: {
-                lte: input.start,
-              },
-              endDate: {
-                gte: input.end,
+                gte: input.start,
+                lte: input.end,
               },
             },
-            // Scenario 2
             {
-              startDate: {
-                lte: input.start,
-              },
+              // End date in the range
               endDate: {
                 gte: input.start,
                 lte: input.end,
               },
             },
-            // Scenario 3
             {
+              // start date before range and end date after range
               startDate: {
-                gte: input.start,
-                lte: input.end,
+                lte: input.start,
               },
               endDate: {
                 gte: input.end,

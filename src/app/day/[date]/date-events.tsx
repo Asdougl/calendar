@@ -17,6 +17,7 @@ import { usePreferences } from '~/trpc/hooks'
 import { api } from '~/trpc/react'
 import { cn, getCategoryColor } from '~/utils/classnames'
 import { daysAway, timeFormat } from '~/utils/dates'
+import { SEARCH_PARAMS, SEARCH_PARAMS_NEW } from '~/utils/searchParams'
 
 export const DateEvents: FC<{
   date: Date
@@ -38,7 +39,7 @@ export const DateEvents: FC<{
         !isLoading ? (
           <PathLink
             path="/week"
-            query={{ of: stdFormat(date) }}
+            query={{ [SEARCH_PARAMS.OF]: stdFormat(date) }}
             className="flex items-center justify-center"
           >
             <ArrowLeftIcon height={20} />
@@ -163,7 +164,7 @@ export const DateEvents: FC<{
       <PathLink
         path="/day/:date"
         params={{ date: formattedDay }}
-        query={{ event: 'new' }}
+        query={{ event: SEARCH_PARAMS_NEW }}
         className="flex items-center justify-center gap-2 rounded-lg px-2 py-3 text-neutral-500 transition-colors hover:bg-neutral-800 hover:text-neutral-50"
       >
         <PlusIcon height={16} />

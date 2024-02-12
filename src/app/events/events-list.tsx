@@ -22,6 +22,7 @@ import { time, timeFormat } from '~/utils/dates'
 import { usePreferences } from '~/trpc/hooks'
 import { EventModal } from '~/components/modals/EventModal'
 import { stdFormat } from '~/components/ui/dates/common'
+import { SEARCH_PARAMS_NEW } from '~/utils/searchParams'
 
 type ListEvent = RouterOutputs['event']['upcoming']['items'][number]
 
@@ -144,7 +145,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                     <PathLink
                       path={direction === 'before' ? '/events/past' : '/events'}
                       query={{
-                        event: 'new',
+                        event: SEARCH_PARAMS_NEW,
                         date: stdFormat(startOfMonth(event.datetime)),
                       }}
                       className="group flex items-center justify-between gap-1 rounded px-2 text-neutral-300 hover:text-neutral-50 lg:hover:bg-neutral-800"

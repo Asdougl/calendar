@@ -2,6 +2,7 @@ import '~/styles/globals.css'
 
 import { Atkinson_Hyperlegible } from 'next/font/google'
 import { cookies } from 'next/headers'
+import { Analytics } from '@vercel/analytics/react'
 
 import { TRPCReactProvider } from '~/trpc/react'
 import { LastLocationProvider } from '~/utils/context'
@@ -31,6 +32,7 @@ export default function RootLayout({
         <TRPCReactProvider cookies={cookies().toString()}>
           <LastLocationProvider>{children}</LastLocationProvider>
         </TRPCReactProvider>
+        <Analytics />
       </body>
     </html>
   )

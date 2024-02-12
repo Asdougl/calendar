@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { TimeStatus } from '@prisma/client'
-import { useState, type FC } from 'react'
+import { useState, type FC, type ReactNode } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import {
@@ -49,6 +49,7 @@ type EventFormProps = {
   expanded?: boolean
   labels?: boolean
   wipValues?: Partial<UpdateEventFormValues>
+  extraActions?: ReactNode
 } & (EditEventFormProps | CreateEventFormProps)
 
 const formatStd = (date: Date) =>
@@ -67,6 +68,7 @@ export const EventForm: FC<EventFormProps> = ({
   expanded: initialExpanded = false,
   labels,
   wipValues,
+  extraActions,
   ...props
 }) => {
   const { preferences } = usePreferences()
@@ -329,35 +331,40 @@ export const EventForm: FC<EventFormProps> = ({
       </div>
 
       {/* Row 5 -- Actions */}
-      <div className="flex w-full justify-end gap-4 lg:flex-row">
-        {expanded && isUpdate && (
-          <DeleteButton
-            isDeleting={isDeleting}
-            onDelete={() => deleteMutate({ id: props.event.id })}
-            title={`Delete ${props.event.title}`}
-            body="Are you sure you want to delete this event? This action cannot be undone."
-          >
-            Delete
-          </DeleteButton>
-        )}
-        {!initialExpanded && (
-          <FormButton
+      <div className="flex w-full flex-wrap-reverse justify-end gap-4 lg:justify-between">
+        <div className="flex justify-end gap-4 lg:justify-start">
+          {extraActions}
+        </div>
+        <div className="flex justify-end gap-4">
+          {expanded && isUpdate && (
+            <DeleteButton
+              isDeleting={isDeleting}
+              onDelete={() => deleteMutate({ id: props.event.id })}
+              title={`Delete ${props.event.title}`}
+              body="Are you sure you want to delete this event? This action cannot be undone."
+            >
+              Delete
+            </DeleteButton>
+          )}
+          {!initialExpanded && (
+            <FormButton
+              control={control}
+              type="button"
+              className="px-8"
+              onClick={() => setExpanded(!expanded)}
+            >
+              {expanded ? 'Less' : 'More'}
+            </FormButton>
+          )}
+          <FormSubmitButton
             control={control}
-            type="button"
+            intent="primary"
+            type="submit"
             className="px-8"
-            onClick={() => setExpanded(!expanded)}
           >
-            {expanded ? 'Less' : 'More'}
-          </FormButton>
-        )}
-        <FormSubmitButton
-          control={control}
-          intent="primary"
-          type="submit"
-          className="px-8"
-        >
-          Save
-        </FormSubmitButton>
+            Save
+          </FormSubmitButton>
+        </div>
       </div>
     </form>
   )

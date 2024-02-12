@@ -15,6 +15,7 @@ import {
   CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/solid'
 import { Button } from '../button'
 import {
@@ -26,6 +27,8 @@ import {
 } from './common'
 import { getMonthDates } from '~/utils/dates'
 import { cn } from '~/utils/classnames'
+import { useViewport } from '~/utils/hooks'
+import { BREAKPOINTS } from '~/utils/constants'
 
 type DateRangePickerProps = {
   start?: Date
@@ -56,6 +59,8 @@ const PickDateButton: FC<PickDateButtonProps> = ({
   min,
   max,
 }) => {
+  const viewport = useViewport()
+
   const isStart = start ? isSameDay(date, start) : false
   const isEnd = end ? isSameDay(date, end) : false
 
@@ -78,18 +83,24 @@ const PickDateButton: FC<PickDateButtonProps> = ({
     <button
       // ref={isToday ? todayRef : undefined}
       type="button"
-      disabled={isDisabled(date, min, max) || !current}
+      disabled={
+        isDisabled(date, min, max) ||
+        (viewport.width >= BREAKPOINTS.lg && !current)
+      }
       aria-label={ariaLabel}
       className={cn(
-        'h-10 w-auto border text-lg hover:bg-neutral-900 md:w-10',
-        current ? 'disabled:opacity-10' : 'opacity-0',
+        'h-10 w-auto border text-lg text-neutral-50 hover:bg-neutral-900 md:w-10',
+        current
+          ? 'disabled:opacity-10'
+          : 'text-opacity-20 lg:text-opacity-100 lg:opacity-0',
         {
           'rounded-lg': isStart && isEnd,
           'rounded-r': isEnd,
           'rounded-l': isStart,
-          'border-neutral-500 bg-neutral-500 text-neutral-50': selected,
-          'border-neutral-500': isToday,
-          'border-transparent': !selected && !isToday,
+          'border-neutral-500 bg-neutral-500 text-neutral-50 text-opacity-100':
+            selected,
+          'font-bold underline': isToday,
+          'border-transparent': !selected,
           'bg-neutral-900': !isStart && !isEnd && isInRange,
         }
       )}
@@ -217,9 +228,17 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
                     <ChevronLeftIcon height={18} />
                   </button>
                   <div>{format(focusMonth, 'MMMM yyyy')}</div>
-                  <div className="opacity-0">
+                  <div className="hidden opacity-0 lg:block">
                     <ChevronRightIcon height={18} />
                   </div>
+                  <button
+                    type="button"
+                    onClick={nextMonth}
+                    className="h-full rounded-lg px-2 hover:bg-neutral-900 lg:hidden"
+                    aria-label="Next Month"
+                  >
+                    <ChevronRightIcon height={18} />
+                  </button>
                 </div>
                 <div className="grid grid-cols-7">
                   {daysOfWeek.map((day) => (
@@ -246,7 +265,7 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
                   )}
                 </div>
               </div>
-              <div>
+              <div className="hidden lg:block">
                 <div className="flex h-10 items-center justify-between">
                   <div className="opacity-0">
                     <ChevronLeftIcon height={18} />
@@ -289,11 +308,12 @@ export const DateRangePicker: FC<DateRangePickerProps> = ({
             </div>
             <div className="flex justify-end">
               <button
-                className="text-xs text-neutral-500 hover:text-neutral-50 disabled:hover:text-neutral-500"
+                className="flex items-center gap-1 px-2 py-0.5 text-sm text-neutral-500 hover:text-neutral-50 disabled:hover:text-neutral-500"
                 disabled={!start && !end}
                 onClick={() => onChange({ start: undefined, end: undefined })}
               >
-                clear
+                <XMarkIcon height={12} />
+                <span className="pb-0.5">clear</span>
               </button>
             </div>
           </div>

@@ -26,3 +26,6 @@ export const log = (
     blob: isError(message) ? message.stack : safeJSONStringify(message),
   })
 }
+
+// eslint-disable-next-line no-console
+export const warn = console.warn

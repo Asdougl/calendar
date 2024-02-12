@@ -7,6 +7,7 @@ import {
   type FC,
   type PropsWithChildren,
 } from 'react'
+import NextLink from 'next/link'
 import { Loader } from './Loader'
 import { PathLink, type PathLinkProps } from './PathLink'
 import { cn } from '~/utils/classnames'
@@ -78,6 +79,15 @@ export const ButtonLink = <Path extends PathName>(
     <PathLink<Path> {...props} className={cn(button(rest), props.className)} />
   )
 }
+
+export const ButtonRawLink = forwardRef<
+  HTMLAnchorElement,
+  ButtonProps<typeof NextLink>
+>(function FwdButtonRawLink({ className, ...props }, ref) {
+  return (
+    <NextLink {...props} ref={ref} className={cn(button(props), className)} />
+  )
+})
 
 export const SkeletonButton: FC<
   PropsWithChildren<ButtonVariantProps & { className?: string }>

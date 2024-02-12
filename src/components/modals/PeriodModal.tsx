@@ -5,8 +5,8 @@ import { type FC } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/solid'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Header2 } from '../ui/headers'
-import { EventForm } from '../form/event/event-form'
 import { stdFormat } from '../ui/dates/common'
+import { PeriodForm } from '../form/period/period-form'
 import { ButtonRawLink } from '../ui/button'
 import { cn, color } from '~/utils/classnames'
 import { api } from '~/trpc/react'
@@ -24,16 +24,16 @@ const getInitialDate = (date: string | null) => {
   return initialDate
 }
 
-export const EventModal: FC = () => {
+export const PeriodModal: FC = () => {
   const searchParams = useSearchParams()
   const router = useRouter()
 
   const enabled =
-    searchParams.has(SEARCH_PARAMS.EVENT) &&
-    searchParams.get(SEARCH_PARAMS.EVENT) !== SEARCH_PARAMS_NEW
+    searchParams.has(SEARCH_PARAMS.PERIOD) &&
+    searchParams.get(SEARCH_PARAMS.PERIOD) !== SEARCH_PARAMS_NEW
 
-  const { data: event, isFetching } = api.event.one.useQuery(
-    { id: searchParams.get(SEARCH_PARAMS.EVENT) || '' },
+  const { data: period, isFetching } = api.periods.one.useQuery(
+    { id: searchParams.get(SEARCH_PARAMS.PERIOD) || '' },
     {
       enabled,
       staleTime: Duration.minutes(5),
@@ -44,7 +44,11 @@ export const EventModal: FC = () => {
   const onOpenChange = (value: boolean, jumpTo?: Date) => {
     if (!value) {
       const url = createUpdatedSearchParams({
-        remove: [SEARCH_PARAMS.EVENT, SEARCH_PARAMS.DATE],
+        remove: [
+          SEARCH_PARAMS.PERIOD,
+          SEARCH_PARAMS.DATE,
+          SEARCH_PARAMS.END_DATE,
+        ],
         update: {
           [SEARCH_PARAMS.OF]: jumpTo ? stdFormat(jumpTo) : undefined,
         },
@@ -56,7 +60,7 @@ export const EventModal: FC = () => {
 
   return (
     <Dialog.Root
-      open={searchParams.has(SEARCH_PARAMS.EVENT)}
+      open={searchParams.has(SEARCH_PARAMS.PERIOD)}
       onOpenChange={onOpenChange}
     >
       <Dialog.Portal>
@@ -75,10 +79,10 @@ export const EventModal: FC = () => {
                   <div
                     className={cn(
                       'h-6 w-1 rounded-full',
-                      color('bg')(event?.category?.color)
+                      color('bg')(period?.color)
                     )}
                   ></div>
-                  {event ? event.title : 'Add Event'}
+                  {period ? period.name : 'Add Period'}
                 </Header2>
               )}
             </Dialog.Title>
@@ -95,48 +99,53 @@ export const EventModal: FC = () => {
             <div className="flex flex-col gap-4">
               <div className="flex gap-4">
                 <div className="w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
-                  Event Title
+                  Period Name
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
-                  Event Date
+                  Period Dates
                 </div>
                 <div className="w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
-                  Event Category
+                  Period Category
                 </div>
               </div>
               <div className="flex gap-4">
                 <div className="w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
-                  Event Time Options
+                  Period Color
                 </div>
-                <div className="h-24 w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
-                  Event Time Editor
+                <div className="w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
+                  Period Icon
                 </div>
               </div>
               <div className="flex justify-end gap-4">
                 <div className="animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
-                  More
+                  Delete
                 </div>
                 <div className="animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">
                   Submit
                 </div>
               </div>
             </div>
-          ) : event ? (
-            <EventForm event={event} onSubmit={() => onOpenChange(false)} />
+          ) : period ? (
+            <PeriodForm period={period} onSubmit={() => onOpenChange(false)} />
           ) : (
-            <EventForm
-              date={getInitialDate(searchParams.get(SEARCH_PARAMS.DATE))}
+            <PeriodForm
+              startDate={getInitialDate(searchParams.get(SEARCH_PARAMS.DATE))}
+              endDate={
+                searchParams.has(SEARCH_PARAMS.END_DATE)
+                  ? getInitialDate(searchParams.get(SEARCH_PARAMS.END_DATE))
+                  : undefined
+              }
               onSubmit={(eventDate) => onOpenChange(false, eventDate)}
               extraActions={
                 <ButtonRawLink
                   href={createUpdatedSearchParams({
-                    update: { period: SEARCH_PARAMS_NEW },
-                    remove: ['event'],
+                    update: { event: SEARCH_PARAMS_NEW },
+                    remove: ['period'],
                   })}
                 >
-                  Add Period
+                  Add Event
                 </ButtonRawLink>
               }
             />

@@ -13,7 +13,6 @@ import { ButtonLink } from './ui/button'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn, color } from '~/utils/classnames'
 import { toCalendarDate } from '~/utils/dates'
-import { useOrigination } from '~/utils/atoms'
 
 type ViewPeriodProps = {
   period: RouterOutputs['periods']['range'][number]
@@ -26,8 +25,6 @@ export const ViewPeriod: FC<PropsWithChildren<ViewPeriodProps>> = ({
   initialOpen = false,
 }) => {
   const [open, setOpen] = useState(initialOpen)
-
-  const [originating] = useOrigination()
 
   const totalWeeks =
     differenceInCalendarWeeks(period.endDate, period.startDate, {
@@ -106,11 +103,7 @@ export const ViewPeriod: FC<PropsWithChildren<ViewPeriodProps>> = ({
           </div>
           {/* Row 4 */}
           <div className="flex justify-end pt-4">
-            <ButtonLink
-              path="/periods/:id"
-              params={{ id: period.id }}
-              query={{ origin: originating }}
-            >
+            <ButtonLink path="/periods/:id" params={{ id: period.id }}>
               More Details
             </ButtonLink>
           </div>
