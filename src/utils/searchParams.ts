@@ -9,6 +9,8 @@ export const SEARCH_PARAMS = {
   DATE: 'date',
   /** Used to prefill the end date of a form */
   END_DATE: 'endDate',
+  /** Used to prefill the title of a form */
+  TITLE: 'title',
   /** Reserved for search queries */
   Q: 'q',
   /** Reserved for identifying originating path */
@@ -31,7 +33,7 @@ type UpdatedSearchParams = {
 }
 
 export const createUpdatedSearchParams = (config: UpdatedSearchParams) => {
-  const url = new URL(window.location.href)
+  const url = new URL(window?.location.href)
 
   if (config.update) {
     for (const key in config.update) {

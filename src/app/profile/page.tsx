@@ -1,4 +1,8 @@
-import { ClockIcon, ListBulletIcon } from '@heroicons/react/24/solid'
+import {
+  ClockIcon,
+  ListBulletIcon,
+  TicketIcon,
+} from '@heroicons/react/24/solid'
 import { type ReactNode } from 'react'
 import {
   DebugSection,
@@ -28,6 +32,11 @@ const LINKS = [
     icon: <ListBulletIcon className="mr-2 h-5 w-5" />,
     title: 'Categories',
   } as ProfileLink<'/categories'>,
+  {
+    path: '/events/past',
+    icon: <TicketIcon className="mr-2 h-5 w-5" />,
+    title: 'Past Events',
+  } as ProfileLink<'/events/past'>,
 ]
 
 export default async function ProfilePage() {

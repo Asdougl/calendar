@@ -1,7 +1,9 @@
 import { type ReactNode, type FC, type PropsWithChildren } from 'react'
 import { Navbar } from '../Navbar'
 import { Header1 } from '../ui/headers'
-import { CommandBar } from '../CommandBar'
+import { CommandBar } from '../command-bar'
+import { EventModal } from '../modals/EventModal'
+import { PeriodModal } from '../modals/PeriodModal'
 import { cn } from '~/utils/classnames'
 
 export type PageLayoutProps = {
@@ -77,6 +79,8 @@ export const InnerPageLayout: FC<PropsWithChildren<PageLayoutProps>> = ({
         </div>
       </header>
       {children}
+      <EventModal />
+      <PeriodModal />
     </>
   )
 }

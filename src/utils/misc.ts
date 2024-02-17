@@ -38,3 +38,7 @@ export const pluralize = (
 export const wait = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+export const getWindow = () => {
+  return typeof window === 'undefined' ? null : window
+}

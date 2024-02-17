@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import throttle from 'lodash/throttle'
 import { startOfDay } from 'date-fns'
 import { pathReplace } from './path'
+import { getWindow } from '~/utils/misc'
 
 /**
  * A hook that returns a debounced value.
@@ -252,8 +253,8 @@ export const useRouter = () => {
 
 export const useViewport = () => {
   const [viewport, setViewport] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: getWindow()?.innerWidth || 0,
+    height: getWindow()?.innerHeight || 0,
   })
 
   useEffect(() => {

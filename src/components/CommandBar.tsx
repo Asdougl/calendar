@@ -31,6 +31,7 @@ const COMMAND_DESCRIPTIONS = {
   [COMMANDS.SETTINGS]: 'Go to settings',
 } as const
 
+/** @deprecated */
 export const CommandBar = () => {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')

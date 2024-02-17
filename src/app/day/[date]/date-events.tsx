@@ -8,7 +8,6 @@ import {
 import { addDays, endOfDay, format, startOfDay } from 'date-fns'
 import { type FC } from 'react'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
-import { EventModal } from '~/components/modals/EventModal'
 import { Loader } from '~/components/ui/Loader'
 import { PathLink } from '~/components/ui/PathLink'
 import { stdFormat } from '~/components/ui/dates/common'
@@ -170,7 +169,6 @@ export const DateEvents: FC<{
         <PlusIcon height={16} />
         <span>Add Event</span>
       </PathLink>
-      <EventModal />
     </InnerPageLayout>
   )
 }

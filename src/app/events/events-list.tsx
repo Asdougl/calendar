@@ -17,10 +17,9 @@ import { PathLink } from '~/components/ui/PathLink'
 import { SubmitButton } from '~/components/ui/button'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
-import { cn, getCategoryColor } from '~/utils/classnames'
-import { time, timeFormat } from '~/utils/dates'
+import { cn, color } from '~/utils/classnames'
+import { Duration, timeFormat } from '~/utils/dates'
 import { usePreferences } from '~/trpc/hooks'
-import { EventModal } from '~/components/modals/EventModal'
 import { stdFormat } from '~/components/ui/dates/common'
 import { SEARCH_PARAMS_NEW } from '~/utils/searchParams'
 
@@ -80,8 +79,8 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      staleTime: time.minutes(2),
-      refetchInterval: time.minutes(5),
+      staleTime: Duration.minutes(2),
+      refetchInterval: Duration.minutes(5),
     }
   )
 
@@ -166,7 +165,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                     className={cn(
                       'group flex items-center justify-between gap-1 overflow-hidden rounded-lg px-2 py-1 transition-colors lg:hover:bg-neutral-900',
                       event.category?.color
-                        ? getCategoryColor(event.category.color, 'bg-dull')
+                        ? color('bg-dull')(event.category.color)
                         : 'bg-neutral-800'
                     )}
                   >
@@ -174,7 +173,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                       <div
                         className={cn(
                           'h-10 w-1 flex-shrink-0 rounded-full',
-                          getCategoryColor(event.category?.color, 'bg')
+                          color('bg')(event.category?.color)
                         )}
                       ></div>
                       <div className="flex flex-col overflow-hidden">
@@ -194,7 +193,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                         <div
                           className={cn(
                             'flex gap-1 whitespace-nowrap leading-tight',
-                            getCategoryColor(event.category?.color, 'text')
+                            color('text')(event.category?.color)
                           )}
                         >
                           {format(event.datetime, 'EEEE, MMM d')}
@@ -239,7 +238,6 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
           </li>
         )}
       </ul>
-      <EventModal />
     </PageLayout>
   )
 }

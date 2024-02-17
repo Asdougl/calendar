@@ -102,7 +102,7 @@ export const eventRouter = createTRPCRouter({
         },
         select,
         orderBy: {
-          datetime: 'asc',
+          datetime: input.direction === 'after' ? 'asc' : 'desc',
         },
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,

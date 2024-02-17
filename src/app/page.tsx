@@ -1,156 +1,9 @@
-import { set, setDay, startOfDay } from 'date-fns'
 import { redirect } from 'next/navigation'
-import { DemoDayBox } from './demo-daybox'
-import { ButtonLink } from '~/components/ui/button'
+import Image from 'next/image'
+import { DemoSevenDays } from './seven-days-demo'
+import { ButtonAnchor, ButtonLink } from '~/components/ui/button'
 import { getServerAuthSession } from '~/server/auth'
-import { type RouterOutputs } from '~/trpc/shared'
-import { createTempId } from '~/utils/misc'
-
-type EventsByDay = Record<
-  0 | 1 | 2 | 3 | 4 | 5 | 6,
-  NonNullable<RouterOutputs['event']['range']>
->
-
-type Event = RouterOutputs['event']['range'][number]
-
-const createEvent = (
-  params: Pick<Event, 'title' | 'datetime'> & Partial<Omit<Event, 'id'>>
-): Event => {
-  return {
-    id: createTempId(),
-    category: null,
-    location: '123 Fake St, Sydney',
-    endDateTime: null,
-    timeStatus: 'STANDARD',
-    ...params,
-  }
-}
-
-const createShowcaseData = (focus: Date): EventsByDay => ({
-  // Sunday
-  0: [
-    createEvent({
-      title: 'Dinner at parents',
-      datetime: set(setDay(focus, 7), {
-        hours: 12,
-        minutes: 0,
-      }),
-      category: {
-        id: createTempId(),
-        color: 'blue',
-        name: 'Family',
-      },
-      location: '123 Fake St, Sydney',
-    }),
-    createEvent({
-      title: 'Go for a run',
-      datetime: set(setDay(focus, 7), {
-        hours: 12,
-        minutes: 0,
-      }),
-      category: {
-        id: createTempId(),
-        color: 'red',
-        name: 'Health',
-      },
-    }),
-  ],
-  // Monday
-  1: [
-    createEvent({
-      title: 'Day off',
-      datetime: setDay(focus, 8),
-      timeStatus: 'ALL_DAY',
-    }),
-    createEvent({
-      title: 'Workout',
-      datetime: set(setDay(focus, 8), {
-        hours: 18,
-        minutes: 0,
-      }),
-      category: {
-        id: createTempId(),
-        color: 'red',
-        name: 'Health',
-      },
-    }),
-  ],
-  // Tuesday
-  2: [],
-  // Wednesday
-  3: [],
-  // Thursday
-  4: [
-    createEvent({
-      title: 'In the office',
-      datetime: set(setDay(focus, 4), {
-        hours: 9,
-        minutes: 0,
-      }),
-    }),
-    createEvent({
-      title: 'Workout',
-      datetime: set(setDay(focus, 4), {
-        hours: 18,
-        minutes: 0,
-      }),
-      category: {
-        id: createTempId(),
-        color: 'red',
-        name: 'Health',
-      },
-    }),
-  ],
-  // Friday
-  5: [
-    createEvent({
-      title: 'Get on the beers',
-      datetime: set(setDay(focus, 6), {
-        hours: 17,
-        minutes: 0,
-      }),
-      category: {
-        id: createTempId(),
-        color: 'green',
-        name: 'Friends',
-      },
-    }),
-  ],
-  // Saturday
-  6: [
-    createEvent({
-      title: 'Go to the market',
-      datetime: set(setDay(focus, 6), {
-        hours: 9,
-        minutes: 0,
-      }),
-    }),
-    createEvent({
-      title: 'Lunch with friends',
-      datetime: set(setDay(focus, 6), {
-        hours: 12,
-        minutes: 0,
-      }),
-      category: {
-        id: createTempId(),
-        color: 'green',
-        name: 'Friends',
-      },
-    }),
-    createEvent({
-      title: 'Dinner with in-laws',
-      datetime: set(setDay(focus, 6), {
-        hours: 20,
-        minutes: 0,
-      }),
-      category: {
-        id: createTempId(),
-        color: 'blue',
-        name: 'Family',
-      },
-    }),
-  ],
-})
+import { Logo } from '~/components/Logo'
 
 export default async function IndexPage() {
   const session = await getServerAuthSession()
@@ -159,16 +12,35 @@ export default async function IndexPage() {
     redirect('/inbox')
   }
 
-  const focusDate = startOfDay(new Date())
-
-  const showcaseData = createShowcaseData(focusDate)
-
   return (
     <div className="relative flex min-h-screen flex-col">
       <header className="sticky top-0 z-20 border-b border-neutral-800 bg-neutral-950">
         <div className="container mx-auto flex items-center justify-between px-4 py-2">
-          <h1 className="font-mono text-xl">asdougl/calendar</h1>
-          <ButtonLink path="/login">Login</ButtonLink>
+          <div className="md:hidden">
+            <Logo size="sm" />
+          </div>
+          <div className="hidden md:block">
+            <Logo size="md" />
+          </div>
+          <div className="flex gap-4">
+            <ButtonAnchor
+              href="https://github.com/asdougl/calendar"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2"
+            >
+              <Image
+                src="/github-mark.svg"
+                width={18}
+                height={18}
+                alt="Github"
+              />
+              <span className="hidden md:inline">Github</span>
+            </ButtonAnchor>
+            <ButtonLink path="/login" intent="primary">
+              Login
+            </ButtonLink>
+          </div>
         </div>
       </header>
       <main className="flex-grow">
@@ -198,8 +70,8 @@ export default async function IndexPage() {
                 </ButtonLink>
               </section>
               <section className="text-sm text-neutral-400 md:text-lg">
-                <p>
-                  <span className="font-mono text-xs text-neutral-50 lg:text-base">
+                <p className="text-base">
+                  <span className="font-mono text-neutral-50">
                     asdougl/calendar
                   </span>{' '}
                   is currently a work in progress.
@@ -238,45 +110,7 @@ export default async function IndexPage() {
               </section>
             </div>
             <div className="flex h-full min-h-[600px] gap-2">
-              <div className="flex w-1/2 flex-1 flex-col gap-2 overflow-hidden">
-                <DemoDayBox
-                  focusDate={focusDate}
-                  dayOfWeek={6}
-                  eventsMap={showcaseData}
-                />
-                <DemoDayBox
-                  focusDate={focusDate}
-                  dayOfWeek={0}
-                  eventsMap={showcaseData}
-                />
-              </div>
-              <div className="flex w-1/2 flex-1 flex-col gap-2 overflow-hidden">
-                <DemoDayBox
-                  focusDate={focusDate}
-                  dayOfWeek={5}
-                  eventsMap={showcaseData}
-                />
-                <DemoDayBox
-                  focusDate={focusDate}
-                  dayOfWeek={4}
-                  eventsMap={showcaseData}
-                />
-                <DemoDayBox
-                  focusDate={focusDate}
-                  dayOfWeek={3}
-                  eventsMap={showcaseData}
-                />
-                <DemoDayBox
-                  focusDate={focusDate}
-                  dayOfWeek={2}
-                  eventsMap={showcaseData}
-                />
-                <DemoDayBox
-                  focusDate={focusDate}
-                  dayOfWeek={1}
-                  eventsMap={showcaseData}
-                />
-              </div>
+              <DemoSevenDays />
             </div>
           </div>
           <div className="flex flex-col gap-8 py-12 pb-8 md:hidden">
@@ -302,13 +136,28 @@ export default async function IndexPage() {
       <footer className="container mx-auto px-4 pb-12 pt-6 text-neutral-400">
         <p>Copyright &copy; {new Date().getFullYear()} Cameron Burrows</p>
         <p className="flex gap-2">
-          <a className="underline" href="www.cameronburrows.com.au">
+          <a
+            className="underline"
+            href="https://www.cameronburrows.com.au"
+            target="_blank"
+            rel="noreferrer"
+          >
             Website
           </a>
-          <a className="underline" href="www.github.com/asdougl">
+          <a
+            className="underline"
+            href="https://www.github.com/asdougl"
+            target="_blank"
+            rel="noreferrer"
+          >
             Github
           </a>
-          <a className="underline" href="www.twitter.com/_asdougl">
+          <a
+            className="underline"
+            href="https://www.twitter.com/_asdougl"
+            target="_blank"
+            rel="noreferrer"
+          >
             X / Twitter
           </a>
         </p>

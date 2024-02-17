@@ -1,12 +1,15 @@
 'use client'
 
+import { PlusIcon } from '@heroicons/react/24/solid'
 import { addYears, differenceInDays, isSameDay, startOfDay } from 'date-fns'
+import Link from 'next/link'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { ButtonLink } from '~/components/ui/button'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn, color } from '~/utils/classnames'
 import { pluralize } from '~/utils/misc'
+import { createUpdatedSearchParams } from '~/utils/searchParams'
 
 const formatter = new Intl.DateTimeFormat('default', {
   day: 'numeric',
@@ -69,7 +72,20 @@ export const PeriodsView = () => {
   })
 
   return (
-    <InnerPageLayout title="Periods">
+    <InnerPageLayout
+      title="Periods"
+      headerRight={
+        <Link
+          href={createUpdatedSearchParams({
+            update: { period: 'new' },
+            remove: ['event'],
+          })}
+          className="flex items-center justify-center"
+        >
+          <PlusIcon height={16} />
+        </Link>
+      }
+    >
       {range?.map((period) => <PeriodItem key={period.id} period={period} />)}
     </InnerPageLayout>
   )

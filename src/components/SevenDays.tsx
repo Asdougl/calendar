@@ -13,11 +13,10 @@ import {
   MouseSensor,
   TouchSensor,
 } from '@dnd-kit/core'
+import { useRouter } from 'next/navigation'
 import { PathLink } from './ui/PathLink'
 import { stdFormat } from './ui/dates/common'
-import { EventModal } from './modals/EventModal'
-import { PeriodModal } from './modals/PeriodModal'
-import { type RouterOutputs } from '~/trpc/shared'
+import { type RouterInputs, type RouterOutputs } from '~/trpc/shared'
 import { cn, color } from '~/utils/classnames'
 import { eventSort } from '~/utils/sort'
 import { api } from '~/trpc/react'
@@ -74,6 +73,8 @@ const EventItem = ({
       id: event.id,
     })
 
+  const router = useRouter()
+
   const style = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
@@ -82,15 +83,19 @@ const EventItem = ({
 
   const now = new Date()
 
+  const navigate = () => {
+    router.push(eventLink(event.id))
+  }
+
   return (
-    <Link
-      href={eventLink(event.id)}
+    <button
+      onClick={navigate}
       ref={setNodeRef}
       {...listeners}
       {...attributes}
       style={style}
       className={cn(
-        'flex flex-shrink-0 items-center justify-between rounded text-sm lg:text-base lg:hover:bg-neutral-900',
+        'flex flex-shrink-0 items-center justify-between rounded bg-neutral-950 text-sm lg:text-base lg:hover:bg-neutral-900',
         { 'pointer-events-none z-10': isDragging }
       )}
     >
@@ -113,7 +118,7 @@ const EventItem = ({
       <div className="whitespace-nowrap text-sm text-neutral-500">
         {eventItemTime(event)}
       </div>
-    </Link>
+    </button>
   )
 }
 
@@ -258,17 +263,21 @@ export type SevenDaysProps = {
   weekStart?: 0 | 1 | 6 | 3 | 2 | 4 | 5
 }
 
-export const SevenDays: FC<SevenDaysProps> = ({
+export type SevenDaysShellProps = SevenDaysProps & {
+  findEvent: (id: string) => RouterOutputs['event']['range'][number] | undefined
+  updateEvent: (input: RouterInputs['event']['update']) => void
+}
+
+export const SevenDaysShell: FC<SevenDaysShellProps> = ({
   start,
-  end,
   events,
   periods,
   loading,
   outlines,
   weekStart,
+  findEvent,
+  updateEvent,
 }) => {
-  const queryClient = api.useUtils()
-
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
       distance: 10,
@@ -279,42 +288,6 @@ export const SevenDays: FC<SevenDaysProps> = ({
     activationConstraint: {
       delay: 250,
       tolerance: 5,
-    },
-  })
-
-  const { mutate } = api.event.update.useMutation({
-    onMutate: (data) => {
-      if (data.datetime) {
-        const curr = queryClient.event.range.getData({ start, end })
-
-        if (curr) {
-          const modifiedEventIndex = curr.findIndex(
-            (event) => event.id === data.id
-          )
-          if (modifiedEventIndex > -1) {
-            const copy = [...curr]
-            const [event] = copy.splice(modifiedEventIndex, 1)
-
-            if (event) {
-              const newEvent = { ...event, ...data }
-
-              copy.push(newEvent)
-
-              queryClient.event.range.setData({ start, end }, copy)
-            }
-          }
-        }
-
-        return { previousValue: curr }
-      }
-    },
-    onSuccess: () => {
-      queryClient.event.range.invalidate({ start, end }).catch(warn)
-    },
-    onError: (err, variables, context) => {
-      if (context?.previousValue) {
-        queryClient.event.range.setData({ start, end }, context.previousValue)
-      }
     },
   })
 
@@ -331,11 +304,7 @@ export const SevenDays: FC<SevenDaysProps> = ({
 
     if (isNaN(yearInt) || isNaN(monthInt) || isNaN(dateInt)) return
 
-    const events = queryClient.event.range.getData({ start, end })
-
-    if (!events) return
-
-    const event = events.find((event) => event.id === e.active.id)
+    const event = findEvent(e.active.id.toString())
 
     if (!event) return
 
@@ -346,7 +315,7 @@ export const SevenDays: FC<SevenDaysProps> = ({
     )
       return
 
-    mutate({
+    updateEvent({
       id: event.id,
       datetime: set(event.datetime, {
         year: yearInt,
@@ -429,8 +398,58 @@ export const SevenDays: FC<SevenDaysProps> = ({
           </div>
         </DndContext>
       </div>
-      <EventModal />
-      <PeriodModal />
     </>
+  )
+}
+
+export const SevenDays = (props: SevenDaysProps) => {
+  const queryClient = api.useUtils()
+
+  const { mutate } = api.event.update.useMutation({
+    onMutate: (data) => {
+      if (data.datetime) {
+        const curr = queryClient.event.range.getData(props)
+
+        if (curr) {
+          const modifiedEventIndex = curr.findIndex(
+            (event) => event.id === data.id
+          )
+          if (modifiedEventIndex > -1) {
+            const copy = [...curr]
+            const [event] = copy.splice(modifiedEventIndex, 1)
+
+            if (event) {
+              const newEvent = { ...event, ...data }
+
+              copy.push(newEvent)
+
+              queryClient.event.range.setData(props, copy)
+            }
+          }
+        }
+
+        return { previousValue: curr }
+      }
+    },
+    onSuccess: () => {
+      queryClient.event.range.invalidate(props).catch(warn)
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousValue) {
+        queryClient.event.range.setData(props, context.previousValue)
+      }
+    },
+  })
+
+  const findEvent = (id: string) => {
+    const events = queryClient.event.range.getData(props)
+
+    if (!events) return
+
+    return events.find((event) => event.id === id)
+  }
+
+  return (
+    <SevenDaysShell {...props} findEvent={findEvent} updateEvent={mutate} />
   )
 }

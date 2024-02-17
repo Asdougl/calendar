@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { Login } from './login'
 import { getServerAuthSession } from '~/server/auth'
-import { PageLayout } from '~/components/layout/PageLayout'
+import { Logo } from '~/components/Logo'
 
 export default async function LoginPage({
   searchParams: { origin },
@@ -15,8 +15,15 @@ export default async function LoginPage({
   }
 
   return (
-    <PageLayout title={<h1 className="font-mono text-lg">asdougl/calendar</h1>}>
-      <Login signup={origin === 'sign-up'} />
-    </PageLayout>
+    <main className="flex min-h-screen flex-col px-2 md:px-0">
+      <div className="container mx-auto flex flex-grow grid-cols-2 flex-col-reverse justify-end gap-4 divide-neutral-800 lg:grid lg:divide-x lg:py-20">
+        <div className="flex flex-col justify-center">
+          <Login signup={origin === 'sign-up'} />
+        </div>{' '}
+        <div className="flex items-center justify-center pt-6">
+          <Logo />
+        </div>
+      </div>
+    </main>
   )
 }

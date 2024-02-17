@@ -44,7 +44,7 @@ export const EventModal: FC = () => {
   const onOpenChange = (value: boolean, jumpTo?: Date) => {
     if (!value) {
       const url = createUpdatedSearchParams({
-        remove: [SEARCH_PARAMS.EVENT, SEARCH_PARAMS.DATE],
+        remove: [SEARCH_PARAMS.EVENT, SEARCH_PARAMS.DATE, SEARCH_PARAMS.TITLE],
         update: {
           [SEARCH_PARAMS.OF]: jumpTo ? stdFormat(jumpTo) : undefined,
         },
@@ -129,6 +129,9 @@ export const EventModal: FC = () => {
             <EventForm
               date={getInitialDate(searchParams.get(SEARCH_PARAMS.DATE))}
               onSubmit={(eventDate) => onOpenChange(false, eventDate)}
+              wipValues={{
+                title: searchParams.get(SEARCH_PARAMS.TITLE) ?? undefined,
+              }}
               extraActions={
                 <ButtonRawLink
                   href={createUpdatedSearchParams({

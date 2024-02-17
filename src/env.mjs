@@ -21,6 +21,8 @@ export const env = createEnv({
     DISCORD_CLIENT_SECRET: z.string(),
     GITHUB_CLIENT_ID: z.string(),
     GITHUB_CLIENT_SECRET: z.string(),
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_SECRET: z.string(),
     // Vercel Postgres
     POSTGRES_DATABASE: z.string(),
     POSTGRES_HOST: z.string(),
@@ -39,6 +41,7 @@ export const env = createEnv({
    */
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_DEVELOPMENT: z.boolean().default(true),
   },
 
   /**
@@ -46,6 +49,7 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
+    // Server
     NODE_ENV: process.env.NODE_ENV,
     PORT: process.env.PORT,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
@@ -54,6 +58,8 @@ export const env = createEnv({
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     POSTGRES_DATABASE: process.env.POSTGRES_DATABASE,
     POSTGRES_HOST: process.env.POSTGRES_HOST,
     POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
@@ -62,6 +68,8 @@ export const env = createEnv({
     POSTGRES_URL_NON_POOLING: process.env.POSTGRES_URL_NON_POOLING,
     POSTGRES_USER: process.env.POSTGRES_USER,
     ANALYZE: process.env.ANALYZE,
+    // Client
+    NEXT_PUBLIC_DEVELOPMENT: process.env.NODE_ENV === 'development',
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
