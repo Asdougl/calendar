@@ -11,6 +11,8 @@ const select = {
   timeStatus: true,
   location: true,
   endDateTime: true,
+  done: true,
+  cancelled: true,
   category: {
     select: {
       id: true,
@@ -164,7 +166,8 @@ export const eventRouter = createTRPCRouter({
           .default(TimeStatus.STANDARD),
         categoryId: z.string().nullish(),
         location: z.string().nullish(),
-        todo: z.boolean().optional(),
+        todo: z.boolean().nullish(),
+        cancelled: z.boolean().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
@@ -176,7 +179,8 @@ export const eventRouter = createTRPCRouter({
           location: input.location,
           categoryId: input.categoryId,
           createdById: ctx.session.user.id,
-          done: input.todo ? false : null,
+          done: input.todo,
+          cancelled: input.cancelled,
         },
         select,
       })
@@ -193,6 +197,7 @@ export const eventRouter = createTRPCRouter({
         location: z.string().nullish(),
         categoryId: z.string().nullish(),
         done: z.boolean().nullish(),
+        cancelled: z.boolean().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
@@ -207,6 +212,7 @@ export const eventRouter = createTRPCRouter({
           categoryId: input.categoryId,
           location: input.location,
           done: input.done,
+          cancelled: input.cancelled,
         },
         select,
       })

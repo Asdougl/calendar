@@ -81,6 +81,7 @@ model Event {
     timeStatus  TimeStatus @default(NO_TIME)
     location    String?
     endDateTime DateTime?
+    cancelled   Boolean    @default(false)
 
     done Boolean? // for todos
 

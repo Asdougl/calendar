@@ -1,3 +1,5 @@
+import { getWindow } from './misc'
+
 export const SEARCH_PARAMS = {
   /** Reserved for the focus date of a week or month view */
   OF: 'of',
@@ -33,7 +35,7 @@ type UpdatedSearchParams = {
 }
 
 export const createUpdatedSearchParams = (config: UpdatedSearchParams) => {
-  const url = new URL(window?.location.href)
+  const url = new URL(getWindow()?.location.href || '')
 
   if (config.update) {
     for (const key in config.update) {

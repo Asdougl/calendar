@@ -111,7 +111,7 @@ const CATEGORY_COLOR_MAP: Record<
     bg: 'bg-neutral-600',
     'bg-dull': 'bg-neutral-900',
     text: 'text-neutral-400',
-    border: 'border-neutral-200',
+    border: 'border-neutral-600',
     ring: 'ring-neutral-400',
     'alt-text': 'text-neutral-800',
   },

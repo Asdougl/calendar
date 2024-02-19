@@ -9,8 +9,12 @@ import {
   MinusCircleIcon,
   PlusCircleIcon,
   XCircleIcon,
+  CheckCircleIcon as CheckCircleIconOutline,
 } from '@heroicons/react/24/outline'
-import { CheckCircleIcon } from '@heroicons/react/24/solid'
+import {
+  CheckCircleIcon,
+  XCircleIcon as XCircleIconSolid,
+} from '@heroicons/react/24/solid'
 import { isValid } from 'date-fns'
 import { CategorySelect } from '../CategorySelect'
 import { DeleteButton } from '../DeleteButton'
@@ -25,14 +29,17 @@ import { dateFromDateAndTime } from '~/utils/dates'
 import { formatError } from '~/utils/errors'
 import { cn } from '~/utils/classnames'
 import { FormButton, FormSubmitButton } from '~/components/ui/form-button'
+import { Button } from '~/components/ui/button'
 
 const UpdateEventSchema = z.object({
   title: z.string().min(1).max(255),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   time: z.string().nullable(),
   type: z.nativeEnum(TimeStatus),
+  todo: z.boolean().nullable(),
   categoryId: z.string().nullable(),
   location: z.string().nullish(),
+  cancelled: z.boolean().optional(),
 })
 type UpdateEventFormValues = z.infer<typeof UpdateEventSchema>
 
@@ -93,9 +100,11 @@ export const EventForm: FC<EventFormProps> = ({
           date: wipValues?.date || formatStd(props.event.datetime),
           time: wipValues?.time || formatTime(props.event.datetime),
           type: wipValues?.type || props.event.timeStatus || 'STANDARD',
+          todo: wipValues?.todo ?? props.event.done,
           categoryId:
             wipValues?.categoryId || props.event.category?.id || 'none',
           location: wipValues?.location || props.event.location,
+          cancelled: wipValues?.cancelled ?? props.event.cancelled,
         }
       : {
           title: wipValues?.title || '',
@@ -103,7 +112,9 @@ export const EventForm: FC<EventFormProps> = ({
           time: wipValues?.time || null,
           type: wipValues?.type || 'NO_TIME',
           categoryId: wipValues?.categoryId || 'none',
+          todo: wipValues?.todo || null,
           location: wipValues?.location,
+          cancelled: wipValues?.cancelled,
         },
   })
 
@@ -157,9 +168,11 @@ export const EventForm: FC<EventFormProps> = ({
     const payload = {
       title: data.title,
       datetime,
+      done: data.todo,
       timeStatus: data.type,
       categoryId: data.categoryId === 'none' ? null : data.categoryId,
       location: data.location,
+      cancelled: data.cancelled,
     }
 
     if (isUpdate) {
@@ -285,6 +298,35 @@ export const EventForm: FC<EventFormProps> = ({
                 </>
               )}
             />
+            <Controller
+              control={control}
+              name="todo"
+              render={({ field, formState }) => (
+                <button
+                  type="button"
+                  disabled={formState.isSubmitting}
+                  className="flex flex-1 items-center gap-2 rounded-lg p-2 disabled:text-neutral-600 md:hover:bg-neutral-900 lg:disabled:hover:bg-transparent"
+                  onClick={() =>
+                    field.onChange(field.value === null ? false : null)
+                  }
+                >
+                  {field.value === null ? (
+                    <>
+                      <CheckCircleIconOutline
+                        height={20}
+                        className="flex-none"
+                      />{' '}
+                      Add Todo
+                    </>
+                  ) : (
+                    <>
+                      <XCircleIconSolid height={20} className="flex-none" />{' '}
+                      Remove Todo
+                    </>
+                  )}
+                </button>
+              )}
+            />
           </div>
           <Controller
             control={control}
@@ -303,19 +345,33 @@ export const EventForm: FC<EventFormProps> = ({
       </div>
       {/* Row 4+ -- Expanded Options */}
       {expanded && (
-        <div className="flex w-full flex-col gap-1">
-          <label htmlFor="location" className={cn({ 'sr-only': !labels })}>
-            Location
-          </label>
-          <Input
-            id="location"
-            placeholder="Location (optional)"
-            autoComplete="off"
-            className="w-auto min-w-full flex-grow"
-            disabled={isSubmitting}
-            {...register('location')}
+        <>
+          <div className="flex w-full flex-col gap-1">
+            <label htmlFor="location" className={cn({ 'sr-only': !labels })}>
+              Location
+            </label>
+            <Input
+              id="location"
+              placeholder="Location (optional)"
+              autoComplete="off"
+              className="w-auto min-w-full flex-grow"
+              disabled={isSubmitting}
+              {...register('location')}
+            />
+          </div>
+          <Controller
+            control={control}
+            name="cancelled"
+            render={({ field }) => (
+              <Button
+                type="button"
+                onClick={() => field.onChange(!field.value)}
+              >
+                {field.value ? 'Un-cancel' : 'Cancel'}
+              </Button>
+            )}
           />
-        </div>
+        </>
       )}
 
       {/* Row 4 -- Errors */}

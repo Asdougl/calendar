@@ -19,6 +19,8 @@ const createEvent = (
     location: '123 Fake St, Sydney',
     endDateTime: null,
     timeStatus: 'STANDARD',
+    cancelled: false,
+    done: null,
     ...params,
   }
 }

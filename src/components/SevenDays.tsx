@@ -109,7 +109,9 @@ const EventItem = ({
         <span
           className={cn('truncate', {
             'text-neutral-500 line-through':
-              event.timeStatus === 'STANDARD' && event.datetime < now,
+              (event.timeStatus === 'STANDARD' && event.datetime < now) ||
+              event.done ||
+              event.cancelled,
           })}
         >
           {event.title}
@@ -408,23 +410,21 @@ export const SevenDays = (props: SevenDaysProps) => {
   const { mutate } = api.event.update.useMutation({
     onMutate: (data) => {
       if (data.datetime) {
-        const curr = queryClient.event.range.getData(props)
+        const curr = queryClient.event.range.getData({
+          start: props.start,
+          end: props.end,
+        })
 
         if (curr) {
-          const modifiedEventIndex = curr.findIndex(
-            (event) => event.id === data.id
-          )
-          if (modifiedEventIndex > -1) {
-            const copy = [...curr]
-            const [event] = copy.splice(modifiedEventIndex, 1)
+          const foundEvent = curr.find((event) => event.id === data.id)
 
-            if (event) {
-              const newEvent = { ...event, ...data }
+          if (foundEvent) {
+            foundEvent.datetime = data.datetime
 
-              copy.push(newEvent)
-
-              queryClient.event.range.setData(props, copy)
-            }
+            queryClient.event.range.setData(
+              { start: props.start, end: props.end },
+              [...curr]
+            )
           }
         }
 
@@ -432,17 +432,25 @@ export const SevenDays = (props: SevenDaysProps) => {
       }
     },
     onSuccess: () => {
-      queryClient.event.range.invalidate(props).catch(warn)
+      queryClient.event.range
+        .invalidate({ start: props.start, end: props.end })
+        .catch(warn)
     },
     onError: (err, variables, context) => {
       if (context?.previousValue) {
-        queryClient.event.range.setData(props, context.previousValue)
+        queryClient.event.range.setData(
+          { start: props.start, end: props.end },
+          context.previousValue
+        )
       }
     },
   })
 
   const findEvent = (id: string) => {
-    const events = queryClient.event.range.getData(props)
+    const events = queryClient.event.range.getData({
+      start: props.start,
+      end: props.end,
+    })
 
     if (!events) return
 

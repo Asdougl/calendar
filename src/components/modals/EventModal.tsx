@@ -2,7 +2,7 @@
 
 import * as Dialog from '@radix-ui/react-dialog'
 import { type FC } from 'react'
-import { XMarkIcon } from '@heroicons/react/24/solid'
+import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Header2 } from '../ui/headers'
 import { EventForm } from '../form/event/event-form'
@@ -16,6 +16,7 @@ import {
   SEARCH_PARAMS_NEW,
   createUpdatedSearchParams,
 } from '~/utils/searchParams'
+import { warn } from '~/utils/logging'
 
 const getInitialDate = (date: string | null) => {
   if (!date) return new Date()
@@ -32,7 +33,7 @@ export const EventModal: FC = () => {
     searchParams.has(SEARCH_PARAMS.EVENT) &&
     searchParams.get(SEARCH_PARAMS.EVENT) !== SEARCH_PARAMS_NEW
 
-  const { data: event, isFetching } = api.event.one.useQuery(
+  const { data: event, isLoading: isLoadingData } = api.event.one.useQuery(
     { id: searchParams.get(SEARCH_PARAMS.EVENT) || '' },
     {
       enabled,
@@ -40,6 +41,35 @@ export const EventModal: FC = () => {
       refetchOnMount: false,
     }
   )
+
+  const isLoading = isLoadingData && enabled
+
+  const queryClient = api.useUtils()
+
+  const { mutate, isLoading: isMutating } = api.event.update.useMutation({
+    onMutate: (data) => {
+      const foundEvent = queryClient.event.one.getData({ id: data.id })
+      if (foundEvent) {
+        queryClient.event.one.setData(
+          { id: data.id },
+          {
+            ...foundEvent,
+            done: typeof data.done === 'undefined' ? null : data.done,
+          }
+        )
+        return foundEvent
+      }
+    },
+    onSuccess: (data) => {
+      queryClient.event.one.invalidate({ id: data.id }).catch(warn)
+      queryClient.event.range.invalidate().catch(warn)
+    },
+    onError: (error, data, context) => {
+      if (context) {
+        queryClient.event.one.setData({ id: context.id }, context)
+      }
+    },
+  })
 
   const onOpenChange = (value: boolean, jumpTo?: Date) => {
     if (!value) {
@@ -64,7 +94,7 @@ export const EventModal: FC = () => {
         <Dialog.Content className="fixed left-1/2 top-10 z-10 w-full max-w-xl -translate-x-1/2 p-6 lg:top-24">
           <div className="flex justify-between pb-2">
             <Dialog.Title asChild>
-              {enabled && isFetching ? (
+              {enabled && isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-pulse rounded-full bg-neutral-800 text-transparent">
                     Event name
@@ -72,12 +102,29 @@ export const EventModal: FC = () => {
                 </div>
               ) : (
                 <Header2 className="flex items-center gap-2">
-                  <div
-                    className={cn(
-                      'h-6 w-1 rounded-full',
-                      color('bg')(event?.category?.color)
-                    )}
-                  ></div>
+                  {/* eslint-disable-next-line @typescript-eslint/prefer-optional-chain */}
+                  {event && event?.done !== null ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        event && mutate({ id: event.id, done: !event.done })
+                      }
+                      disabled={isMutating}
+                      className={cn(
+                        'flex h-6 w-6 items-center justify-center rounded border-2',
+                        color('border')(event?.category?.color)
+                      )}
+                    >
+                      {event?.done ? <CheckIcon height={18} /> : ' '}
+                    </button>
+                  ) : (
+                    <div
+                      className={cn(
+                        'h-6 w-1 rounded-full',
+                        color('bg')(event?.category?.color)
+                      )}
+                    ></div>
+                  )}
                   {event ? event.title : 'Add Event'}
                 </Header2>
               )}
@@ -91,7 +138,7 @@ export const EventModal: FC = () => {
               </button>
             </Dialog.Close>
           </div>
-          {isFetching ? (
+          {isLoading ? (
             <div className="flex flex-col gap-4">
               <div className="flex gap-4">
                 <div className="w-full animate-pulse rounded-lg bg-neutral-800 px-4 py-2 text-transparent">

@@ -12,6 +12,8 @@ export const createMockEvent = (partial?: Partial<RangeEvent>): RangeEvent => {
     location: 'Test Event Location',
     endDateTime: null,
     category: null,
+    done: null,
+    cancelled: false,
     ...partial,
   }
 }
