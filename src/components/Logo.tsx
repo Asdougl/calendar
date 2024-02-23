@@ -28,7 +28,7 @@ export const Logo = ({ size = 'lg', mobileHide }: LogoProps) => {
   return (
     <div className="flex items-center gap-2">
       <Image
-        src="/favicon.svg"
+        src="/asdougl-mark.svg"
         alt="Logo"
         width={sizes[size].dim}
         height={sizes[size].dim}
