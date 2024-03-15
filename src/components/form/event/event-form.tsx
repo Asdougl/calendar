@@ -6,13 +6,13 @@ import { useState, type FC, type ReactNode } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import {
-  MinusCircleIcon,
   PlusCircleIcon,
   XCircleIcon,
   CheckCircleIcon as CheckCircleIconOutline,
 } from '@heroicons/react/24/outline'
 import {
   CheckCircleIcon,
+  MinusCircleIcon,
   XCircleIcon as XCircleIconSolid,
 } from '@heroicons/react/24/solid'
 import { isValid } from 'date-fns'
@@ -45,14 +45,15 @@ type UpdateEventFormValues = z.infer<typeof UpdateEventSchema>
 
 type EditEventFormProps = {
   event: RouterOutputs['event']['range'][number]
+  onSubmit?: (event: RouterOutputs['event']['one']) => void
 }
 
 type CreateEventFormProps = {
   date: Date
+  onSubmit?: (event: RouterOutputs['event']['one']) => void
 }
 
 type EventFormProps = {
-  onSubmit?: (eventDate?: Date) => void
   expanded?: boolean
   labels?: boolean
   wipValues?: Partial<UpdateEventFormValues>
@@ -142,11 +143,11 @@ export const EventForm: FC<EventFormProps> = ({
 
   const { mutate: deleteMutate, isLoading: isDeleting } =
     api.event.delete.useMutation({
-      onSuccess: () => {
+      onSuccess: (victim) => {
         queryClient.event
           .invalidate()
           .catch((err) => setError('root', { message: formatError(err) }))
-        onFinish?.()
+        onFinish?.(victim)
       },
       onError: (error) => {
         setError('root', { message: formatError(error) })
@@ -176,15 +177,15 @@ export const EventForm: FC<EventFormProps> = ({
     }
 
     if (isUpdate) {
-      await updateMutateAsync({
+      const event = await updateMutateAsync({
         id: props.event.id,
         ...payload,
       })
+      onFinish?.(event)
     } else {
-      await createMutateAsync(payload)
+      const event = await createMutateAsync(payload)
+      onFinish?.(event)
     }
-
-    onFinish?.(payload.datetime)
   })
 
   const timeStatus = watch('type')
@@ -260,6 +261,7 @@ export const EventForm: FC<EventFormProps> = ({
                 <>
                   <button
                     type="button"
+                    name="time-status"
                     disabled={formState.isSubmitting}
                     className="flex flex-1 items-center gap-2 rounded-lg p-2 disabled:text-neutral-600 md:hover:bg-neutral-900 lg:disabled:hover:bg-transparent"
                     onClick={() =>
@@ -280,6 +282,7 @@ export const EventForm: FC<EventFormProps> = ({
                   </button>
                   <button
                     type="button"
+                    name="all-day"
                     disabled={formState.isSubmitting}
                     className="flex flex-1 items-center gap-2 rounded-lg p-2 disabled:text-neutral-600 md:hover:bg-neutral-900 lg:disabled:hover:bg-transparent"
                     onClick={() =>
@@ -304,6 +307,7 @@ export const EventForm: FC<EventFormProps> = ({
               render={({ field, formState }) => (
                 <button
                   type="button"
+                  name="todo"
                   disabled={formState.isSubmitting}
                   className="flex flex-1 items-center gap-2 rounded-lg p-2 disabled:text-neutral-600 md:hover:bg-neutral-900 lg:disabled:hover:bg-transparent"
                   onClick={() =>

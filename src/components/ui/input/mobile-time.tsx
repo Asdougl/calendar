@@ -62,8 +62,17 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
   const [meridiem, setMeridiem] = useState<'am' | 'pm'>(() => {
     if (!value) return 'am'
     const match = value.match(/([aApP](?:m|M))$/)
-    if (!match) return 'am'
-
+    if (!match) {
+      const time = value.match(TIME_REGEX)
+      if (!time) return 'am'
+      const rawHours = time[1]
+      if (rawHours) {
+        const hours = parseInt(rawHours)
+        if (hours < 12) return 'am'
+        else return 'pm'
+      }
+      return 'am'
+    }
     const rawMeridiem = match[1]
     if (rawMeridiem) {
       if (rawMeridiem.toLowerCase() === 'am') return 'am'
@@ -141,6 +150,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
         disabled={disabled}
         size="lg"
         className="flex-1"
+        labels={(value) => `hour ${value}`}
       />
       <Spinner
         options={MINUTES}
@@ -149,6 +159,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
         disabled={disabled}
         size="lg"
         className="flex-1"
+        labels={(value) => `minute ${value}`}
       />
       {type === '12' && (
         <Spinner

@@ -2,7 +2,7 @@
 
 import { endOfWeek, getDay, set, setDay, startOfDay } from 'date-fns'
 import { useState } from 'react'
-import { SevenDaysShell } from '~/components/SevenDays'
+import { SevenDaysShell } from '~/components/seven-days/SevenDays'
 import { type RouterOutputs } from '~/trpc/shared'
 import { useMountEffect } from '~/utils/hooks'
 import { createTempId } from '~/utils/misc'
@@ -21,6 +21,7 @@ const createEvent = (
     timeStatus: 'STANDARD',
     cancelled: false,
     done: null,
+    recursion: null,
     ...params,
   }
 }

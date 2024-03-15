@@ -4,7 +4,7 @@ import { Input, type InputProps } from './input'
 import { Label, type LabelProps } from './label'
 import { cn } from '~/utils/classnames'
 
-const fieldStyle = cva('flex flex-col gap-1', {
+const fieldStyle = cva('flex gap-1', {
   variants: {
     width: {
       sm: 'w-32',
@@ -12,9 +12,14 @@ const fieldStyle = cva('flex flex-col gap-1', {
       lg: 'w-full lg:w-64',
       full: 'w-full',
     },
+    orentation: {
+      row: 'flex-row',
+      column: 'flex-col',
+    },
   },
   defaultVariants: {
     width: 'lg',
+    orentation: 'column',
   },
 })
 

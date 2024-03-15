@@ -1,0 +1,177 @@
+import { type FC } from 'react'
+import { differenceInCalendarDays, setDay } from 'date-fns'
+import { useDroppable } from '@dnd-kit/core'
+import Link from 'next/link'
+import { PlusIcon } from '@heroicons/react/24/solid'
+import { stdFormat } from '../ui/dates/common'
+import { EventItem } from './EventItem'
+import { type RouterOutputs } from '~/trpc/shared'
+import { SEARCH_PARAM_NEW, modifySearchParams } from '~/utils/nav/search'
+import { eventSort } from '~/utils/sort'
+import { cn, color } from '~/utils/classnames'
+import { PathLink } from '~/utils/nav/Link'
+
+const DayOfWeekLabel = ({ date }: { date: Date }) => {
+  // Using built in formatters because they're
+  // "probably" more performant than date-fns
+
+  const isToday = differenceInCalendarDays(date, new Date()) === 0
+
+  return (
+    <PathLink
+      path="/day/:date"
+      params={{ date: stdFormat(date) }}
+      className="flex items-center gap-1 rounded px-1 leading-tight lg:hover:bg-neutral-800 xl:gap-2"
+    >
+      {isToday && (
+        <div className="relative flex h-2 w-2 items-center justify-center xl:h-2.5 xl:w-2.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-neutral-50 opacity-75"></span>
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-neutral-50 xl:h-2.5 xl:w-2.5"></span>
+        </div>
+      )}
+      <div className="flex items-baseline gap-1">
+        <span className="font-bold xl:text-xl">
+          {date.toLocaleString('default', { weekday: 'short' })}
+        </span>
+        <span className="text-sm xl:text-base">
+          {date.getDate().toString().padStart(2, '0')}
+        </span>
+        <span className="text-sm xl:text-base">
+          {date.toLocaleString('default', { month: 'short' })}
+        </span>
+      </div>
+    </PathLink>
+  )
+}
+
+type DayOfWeekProps = {
+  baseDate: Date
+  dayOfWeek: number
+  loadingEvents?: boolean
+  loadingPeriods?: boolean
+  events?: RouterOutputs['event']['range'][]
+  periods?: RouterOutputs['periods']['range'][]
+  outlines?: boolean
+  weekStart?: 0 | 1 | 6 | 3 | 2 | 4 | 5
+}
+
+const eventLink = (id: string, date?: Date) => {
+  const url = new URL(window.location.href)
+  modifySearchParams({
+    update: {
+      event: id,
+      date: date ? stdFormat(date) : undefined,
+    },
+    remove: ['period'],
+    searchParams: url.searchParams,
+  })
+
+  return url.toString()
+}
+
+const periodLink = (id: string, date?: Date) => {
+  const url = new URL(window.location.href)
+  modifySearchParams({
+    update: {
+      period: id,
+      date: date ? stdFormat(date) : undefined,
+    },
+    remove: ['event'],
+    searchParams: url.searchParams,
+  })
+  return url.toString()
+}
+
+export const DayOfWeek: FC<DayOfWeekProps> = ({
+  baseDate,
+  dayOfWeek,
+  events,
+  periods,
+  loadingEvents,
+  outlines = true,
+  weekStart = 1,
+}) => {
+  const date = setDay(baseDate, dayOfWeek, { weekStartsOn: weekStart })
+
+  const { setNodeRef, isOver } = useDroppable({
+    id: stdFormat(date),
+  })
+
+  const eventsForDay = events?.[dayOfWeek]
+    ? events[dayOfWeek]?.toSorted(eventSort) || []
+    : []
+
+  const periodsForDay = periods?.[dayOfWeek] || []
+
+  const distanceToStart = differenceInCalendarDays(date, baseDate)
+
+  return (
+    <div
+      className={cn(
+        'flex min-w-0 flex-col rounded-lg border border-neutral-800',
+        outlines && {
+          'border-neutral-300': distanceToStart === 0,
+          'border-neutral-400': distanceToStart === 1,
+          'border-neutral-500': distanceToStart === 2,
+          'border-neutral-600': distanceToStart === 3,
+          'border-neutral-700': distanceToStart === 4,
+        },
+        {
+          'bg-neutral-900': isOver,
+        }
+      )}
+    >
+      <div className="flex w-full items-center justify-between px-0.5 pt-0.5 md:px-2 md:pt-2">
+        <DayOfWeekLabel date={date} />
+        <div className="flex items-center gap-2 px-1 pt-1">
+          {periodsForDay.map((period) => (
+            <Link
+              key={period.id}
+              href={periodLink(period.id)}
+              className={cn(
+                'flex h-4 w-4 items-center justify-center rounded-sm text-xs',
+                color('bg')(period.color)
+              )}
+            >
+              {period.icon}
+            </Link>
+          ))}
+        </div>
+      </div>
+      <div
+        ref={setNodeRef}
+        className="relative flex flex-grow flex-col px-1.5 md:gap-0.5 md:px-3 lg:pb-1"
+      >
+        {loadingEvents ? (
+          <div className="flex justify-between">
+            <div className="animate-pulse rounded-full bg-neutral-800 text-xs text-transparent">
+              {date.toDateString()}
+            </div>
+            <div className="animate-pulse rounded-full bg-neutral-800 text-xs text-transparent">
+              00:00
+            </div>
+          </div>
+        ) : (
+          <>
+            {eventsForDay.map((event) => (
+              <EventItem key={event.id} event={event} />
+            ))}
+            {distanceToStart >= 0 && (
+              <Link
+                href={eventLink(SEARCH_PARAM_NEW, date)}
+                className={cn(
+                  'flex flex-shrink-0 flex-grow flex-col justify-end rounded text-xs lg:hover:bg-neutral-900',
+                  { 'pointer-events-none -z-10': isOver }
+                )}
+              >
+                <span className="flex items-center gap-1 pb-1 text-neutral-500">
+                  <PlusIcon height={12} />
+                </span>
+              </Link>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

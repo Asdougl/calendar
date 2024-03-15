@@ -53,7 +53,7 @@ export const Alert: FC<AlertProps> = ({
       <div className="py-2">{icon}</div>
       <div className="flex flex-col">
         {title && <Header3>{title}</Header3>}
-        <p>{message}</p>
+        <p data-testid={props.level}>{message}</p>
       </div>
     </div>
   )

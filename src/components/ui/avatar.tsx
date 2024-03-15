@@ -4,7 +4,7 @@ import * as RadixAvatar from '@radix-ui/react-avatar'
 import { type VariantProps, cva } from 'class-variance-authority'
 import { type FC } from 'react'
 import { useSession } from 'next-auth/react'
-import { PathLink } from './PathLink'
+import { PathLink } from '~/utils/nav/Link'
 import { cn } from '~/utils/classnames'
 
 const avatar = cva(

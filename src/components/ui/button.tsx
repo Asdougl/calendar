@@ -9,9 +9,9 @@ import {
 } from 'react'
 import NextLink from 'next/link'
 import { Loader } from './Loader'
-import { PathLink, type PathLinkProps } from './PathLink'
+import { PathLink, type PathLinkProps } from '~/utils/nav/Link'
 import { cn } from '~/utils/classnames'
-import { type PathName } from '~/utils/path'
+import { type Pathname } from '~/utils/nav/path'
 
 const button = cva(
   'rounded-lg border focus:outline-none focus:ring focus:ring-opacity-50',
@@ -67,10 +67,10 @@ export const ButtonAnchor = forwardRef<HTMLAnchorElement, ButtonProps<'a'>>(
   }
 )
 
-type ButtonLinkProps<Path extends PathName> = PathLinkProps<Path> &
+type ButtonLinkProps<Path extends Pathname> = PathLinkProps<Path> &
   ButtonVariantProps
 
-export const ButtonLink = <Path extends PathName>(
+export const ButtonLink = <Path extends Pathname>(
   props: ButtonLinkProps<Path>
 ) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

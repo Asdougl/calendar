@@ -42,6 +42,12 @@ const config = {
         'react-refresh/only-export-components': 0,
       },
     },
+    {
+      files: ['*.test.ts', '*.test.tsx'],
+      rules: {
+        '@typescript-eslint/no-floating-promises': 0,
+      },
+    },
   ],
 }
 

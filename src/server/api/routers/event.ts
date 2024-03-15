@@ -1,8 +1,9 @@
 import { z } from 'zod'
-import { TimeStatus } from '@prisma/client'
-import { addDays } from 'date-fns'
+import { EVENT_LINK_RELATION, TimeStatus } from '@prisma/client'
+import { add, addDays } from 'date-fns'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
 import { eventSort } from '~/utils/sort'
+import { TimeIntervalToDuration } from '~/utils/recursion'
 
 const select = {
   id: true,
@@ -20,6 +21,14 @@ const select = {
       color: true,
     },
   },
+  recursion: {
+    select: {
+      id: true,
+      interval: true,
+      intervalCount: true,
+      triggered: true,
+    },
+  },
 }
 
 export const eventRouter = createTRPCRouter({
@@ -31,12 +40,20 @@ export const eventRouter = createTRPCRouter({
       return ctx.db.event.findMany({
         where: {
           createdById: ctx.session.user.id,
+          datetime: {
+            gte: input.start.toISOString(),
+            lt: input.end.toISOString(),
+          },
           OR: [
             {
-              datetime: {
-                gte: input.start.toISOString(),
-                lt: input.end.toISOString(),
+              category: {
+                NOT: {
+                  hidden: true,
+                },
               },
+            },
+            {
+              category: null,
             },
           ],
         },
@@ -82,6 +99,7 @@ export const eventRouter = createTRPCRouter({
         limit: z.number().min(1).max(100).default(50),
         cursor: z.string().nullish(),
         query: z.string().nullish(),
+        category: z.string().nullish(),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -99,6 +117,15 @@ export const eventRouter = createTRPCRouter({
           title: input.query
             ? {
                 contains: input.query,
+              }
+            : undefined,
+          categoryId: input.category ?? undefined,
+          // filter out hidden UNLESS we're looking for a specific category
+          category: input.category
+            ? {
+                NOT: {
+                  hidden: true,
+                },
               }
             : undefined,
         },
@@ -166,11 +193,20 @@ export const eventRouter = createTRPCRouter({
           .default(TimeStatus.STANDARD),
         categoryId: z.string().nullish(),
         location: z.string().nullish(),
-        todo: z.boolean().nullish(),
+        done: z.boolean().nullish(),
         cancelled: z.boolean().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
+      // if time status is all day, set the time to 12:00
+      if (
+        input.timeStatus &&
+        (input.timeStatus === TimeStatus.ALL_DAY ||
+          input.timeStatus === TimeStatus.NO_TIME)
+      ) {
+        input.datetime = new Date(input.datetime.setHours(12, 0, 0, 0))
+      }
+
       return ctx.db.event.create({
         data: {
           title: input.title,
@@ -179,7 +215,7 @@ export const eventRouter = createTRPCRouter({
           location: input.location,
           categoryId: input.categoryId,
           createdById: ctx.session.user.id,
-          done: input.todo,
+          done: input.done,
           cancelled: input.cancelled,
         },
         select,
@@ -200,7 +236,26 @@ export const eventRouter = createTRPCRouter({
         cancelled: z.boolean().optional(),
       })
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      // if time status is all day, set the time to 12:00
+      if (
+        input.timeStatus &&
+        (input.timeStatus === TimeStatus.ALL_DAY ||
+          input.timeStatus === TimeStatus.NO_TIME)
+      ) {
+        if (input.datetime) {
+          input.datetime = new Date(input.datetime.setHours(12, 0, 0, 0))
+        } else {
+          // fuck we need to query it :(
+          const event = await ctx.db.event.findUnique({
+            select: { datetime: true },
+            where: { id: input.id },
+          })
+          if (!event) return null
+          input.datetime = new Date(event.datetime.setHours(12, 0, 0, 0))
+        }
+      }
+
       return ctx.db.event.update({
         where: {
           id: input.id,
@@ -226,5 +281,89 @@ export const eventRouter = createTRPCRouter({
         },
         select,
       })
+    }),
+  complete: protectedProcedure
+    .input(z.object({ id: z.string(), completed: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      // Update the original event
+      const event = await ctx.db.event.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          done: input.completed,
+        },
+        select: {
+          ...select,
+          recursion: {
+            select: {
+              id: true,
+              title: true,
+              interval: true,
+              intervalCount: true,
+              datetime: true,
+              timeStatus: true,
+              location: true,
+              triggered: true,
+              todo: true,
+              categoryId: true,
+            },
+          },
+          SourceLink: {
+            select: {
+              id: true,
+              relation: true,
+              targetId: true,
+            },
+          },
+        },
+      })
+
+      if (event.recursion?.triggered) {
+        // Check if the event has
+        const hasTriggeredEvent = event.SourceLink?.some(
+          (link) => link.relation === EVENT_LINK_RELATION.TRIGGERED
+        )
+
+        // If the event has not been triggered, create a new event
+        if (!hasTriggeredEvent) {
+          // Create the triggered event
+          const createdEvent = await ctx.db.event.create({
+            data: {
+              title: event.recursion.title,
+              datetime: add(event.datetime, {
+                [TimeIntervalToDuration[event.recursion.interval]]:
+                  event.recursion.intervalCount,
+              }),
+              timeStatus: event.recursion.timeStatus,
+              location: event.recursion.location,
+              categoryId: event.recursion.categoryId,
+              createdById: ctx.session.user.id,
+              done: event.recursion.todo ? false : null,
+              recursionId: event.recursion.id,
+            },
+          })
+
+          // Create the link
+          await ctx.db.eventLink.create({
+            data: {
+              relation: EVENT_LINK_RELATION.TRIGGERED,
+              sourceId: event.id,
+              targetId: createdEvent.id,
+            },
+          })
+
+          // Return the event and the triggered event
+          return {
+            event,
+            triggered: createdEvent,
+          }
+        }
+      }
+
+      // Return just the event
+      return {
+        event,
+      }
     }),
 })

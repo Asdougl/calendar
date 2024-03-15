@@ -5,6 +5,8 @@ const select = {
   id: true,
   name: true,
   color: true,
+  private: true,
+  hidden: true,
 }
 
 export const categoryRouter = createTRPCRouter({
@@ -14,6 +16,9 @@ export const categoryRouter = createTRPCRouter({
         createdById: ctx.session.user.id,
       },
       select,
+      orderBy: {
+        createdAt: 'asc',
+      },
     })
   }),
   one: protectedProcedure
@@ -24,7 +29,13 @@ export const categoryRouter = createTRPCRouter({
           id: input.id,
           createdById: ctx.session.user.id,
         },
-        select,
+        select: {
+          id: true,
+          name: true,
+          color: true,
+          private: true,
+          hidden: true,
+        },
       })
     }),
   create: protectedProcedure
@@ -50,6 +61,8 @@ export const categoryRouter = createTRPCRouter({
         id: z.string(),
         name: z.string().optional(),
         color: z.string().optional(),
+        private: z.boolean().optional(),
+        hidden: z.boolean().optional(),
       })
     )
     .mutation(({ ctx, input }) => {
@@ -61,6 +74,8 @@ export const categoryRouter = createTRPCRouter({
         data: {
           name: input.name,
           color: input.color,
+          private: input.private,
+          hidden: input.hidden,
         },
         select,
       })

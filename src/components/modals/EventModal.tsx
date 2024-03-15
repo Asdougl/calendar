@@ -12,10 +12,10 @@ import { cn, color } from '~/utils/classnames'
 import { api } from '~/trpc/react'
 import { Duration } from '~/utils/dates'
 import {
-  SEARCH_PARAMS,
-  SEARCH_PARAMS_NEW,
-  createUpdatedSearchParams,
-} from '~/utils/searchParams'
+  SearchParamKeys,
+  SEARCH_PARAM_NEW,
+  modifyCurrentSearchParams,
+} from '~/utils/nav/search'
 import { warn } from '~/utils/logging'
 
 const getInitialDate = (date: string | null) => {
@@ -30,11 +30,11 @@ export const EventModal: FC = () => {
   const router = useRouter()
 
   const enabled =
-    searchParams.has(SEARCH_PARAMS.EVENT) &&
-    searchParams.get(SEARCH_PARAMS.EVENT) !== SEARCH_PARAMS_NEW
+    searchParams.has(SearchParamKeys.Values.event) &&
+    searchParams.get(SearchParamKeys.Values.event) !== SEARCH_PARAM_NEW
 
   const { data: event, isLoading: isLoadingData } = api.event.one.useQuery(
-    { id: searchParams.get(SEARCH_PARAMS.EVENT) || '' },
+    { id: searchParams.get(SearchParamKeys.Values.event) || '' },
     {
       enabled,
       staleTime: Duration.minutes(5),
@@ -46,7 +46,7 @@ export const EventModal: FC = () => {
 
   const queryClient = api.useUtils()
 
-  const { mutate, isLoading: isMutating } = api.event.update.useMutation({
+  const { mutate, isLoading: isMutating } = api.event.complete.useMutation({
     onMutate: (data) => {
       const foundEvent = queryClient.event.one.getData({ id: data.id })
       if (foundEvent) {
@@ -54,14 +54,14 @@ export const EventModal: FC = () => {
           { id: data.id },
           {
             ...foundEvent,
-            done: typeof data.done === 'undefined' ? null : data.done,
+            done: data.completed,
           }
         )
         return foundEvent
       }
     },
     onSuccess: (data) => {
-      queryClient.event.one.invalidate({ id: data.id }).catch(warn)
+      queryClient.event.one.invalidate({ id: data.event.id }).catch(warn)
       queryClient.event.range.invalidate().catch(warn)
     },
     onError: (error, data, context) => {
@@ -73,10 +73,10 @@ export const EventModal: FC = () => {
 
   const onOpenChange = (value: boolean, jumpTo?: Date) => {
     if (!value) {
-      const url = createUpdatedSearchParams({
-        remove: [SEARCH_PARAMS.EVENT, SEARCH_PARAMS.DATE, SEARCH_PARAMS.TITLE],
+      const url = modifyCurrentSearchParams({
+        remove: ['event', 'date', 'title'],
         update: {
-          [SEARCH_PARAMS.OF]: jumpTo ? stdFormat(jumpTo) : undefined,
+          of: jumpTo ? stdFormat(jumpTo) : undefined,
         },
       })
 
@@ -86,7 +86,7 @@ export const EventModal: FC = () => {
 
   return (
     <Dialog.Root
-      open={searchParams.has(SEARCH_PARAMS.EVENT)}
+      open={searchParams.has(SearchParamKeys.Values.event)}
       onOpenChange={onOpenChange}
     >
       <Dialog.Portal>
@@ -107,7 +107,8 @@ export const EventModal: FC = () => {
                     <button
                       type="button"
                       onClick={() =>
-                        event && mutate({ id: event.id, done: !event.done })
+                        event &&
+                        mutate({ id: event.id, completed: !event.done })
                       }
                       disabled={isMutating}
                       className={cn(
@@ -174,15 +175,18 @@ export const EventModal: FC = () => {
             <EventForm event={event} onSubmit={() => onOpenChange(false)} />
           ) : (
             <EventForm
-              date={getInitialDate(searchParams.get(SEARCH_PARAMS.DATE))}
-              onSubmit={(eventDate) => onOpenChange(false, eventDate)}
+              date={getInitialDate(
+                searchParams.get(SearchParamKeys.Values.date)
+              )}
+              onSubmit={(event) => onOpenChange(false, event?.datetime)}
               wipValues={{
-                title: searchParams.get(SEARCH_PARAMS.TITLE) ?? undefined,
+                date:
+                  searchParams.get(SearchParamKeys.Values.date) ?? undefined,
               }}
               extraActions={
                 <ButtonRawLink
-                  href={createUpdatedSearchParams({
-                    update: { period: SEARCH_PARAMS_NEW },
+                  href={modifyCurrentSearchParams({
+                    update: { period: SEARCH_PARAM_NEW },
                     remove: ['event'],
                   })}
                 >

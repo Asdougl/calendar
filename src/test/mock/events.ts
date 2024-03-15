@@ -14,15 +14,35 @@ export const createMockEvent = (partial?: Partial<RangeEvent>): RangeEvent => {
     category: null,
     done: null,
     cancelled: false,
+    recursion: null,
     ...partial,
   }
 }
 
-export const createMockEvents = (count: number) => {
+const randomDate = (start: Date, end: Date) => {
+  return new Date(
+    start.getTime() + Math.random() * (end.getTime() - start.getTime())
+  )
+}
+
+type MockEventsConfig = {
+  start: Date
+  end: Date
+  title?: (index: number) => string
+}
+
+export const createMockEvents = (count: number, config?: MockEventsConfig) => {
   const events: RangeEvent[] = []
 
   for (let i = 0; i < count; i++) {
-    events.push(createMockEvent())
+    events.push(
+      createMockEvent(
+        config && {
+          datetime: randomDate(config.start, config.end),
+          title: config.title ? config.title(i) : undefined,
+        }
+      )
+    )
   }
 
   return events

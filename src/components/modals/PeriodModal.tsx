@@ -3,7 +3,6 @@
 import * as Dialog from '@radix-ui/react-dialog'
 import { type FC } from 'react'
 import { XMarkIcon } from '@heroicons/react/24/solid'
-import { useSearchParams, useRouter } from 'next/navigation'
 import { Header2 } from '../ui/headers'
 import { stdFormat } from '../ui/dates/common'
 import { PeriodForm } from '../form/period/period-form'
@@ -11,13 +10,10 @@ import { ButtonRawLink } from '../ui/button'
 import { cn, color } from '~/utils/classnames'
 import { api } from '~/trpc/react'
 import { Duration } from '~/utils/dates'
-import {
-  SEARCH_PARAMS,
-  SEARCH_PARAMS_NEW,
-  createUpdatedSearchParams,
-} from '~/utils/searchParams'
+import { SEARCH_PARAM_NEW, modifyCurrentSearchParams } from '~/utils/nav/search'
+import { useQueryParams } from '~/utils/nav/hooks'
 
-const getInitialDate = (date: string | null) => {
+const getInitialDate = (date: string | null | undefined) => {
   if (!date) return new Date()
   const initialDate = new Date(date)
   if (isNaN(initialDate.getTime())) return new Date()
@@ -25,15 +21,14 @@ const getInitialDate = (date: string | null) => {
 }
 
 export const PeriodModal: FC = () => {
-  const searchParams = useSearchParams()
-  const router = useRouter()
+  const [searchParams, updateSearchParams] = useQueryParams()
 
   const enabled =
-    searchParams.has(SEARCH_PARAMS.PERIOD) &&
-    searchParams.get(SEARCH_PARAMS.PERIOD) !== SEARCH_PARAMS_NEW
+    searchParams.has('period') &&
+    searchParams.get('period') !== SEARCH_PARAM_NEW
 
   const { data: period, isFetching } = api.periods.one.useQuery(
-    { id: searchParams.get(SEARCH_PARAMS.PERIOD) || '' },
+    { id: searchParams.get('period') || '' },
     {
       enabled,
       staleTime: Duration.minutes(5),
@@ -43,26 +38,17 @@ export const PeriodModal: FC = () => {
 
   const onOpenChange = (value: boolean, jumpTo?: Date) => {
     if (!value) {
-      const url = createUpdatedSearchParams({
-        remove: [
-          SEARCH_PARAMS.PERIOD,
-          SEARCH_PARAMS.DATE,
-          SEARCH_PARAMS.END_DATE,
-        ],
+      updateSearchParams({
+        remove: ['period', 'date', 'endDate'],
         update: {
-          [SEARCH_PARAMS.OF]: jumpTo ? stdFormat(jumpTo) : undefined,
+          of: jumpTo ? stdFormat(jumpTo) : undefined,
         },
       })
-
-      router.push(url)
     }
   }
 
   return (
-    <Dialog.Root
-      open={searchParams.has(SEARCH_PARAMS.PERIOD)}
-      onOpenChange={onOpenChange}
-    >
+    <Dialog.Root open={searchParams.has('period')} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" />
         <Dialog.Content className="fixed left-1/2 top-10 z-10 w-full max-w-xl -translate-x-1/2 p-6 lg:top-24">
@@ -131,17 +117,17 @@ export const PeriodModal: FC = () => {
             <PeriodForm period={period} onSubmit={() => onOpenChange(false)} />
           ) : (
             <PeriodForm
-              startDate={getInitialDate(searchParams.get(SEARCH_PARAMS.DATE))}
+              startDate={getInitialDate(searchParams.get('date'))}
               endDate={
-                searchParams.has(SEARCH_PARAMS.END_DATE)
-                  ? getInitialDate(searchParams.get(SEARCH_PARAMS.END_DATE))
+                searchParams.has('endDate')
+                  ? getInitialDate(searchParams.get('endDate'))
                   : undefined
               }
               onSubmit={(eventDate) => onOpenChange(false, eventDate)}
               extraActions={
                 <ButtonRawLink
-                  href={createUpdatedSearchParams({
-                    update: { event: SEARCH_PARAMS_NEW },
+                  href={modifyCurrentSearchParams({
+                    update: { event: SEARCH_PARAM_NEW },
                     remove: ['period'],
                   })}
                 >

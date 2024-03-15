@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event'
 import { addDays, format } from 'date-fns'
 import { useState } from 'react'
 import { DatePicker } from '../dates/DatePicker'
+import { ACCESSIBLE_FORMAT, DISPLAY_FORMAT, STD_FORMAT } from '../dates/common'
 
 const DEFAULT_DATE = '2023-10-10'
 
@@ -12,7 +13,7 @@ const WrappedDatePicker = ({ initialDate = DEFAULT_DATE }) => {
     <>
       <DatePicker
         value={new Date(value)}
-        onChange={(date) => setValue(format(date, 'yyyy-MM-dd'))}
+        onChange={(date) => setValue(format(date, STD_FORMAT))}
       />
       <span data-testid="datepicker-result">{value}</span>
     </>
@@ -29,7 +30,7 @@ const setupOpen = async (initialDate = DEFAULT_DATE) => {
   const utils = setup(initialDate)
 
   const toggleButton = screen.getByRole('button', {
-    name: format(new Date(initialDate), 'd MMM yy'),
+    name: format(new Date(initialDate), DISPLAY_FORMAT),
   })
 
   await user.click(toggleButton)
@@ -47,7 +48,7 @@ describe('DatePicker', () => {
 
     setup()
 
-    const toggleButton = screen.getByRole('button', { name: '10 Oct 23' })
+    const toggleButton = screen.getByRole('button', { name: '10 Oct 2023' })
 
     expect(toggleButton).toBeInTheDocument()
 
@@ -74,7 +75,7 @@ describe('DatePicker', () => {
 
     setup()
 
-    const toggleButton = screen.getByRole('button', { name: '10 Oct 23' })
+    const toggleButton = screen.getByRole('button', { name: '10 Oct 2023' })
 
     await user.click(toggleButton)
 
@@ -108,13 +109,10 @@ describe('DatePicker', () => {
 
     const todayDate = new Date()
 
-    const stdFormat = format(todayDate, 'yyyy-MM-dd')
-    const labelFormat = format(todayDate, 'd MMM yy')
-    const accessibleFormat = format(todayDate, 'd, eeee, MMMM yyyy')
-    const accessibleTomorrow = format(
-      addDays(todayDate, 1),
-      'd, eeee, MMMM yyyy'
-    )
+    const stdFormat = format(todayDate, STD_FORMAT)
+    const labelFormat = format(todayDate, DISPLAY_FORMAT)
+    const accessibleFormat = format(todayDate, ACCESSIBLE_FORMAT)
+    const accessibleTomorrow = format(addDays(todayDate, 1), ACCESSIBLE_FORMAT)
 
     setup(stdFormat)
 

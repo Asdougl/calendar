@@ -1,12 +1,11 @@
 'use client'
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useRouter as useNextRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import type { EffectCallback } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import throttle from 'lodash/throttle'
 import { startOfDay } from 'date-fns'
-import { pathReplace } from './path'
 import { getWindow } from '~/utils/misc'
 
 /**
@@ -236,19 +235,6 @@ export const useToggle = (initialState: boolean) => {
   }
 
   return [state, toggle] as const
-}
-
-export const useRouter = () => {
-  const router = useNextRouter()
-
-  const push = (...args: Parameters<typeof pathReplace>) => {
-    router.push(pathReplace(...args))
-  }
-
-  return {
-    ...router,
-    push,
-  }
 }
 
 export const useViewport = () => {

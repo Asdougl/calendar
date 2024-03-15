@@ -50,11 +50,12 @@ model User {
 
     preferences Json?
 
-    accounts Account[]
-    sessions Session[]
-    Event    Event[]
-    Category Category[]
-    Period   Period[]
+    accounts  Account[]
+    sessions  Session[]
+    Event     Event[]
+    Category  Category[]
+    Period    Period[]
+    Recursion Recursion[]
 }
 
 model VerificationToken {
@@ -94,14 +95,23 @@ model Event {
     category   Category? @relation(fields: [categoryId], references: [id])
     categoryId String?
 
+    recursion   Recursion? @relation(fields: [recursionId], references: [id])
+    recursionId String?
+
+    SourceLink EventLink[] @relation("source")
+    TargetLink EventLink[] @relation("target")
+
     @@index([createdById])
     @@index([categoryId])
+    @@index([recursionId])
 }
 
 model Category {
-    id    String @id @default(uuid())
-    name  String
-    color String
+    id      String  @id @default(uuid())
+    name    String
+    color   String
+    private Boolean @default(false)
+    hidden  Boolean @default(false)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -109,8 +119,9 @@ model Category {
     createdBy   User   @relation(fields: [createdById], references: [id])
     createdById String
 
-    Event  Event[]
-    Period Period[]
+    Event     Event[]
+    Period    Period[]
+    Recursion Recursion[]
 
     @@index([createdById])
 }
@@ -134,4 +145,60 @@ model Period {
 
     @@index([createdById])
     @@index([categoryId])
+}
+
+enum TIME_INVERVAL {
+    DAILY
+    WEEKLY
+    MONTHLY
+    YEARLY
+}
+
+model Recursion {
+    id            String        @id @default(uuid())
+    title         String
+    interval      TIME_INVERVAL
+    intervalCount Int
+    recurrenceEnd DateTime?
+    triggered     Boolean       @default(false)
+
+    // Template for Event
+    datetime    DateTime
+    timeStatus  TimeStatus @default(NO_TIME)
+    location    String?
+    endDateTime DateTime?
+    // is defaulted to boolean?
+    todo        Boolean    @default(false)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    createdBy   User   @relation(fields: [createdById], references: [id])
+    createdById String
+
+    category   Category? @relation(fields: [categoryId], references: [id])
+    categoryId String?
+
+    events Event[]
+
+    @@index([createdById])
+    @@index([categoryId])
+}
+
+enum EVENT_LINK_RELATION {
+    TRIGGERED
+}
+
+model EventLink {
+    id       String              @id @default(uuid())
+    relation EVENT_LINK_RELATION
+
+    source   Event  @relation(fields: [sourceId], references: [id], name: "source")
+    sourceId String
+
+    target   Event  @relation(fields: [targetId], references: [id], name: "target")
+    targetId String
+
+    @@index([sourceId])
+    @@index([targetId])
 }

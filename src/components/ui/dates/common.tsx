@@ -39,10 +39,13 @@ export const MONTH_OPTIONS = [
   </option>,
 ]
 
-export const stdFormat = (date: Date) => format(date, 'yyyy-MM-dd')
-export const displayFormat = (date: Date) => format(date, 'd MMM yy')
-export const accessibleFormat = (date: Date) =>
-  format(date, 'd, eeee, MMMM yyyy')
+export const STD_FORMAT = 'yyyy-MM-dd'
+export const DISPLAY_FORMAT = 'd MMM yyyy'
+export const ACCESSIBLE_FORMAT = 'd, eeee, MMMM yyyy'
+
+export const stdFormat = (date: Date) => format(date, STD_FORMAT)
+export const displayFormat = (date: Date) => format(date, DISPLAY_FORMAT)
+export const accessibleFormat = (date: Date) => format(date, ACCESSIBLE_FORMAT)
 
 export const isDisabled = (test: Date, min?: Date, max?: Date) => {
   if (max && isAfter(test, max)) {

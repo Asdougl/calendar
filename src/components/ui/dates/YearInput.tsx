@@ -9,26 +9,36 @@ type YearInputProps = {
 } & Omit<InputProps, 'value' | 'onChange' | 'onBlur' | 'ref' | 'type'>
 
 export const YearInput = ({ value, onBlur, ...props }: YearInputProps) => {
-  const [year, setYear] = useState(value)
+  const [year, setYear] = useState(value.toString())
 
   useEffect(() => {
-    setYear(value)
+    setYear(value.toString())
   }, [value])
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseInt(e.target.value.replaceAll(/\D/g, ''))
+    const newValue = e.target.value.replaceAll(/\D/g, '')
     setYear(newValue)
+    if (newValue.length === 4) {
+      const parsedYear = parseInt(newValue)
+      if (!isNaN(parsedYear)) {
+        onBlur(parsedYear)
+      }
+    }
   }
 
   const internalOnBlur = () => {
-    if (year < 1901) {
-      setYear(1901)
+    let parsedYear = parseInt(year)
+    if (isNaN(parsedYear)) {
+      parsedYear = 0
+    }
+    if (parsedYear < 1901) {
+      setYear('1901')
       onBlur(1901)
-    } else if (year > 2099) {
-      setYear(2099)
+    } else if (parsedYear > 2099) {
+      setYear('2099')
       onBlur(2099)
     } else {
-      onBlur(year)
+      onBlur(parsedYear)
     }
   }
 

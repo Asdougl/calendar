@@ -10,6 +10,7 @@ type SpinnerProps<T extends string | number> = {
   disabled?: boolean
   size?: 'sm' | 'md' | 'lg' | 'auto'
   className?: string
+  labels?: (value: T) => string
 }
 
 export const Spinner = <T extends string | number>({
@@ -20,6 +21,7 @@ export const Spinner = <T extends string | number>({
   disabled,
   size = 'md',
   className,
+  labels,
 }: SpinnerProps<T>) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const updateTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -76,6 +78,9 @@ export const Spinner = <T extends string | number>({
             type="button"
             onClick={() => onChange(option)}
             disabled={value === option || disabled}
+            aria-label={`${labels ? labels(option) : option.toString()} ${
+              value === option ? 'selected' : ''
+            }`.trim()}
             className={cn(
               'snap-center border-y border-neutral-800 px-4 py-4 text-center font-mono',
               disabled ? 'text-neutral-600' : 'text-neutral-50',
@@ -99,7 +104,7 @@ export const Spinner = <T extends string | number>({
                 'opacity-0',
                 value &&
                   options.indexOf(value) > 0 &&
-                  'md:group-hover:opacity-100'
+                  'opacity-100 md:opacity-0 md:group-hover:opacity-100'
               )}
             />
             <ChevronUpIcon
@@ -108,7 +113,7 @@ export const Spinner = <T extends string | number>({
                 'rotate-180 opacity-0',
                 value &&
                   options.indexOf(value) < options.length - 1 &&
-                  'md:group-hover:opacity-100'
+                  'opacity-100 md:opacity-0 md:group-hover:opacity-100'
               )}
             />
           </>

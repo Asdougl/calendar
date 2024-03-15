@@ -2,10 +2,9 @@
 
 import { type FormEvent, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { useRouter } from 'next/navigation'
 import { isValid } from 'date-fns'
 import { useMountEffect } from '~/utils/hooks'
-import { createUpdatedSearchParams } from '~/utils/searchParams'
+import { useNavPathname, useNavigate, useQueryParams } from '~/utils/nav/hooks'
 
 // split command into command and arguments respecting quotes
 const splitCommand = (command: string) => {
@@ -19,7 +18,9 @@ export const CommandBar = () => {
   const [commandString, setCommandString] = useState('')
   const [commandError, setCommandError] = useState('')
 
-  const router = useRouter()
+  const navigate = useNavigate()
+  const pathname = useNavPathname()
+  const [, updateSearchParams] = useQueryParams()
 
   const execCommand = (e: FormEvent) => {
     e.preventDefault()
@@ -27,27 +28,36 @@ export const CommandBar = () => {
     const [command, ...args] = splitCommand(commandString)
 
     if (command === 'event') {
-      const url = createUpdatedSearchParams({
-        update: { event: 'new', date: args[0], title: args[1] },
-        remove: ['period'],
-      })
-
-      router.push(url)
+      if (pathname) {
+        updateSearchParams({
+          update: { event: 'new', date: args[0], title: args[1] },
+          remove: ['period'],
+        })
+      }
       handleOpenChange(false)
     } else if (command === 'inbox') {
-      router.push('/inbox')
+      navigate({ path: '/inbox' })
       handleOpenChange(false)
     } else if (command === 'week') {
       const weekOf = args[0] ?? ''
-      router.push(
-        `/week${weekOf && isValid(new Date(weekOf)) ? `?of=${weekOf}` : ''}`
-      )
+      navigate({
+        path: '/week',
+        query: {
+          of: weekOf && isValid(new Date(weekOf)) ? `?of=${weekOf}` : undefined,
+        },
+      })
       handleOpenChange(false)
     } else if (command === 'month') {
       const monthOf = args[0] ?? ''
-      router.push(
-        `/month${monthOf && isValid(new Date(monthOf)) ? `?of=${monthOf}` : ''}`
-      )
+      navigate({
+        path: '/month',
+        query: {
+          of:
+            monthOf && isValid(new Date(monthOf))
+              ? `?of=${monthOf}`
+              : undefined,
+        },
+      })
       handleOpenChange(false)
     } else {
       setCommandError('Command not found')

@@ -4,13 +4,13 @@ import { ArrowLeftIcon } from '@heroicons/react/24/solid'
 import { useRouter } from 'next/navigation'
 import { cn } from '~/utils/classnames'
 import { useLastLocation } from '~/utils/context'
-import { type PathName } from '~/utils/path'
+import { type Pathname } from '~/utils/nav/path'
 
 export const BackButton = ({
   whenLastLocation,
   className,
 }: {
-  whenLastLocation?: PathName
+  whenLastLocation?: Pathname
   className?: string
 }) => {
   const router = useRouter()

@@ -5,9 +5,10 @@ import {
   ChevronUpIcon,
 } from '@heroicons/react/24/solid'
 import { type VariantProps, cva } from 'class-variance-authority'
+import { type ForwardedRef, forwardRef } from 'react'
 import { Loader } from './Loader'
 import { Button } from './button'
-import { cn, getCategoryColor } from '~/utils/classnames'
+import { cn, color } from '~/utils/classnames'
 
 const selectStyle = cva(
   'flex w-full flex-grow items-center justify-between gap-1',
@@ -48,20 +49,23 @@ export type SelectProps<Values = string> = {
   onChange?: (value: Values) => void
 } & VariantProps<typeof selectStyle>
 
-export const Select = <Values extends string = string>({
-  className,
-  defaultValue,
-  value,
-  name,
-  onChange,
-  disabled,
-  loading,
-  placeholder,
-  defaultOption,
-  options,
-  id,
-  ...otherProps
-}: SelectProps<Values>) => {
+const SelectRaw = <Values extends string = string>(
+  {
+    className,
+    defaultValue,
+    value,
+    name,
+    onChange,
+    disabled,
+    loading,
+    placeholder,
+    defaultOption,
+    options,
+    id,
+    ...otherProps
+  }: SelectProps<Values>,
+  ref: ForwardedRef<HTMLButtonElement>
+) => {
   return (
     <RadixSelect.Root
       defaultValue={defaultValue}
@@ -69,7 +73,7 @@ export const Select = <Values extends string = string>({
       name={name}
       onValueChange={onChange}
     >
-      <RadixSelect.Trigger asChild disabled={disabled}>
+      <RadixSelect.Trigger asChild disabled={disabled} ref={ref}>
         <Button
           id={id}
           disabled={disabled}
@@ -93,7 +97,16 @@ export const Select = <Values extends string = string>({
         </Button>
       </RadixSelect.Trigger>
       <RadixSelect.Portal>
-        <RadixSelect.Content className="relative z-10 rounded-lg border border-neutral-800 bg-neutral-950 px-1 py-2">
+        <RadixSelect.Content
+          ref={(ref) => {
+            // Prevents click through onto elements behind the select
+            if (!ref) return
+            ref.ontouchstart = (e) => {
+              e.preventDefault()
+            }
+          }}
+          className="relative z-10 rounded-lg border border-neutral-800 bg-neutral-950 px-1 py-2"
+        >
           <RadixSelect.ScrollUpButton className="flex h-6 cursor-default items-center justify-center bg-neutral-950">
             <ChevronUpIcon height={20} />
           </RadixSelect.ScrollUpButton>
@@ -123,7 +136,7 @@ export const Select = <Values extends string = string>({
                       <div
                         className={cn(
                           'mt-[7px] h-2 w-2 rounded-full',
-                          getCategoryColor(option.color, 'bg')
+                          color('bg')(option.color)
                         )}
                       ></div>
                     )}
@@ -144,3 +157,5 @@ export const Select = <Values extends string = string>({
     </RadixSelect.Root>
   )
 }
+
+export const Select = forwardRef(SelectRaw)

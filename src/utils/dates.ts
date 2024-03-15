@@ -1,3 +1,4 @@
+import { type Event } from '@prisma/client'
 import {
   addDays,
   differenceInCalendarDays,
@@ -20,13 +21,36 @@ const hours = (hours: number) => minutes(hours * 60)
 const days = (days: number) => hours(days * 24)
 const weeks = (weeks: number) => days(weeks * 7)
 
-export const Duration = {
-  seconds,
-  minutes,
-  hours,
-  days,
-  weeks,
-  create: ({
+// export const Duration = {
+//   seconds,
+//   minutes,
+//   hours,
+//   days,
+//   weeks,
+//   create: ({
+//     seconds: secondCount = 0,
+//     minutes: minuteCount = 0,
+//     hours: hoursCount = 0,
+//     days: daysCount = 0,
+//     weeks: weeksCount = 0,
+//   }) => {
+//     return (
+//       seconds(secondCount) +
+//       minutes(minuteCount) +
+//       hours(hoursCount) +
+//       days(daysCount) +
+//       weeks(weeksCount)
+//     )
+//   },
+// } as const
+
+export class Duration {
+  static seconds = seconds
+  static minutes = minutes
+  static hours = hours
+  static days = days
+  static weeks = weeks
+  static create = ({
     seconds: secondCount = 0,
     minutes: minuteCount = 0,
     hours: hoursCount = 0,
@@ -40,8 +64,8 @@ export const Duration = {
       days(daysCount) +
       weeks(weeksCount)
     )
-  },
-} as const
+  }
+}
 
 /** @deprecated */
 export const time = {
@@ -186,4 +210,13 @@ export const timeFormat = (
   preferences?: RouterOutputs['preferences']['getAll']
 ) => {
   return format(date, preferences?.timeFormat === '24' ? 'HH:mm' : 'h:mm a')
+}
+
+export const isEventComplete = (
+  event: Pick<Event, 'datetime' | 'done' | 'cancelled'>
+) => {
+  const now = new Date()
+  return (
+    event.cancelled || (event.done !== null ? event.done : event.datetime < now)
+  )
 }

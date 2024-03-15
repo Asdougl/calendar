@@ -10,23 +10,18 @@ import type { FC, ReactNode } from 'react'
 import Link from 'next/link'
 import { ProfileAvatar } from './ui/avatar'
 import { cn } from '~/utils/classnames'
-import {
-  type PathCreatorParams,
-  type PathName,
-  pathReplace,
-} from '~/utils/path'
+import { type PathArgs, createPath } from '~/utils/nav'
+import { type Pathname } from '~/utils/nav/path'
 
-const NavBarItem = <Path extends PathName>({
-  icon,
-  label,
-  ...pathParams
-}: {
-  icon: ReactNode
-  label: string
-} & PathCreatorParams<Path>) => {
+const NavBarItem = <Path extends Pathname>(
+  props: {
+    icon: ReactNode
+    label: string
+  } & PathArgs<Path>
+) => {
   const pathname = usePathname()
 
-  const navPath = pathReplace(pathParams)
+  const navPath = createPath(props)
 
   const active = pathname === navPath
 
@@ -38,8 +33,8 @@ const NavBarItem = <Path extends PathName>({
         active ? 'text-neutral-50' : 'text-neutral-500'
       )}
     >
-      {icon}
-      <span className="hidden lg:block">{label}</span>
+      {props.icon}
+      <span className="hidden lg:block">{props.label}</span>
     </Link>
   )
 }

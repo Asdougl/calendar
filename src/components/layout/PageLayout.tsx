@@ -28,7 +28,7 @@ export const OuterPageLayout: FC<
     >
       <div
         className={cn(
-          'mx-auto flex h-full w-full max-w-2xl flex-grow flex-col',
+          'mx-auto flex h-full w-full max-w-4xl flex-grow flex-col',
           { 'pb-24 lg:pb-0': !fullscreen, 'overflow-hidden': fullscreen }
         )}
       >
