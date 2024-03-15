@@ -5,6 +5,7 @@ import { cn, color } from '~/utils/classnames'
 import { type RouterOutputs } from '~/trpc/shared'
 import { isEventComplete } from '~/utils/dates'
 
+// FYI -- in pipelines this outputs in all caps
 const timeFormatter = new Intl.DateTimeFormat('default', {
   hour: 'numeric',
   minute: 'numeric',
