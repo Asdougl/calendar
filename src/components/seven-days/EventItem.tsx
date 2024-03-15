@@ -56,11 +56,11 @@ export const EventItem = ({
         { 'pointer-events-none z-10': isDragging }
       )}
     >
-      <div className="flex min-w-0 items-center gap-0.5">
+      <div className="flex min-w-0 items-center gap-0.5 xl:gap-1">
         {event.done === null ? (
           <div
             className={cn(
-              'h-4 w-0.5 flex-shrink-0 rounded-full',
+              'h-4 w-0.5 flex-shrink-0 rounded-full xl:w-1',
               color('bg')(event.category?.color)
             )}
           ></div>
@@ -82,7 +82,7 @@ export const EventItem = ({
           {event.title}
         </span>
       </div>
-      <div className="whitespace-nowrap text-sm text-neutral-500">
+      <div className="whitespace-nowrap text-sm text-neutral-500 xl:pr-2">
         {eventItemTime(event)}
       </div>
     </button>

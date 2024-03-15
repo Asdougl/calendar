@@ -1,9 +1,9 @@
 import { type FC } from 'react'
-import { differenceInCalendarDays, setDay } from 'date-fns'
+import { differenceInCalendarDays, format, setDay } from 'date-fns'
 import { useDroppable } from '@dnd-kit/core'
 import Link from 'next/link'
 import { PlusIcon } from '@heroicons/react/24/solid'
-import { stdFormat } from '../ui/dates/common'
+import { ACCESSIBLE_FORMAT, stdFormat } from '../ui/dates/common'
 import { EventItem } from './EventItem'
 import { type RouterOutputs } from '~/trpc/shared'
 import { SEARCH_PARAM_NEW, modifySearchParams } from '~/utils/nav/search'
@@ -123,17 +123,30 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
     >
       <div className="flex w-full items-center justify-between px-0.5 pt-0.5 md:px-2 md:pt-2">
         <DayOfWeekLabel date={date} />
-        <div className="flex items-center gap-2 px-1 pt-1">
-          {periodsForDay.map((period) => (
+        <div className="flex grow items-center gap-2 px-1 pb-0.5">
+          {periodsForDay.map((period, _index, arr) => (
             <Link
               key={period.id}
               href={periodLink(period.id)}
               className={cn(
-                'flex h-4 w-4 items-center justify-center rounded-sm text-xs',
+                'flex h-4 w-4 grow items-center justify-end gap-1 overflow-hidden rounded-sm px-0.5 text-xs',
                 color('bg')(period.color)
               )}
             >
-              {period.icon}
+              <div
+                className={cn(
+                  'font-bold',
+                  {
+                    'max-md:hidden': arr.length > 1,
+                    'max-lg:hidden': arr.length > 2,
+                    hidden: arr.length > 4,
+                  },
+                  color('alt-text')(period.color)
+                )}
+              >
+                {period.name}
+              </div>
+              <div>{period.icon}</div>
             </Link>
           ))}
         </div>
@@ -164,7 +177,10 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
                   { 'pointer-events-none -z-10': isOver }
                 )}
               >
-                <span className="flex items-center gap-1 pb-1 text-neutral-500">
+                <span className="flex items-center gap-1 px-1 pb-1 text-neutral-500">
+                  <span className="sr-only">
+                    New Event on {format(date, ACCESSIBLE_FORMAT)}
+                  </span>
                   <PlusIcon height={12} />
                 </span>
               </Link>

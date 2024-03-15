@@ -166,6 +166,10 @@ export const EventForm: FC<EventFormProps> = ({
       return
     }
 
+    if (data.type === 'NO_TIME' || data.type === 'ALL_DAY') {
+      datetime.setHours(12, 0, 0, 0)
+    }
+
     const payload = {
       title: data.title,
       datetime,
@@ -371,7 +375,7 @@ export const EventForm: FC<EventFormProps> = ({
                 type="button"
                 onClick={() => field.onChange(!field.value)}
               >
-                {field.value ? 'Un-cancel' : 'Cancel'}
+                {field.value ? 'Un-cancel event' : 'Cancel event'}
               </Button>
             )}
           />

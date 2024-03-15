@@ -198,15 +198,6 @@ export const eventRouter = createTRPCRouter({
       })
     )
     .mutation(({ ctx, input }) => {
-      // if time status is all day, set the time to 12:00
-      if (
-        input.timeStatus &&
-        (input.timeStatus === TimeStatus.ALL_DAY ||
-          input.timeStatus === TimeStatus.NO_TIME)
-      ) {
-        input.datetime = new Date(input.datetime.setHours(12, 0, 0, 0))
-      }
-
       return ctx.db.event.create({
         data: {
           title: input.title,
@@ -236,26 +227,7 @@ export const eventRouter = createTRPCRouter({
         cancelled: z.boolean().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      // if time status is all day, set the time to 12:00
-      if (
-        input.timeStatus &&
-        (input.timeStatus === TimeStatus.ALL_DAY ||
-          input.timeStatus === TimeStatus.NO_TIME)
-      ) {
-        if (input.datetime) {
-          input.datetime = new Date(input.datetime.setHours(12, 0, 0, 0))
-        } else {
-          // fuck we need to query it :(
-          const event = await ctx.db.event.findUnique({
-            select: { datetime: true },
-            where: { id: input.id },
-          })
-          if (!event) return null
-          input.datetime = new Date(event.datetime.setHours(12, 0, 0, 0))
-        }
-      }
-
+    .mutation(({ ctx, input }) => {
       return ctx.db.event.update({
         where: {
           id: input.id,

@@ -255,12 +255,12 @@ export const MonthView: FC = () => {
                           'rounded-lg bg-neutral-50 text-neutral-950'
                       )}
                     >
-                      <span className="text-xs xl:hidden">
+                      <div className="text-xs xl:hidden">
                         {format(day, 'dd')}
-                      </span>
-                      <span className="hidden text-sm xl:block">
+                      </div>
+                      <div className="hidden text-sm xl:block">
                         {format(day, 'dd MMM')}
-                      </span>
+                      </div>
                     </div>
                     <div className="flex h-full grow items-center justify-end">
                       {periodsForDay?.map((period) => (

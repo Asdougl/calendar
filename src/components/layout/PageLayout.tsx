@@ -22,7 +22,7 @@ export const OuterPageLayout: FC<
 > = ({ children, skeleton, hideNav, fullscreen }) => {
   return (
     <main
-      className={cn('flex min-h-screen flex-col px-2 md:px-0', {
+      className={cn('flex min-h-screen flex-col px-2 lg:px-0', {
         'h-screen': fullscreen,
       })}
     >

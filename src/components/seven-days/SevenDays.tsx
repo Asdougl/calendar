@@ -189,9 +189,7 @@ export const SevenDays = (props: SevenDaysProps) => {
       }
     },
     onSuccess: () => {
-      queryClient.event.range
-        .invalidate({ start: props.start, end: props.end })
-        .catch(warn)
+      queryClient.event.invalidate().catch(warn)
     },
     onError: (err, variables, context) => {
       if (context?.previousValue) {
