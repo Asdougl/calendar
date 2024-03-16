@@ -6,9 +6,9 @@ generator client {
 }
 
 datasource db {
-    provider     = "mysql"
-    url          = env("DATABASE_URL")
-    relationMode = "prisma"
+    provider  = "postgresql"
+    url       = env("POSTGRES_PRISMA_URL")
+    directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 // Necessary for Next auth
@@ -18,17 +18,16 @@ model Account {
     type              String
     provider          String
     providerAccountId String
-    refresh_token     String? @db.Text
-    access_token      String? @db.Text
+    refresh_token     String?
+    access_token      String?
     expires_at        Int?
     token_type        String?
     scope             String?
-    id_token          String? @db.Text
+    id_token          String?
     session_state     String?
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
-    @@index([userId])
 }
 
 model Session {
@@ -37,8 +36,6 @@ model Session {
     userId       String
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@index([userId])
 }
 
 model User {
@@ -56,6 +53,7 @@ model User {
     Category  Category[]
     Period    Period[]
     Recursion Recursion[]
+    Share     Share[]
 }
 
 model VerificationToken {
@@ -100,10 +98,6 @@ model Event {
 
     SourceLink EventLink[] @relation("source")
     TargetLink EventLink[] @relation("target")
-
-    @@index([createdById])
-    @@index([categoryId])
-    @@index([recursionId])
 }
 
 model Category {
@@ -122,8 +116,6 @@ model Category {
     Event     Event[]
     Period    Period[]
     Recursion Recursion[]
-
-    @@index([createdById])
 }
 
 model Period {
@@ -142,9 +134,6 @@ model Period {
 
     category   Category? @relation(fields: [categoryId], references: [id])
     categoryId String?
-
-    @@index([createdById])
-    @@index([categoryId])
 }
 
 enum TIME_INVERVAL {
@@ -180,9 +169,6 @@ model Recursion {
     categoryId String?
 
     events Event[]
-
-    @@index([createdById])
-    @@index([categoryId])
 }
 
 enum EVENT_LINK_RELATION {
@@ -198,7 +184,16 @@ model EventLink {
 
     target   Event  @relation(fields: [targetId], references: [id], name: "target")
     targetId String
+}
 
-    @@index([sourceId])
-    @@index([targetId])
+model Share {
+    id       String   @id @default(uuid())
+    nickname String
+    expires  DateTime
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    createdBy   User   @relation(fields: [createdById], references: [id])
+    createdById String
 }
