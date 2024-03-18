@@ -37,7 +37,7 @@ const config = {
   },
   overrides: [
     {
-      files: ['page.tsx', 'layout.tsx'],
+      files: ['page.tsx', 'layout.tsx', 'src/trpc/**/*.tsx'],
       rules: {
         'react-refresh/only-export-components': 0,
       },

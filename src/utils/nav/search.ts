@@ -7,6 +7,7 @@ export const SearchParams = z.object({
   event: z.string().optional(),
   period: z.string().optional(),
   date: z.string().optional(),
+  time: z.string().optional(),
   endDate: z.string().optional(),
   title: z.string().optional(),
   q: z.string().optional(),

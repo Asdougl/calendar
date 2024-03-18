@@ -5,13 +5,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import upperFirst from 'lodash/upperFirst'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { DeleteButton } from '~/components/form/DeleteButton'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
-import { SubmitButton } from '~/components/ui/button'
+import { Button, SubmitButton } from '~/components/ui/button'
 import { Checkbox } from '~/components/ui/checkbox'
 import { Field } from '~/components/ui/Field'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Select } from '~/components/ui/select'
+import { env } from '~/env.mjs'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { CategoryColors, isCategoryColor } from '~/utils/classnames'
@@ -26,8 +28,8 @@ type EditCategoryProps = {
 const EditCategorySchema = z.object({
   name: z.string().min(1).max(100),
   color: z.enum(CategoryColors),
-  private: z.boolean(),
-  hidden: z.boolean(),
+  private: z.boolean().default(false),
+  hidden: z.boolean().default(false),
 })
 
 const CategorySelectColors = CategoryColors.map((color) => ({
@@ -39,7 +41,7 @@ const CategorySelectColors = CategoryColors.map((color) => ({
 const EditCategoryForm = ({
   category,
 }: {
-  category: EditCategoryProps['initialCategory']
+  category?: EditCategoryProps['initialCategory']
 }) => {
   const navigate = useNavigate()
 
@@ -48,14 +50,15 @@ const EditCategoryForm = ({
   const form = useForm<z.infer<typeof EditCategorySchema>>({
     resolver: zodResolver(EditCategorySchema),
     defaultValues: {
-      name: category.name,
-      color: isCategoryColor(category.color) ? category.color : 'gray',
-      private: category.private,
-      hidden: category.hidden,
+      name: category?.name,
+      color:
+        category && isCategoryColor(category.color) ? category.color : 'gray',
+      private: category?.private,
+      hidden: category?.hidden,
     },
   })
 
-  const { mutateAsync } = api.category.update.useMutation({
+  const updateCategory = api.category.update.useMutation({
     onSuccess: (data) => {
       queryClient.category.all.setData(undefined, (curr) => {
         if (!curr) {
@@ -63,7 +66,7 @@ const EditCategoryForm = ({
         }
         return [...curr.map((item) => (item.id === data.id ? data : item))]
       })
-      queryClient.category.one.setData({ id: category.id }, (curr) => {
+      queryClient.category.one.setData({ id: data.id }, (curr) => {
         if (!curr) {
           return data
         }
@@ -73,7 +76,33 @@ const EditCategoryForm = ({
         }
       })
       queryClient.category.all.invalidate().catch(warn)
-      queryClient.category.one.invalidate({ id: category.id }).catch(warn)
+      queryClient.category.one.invalidate({ id: data.id }).catch(warn)
+      queryClient.event.invalidate().catch(warn)
+    },
+    onError: (err) => {
+      form.setError('root', err)
+    },
+  })
+
+  const createCategory = api.category.create.useMutation({
+    onSuccess: (data) => {
+      queryClient.category.all.setData(undefined, (curr) => {
+        if (!curr) {
+          return [data]
+        }
+        return [...curr, data]
+      })
+      queryClient.category.all.invalidate().catch(warn)
+    },
+    onError: (err) => {
+      form.setError('root', err)
+    },
+  })
+
+  const removeCategory = api.category.remove.useMutation({
+    onSuccess: (data) => {
+      queryClient.category.all.invalidate().catch(warn)
+      queryClient.category.one.invalidate({ id: data.id }).catch(warn)
       queryClient.event.invalidate().catch(warn)
     },
     onError: (err) => {
@@ -82,17 +111,28 @@ const EditCategoryForm = ({
   })
 
   const onSubmit = form.handleSubmit(async (data) => {
-    await mutateAsync({
-      id: category.id,
-      ...data,
-    })
+    if (category) {
+      await updateCategory.mutateAsync({
+        id: category.id,
+        ...data,
+      })
+    } else {
+      console.log('woa')
+      await createCategory.mutateAsync(data)
+    }
     navigate({ path: '/categories' })
   })
+
+  const lockForm =
+    updateCategory.isPending ||
+    createCategory.isPending ||
+    removeCategory.isPending ||
+    form.formState.isSubmitting
 
   return (
     <form onSubmit={onSubmit} className="flex w-full flex-col gap-2 px-2">
       <Field id="name" label="Name">
-        <Input id="name" {...form.register('name')} />
+        <Input id="name" disabled={lockForm} {...form.register('name')} />
       </Field>
       <Field id="color" label="Color">
         <Controller
@@ -101,8 +141,8 @@ const EditCategoryForm = ({
           render={({ field }) => (
             <Select
               id="color"
+              disabled={lockForm}
               options={CategorySelectColors}
-              defaultValue={category.color}
               {...field}
             />
           )}
@@ -115,6 +155,7 @@ const EditCategoryForm = ({
           render={({ field }) => (
             <Checkbox
               id="private"
+              disabled={lockForm}
               onCheckedChange={field.onChange}
               checked={field.value}
             />
@@ -134,6 +175,7 @@ const EditCategoryForm = ({
           render={({ field }) => (
             <Checkbox
               id="hidden"
+              disabled={lockForm}
               onCheckedChange={field.onChange}
               checked={field.value}
             />
@@ -147,15 +189,48 @@ const EditCategoryForm = ({
           </span>
         </Label>
       </div>
-      <SubmitButton>Save</SubmitButton>
+      {form.formState.errors.root && (
+        <div className="text-red-500">{form.formState.errors.root.message}</div>
+      )}
+      <SubmitButton disabled={lockForm}>Save</SubmitButton>
+      {category && (
+        <DeleteButton
+          disabled={lockForm}
+          title={`Delete ${category.name}`}
+          body={`Are you sure you want to delete ${category.name}? All events in this category will be uncategorized. This action cannot be undone.`}
+          buttonText="Delete"
+          isDeleting={removeCategory.isPending}
+          onDelete={() => removeCategory.mutate({ id: category.id })}
+        >
+          Delete
+        </DeleteButton>
+      )}
     </form>
   )
 }
 
-export default function EditCategory({ initialCategory }: EditCategoryProps) {
+export const CreateCategory = () => {
+  return (
+    <InnerPageLayout
+      headerLeft={
+        <PathLink
+          path="/categories"
+          className="flex items-center justify-center"
+        >
+          <ChevronLeftIcon height={20} />
+        </PathLink>
+      }
+      title={`Create Category`}
+    >
+      <EditCategoryForm />
+    </InnerPageLayout>
+  )
+}
+
+export const EditCategory = ({ initialCategory }: EditCategoryProps) => {
   const { data: category } = api.category.one.useQuery(
     {
-      id: initialCategory.id,
+      id: initialCategory?.id ?? '',
     },
     {
       initialData: initialCategory,

@@ -17,7 +17,7 @@ type CreateParams = z.infer<typeof CreateParams>
 export const createPeriod = async (period: CreateParams) => {
   const parsed = CreateParams.parse(period)
 
-  await api.periods.create.mutate({
+  await api.periods.create({
     ...parsed,
     startDate: new Date(parsed.startDate),
     endDate: new Date(parsed.endDate),
@@ -32,7 +32,7 @@ type UpdateParams = z.infer<typeof UpdateParams>
 export const updatePeriod = async (id: string, period: UpdateParams) => {
   const { startDate, endDate, ...parsed } = UpdateParams.parse(period)
 
-  await api.periods.update.mutate({
+  await api.periods.update({
     id,
     ...parsed,
     startDate: startDate ? new Date(startDate) : undefined,

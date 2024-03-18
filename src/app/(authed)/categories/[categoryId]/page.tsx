@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
-import EditCategory from './edit-category'
+import { CreateCategory, EditCategory } from './edit-category'
 import { api } from '~/trpc/server'
+import { SEARCH_PARAM_NEW } from '~/utils/nav/search'
+import { type RouterOutputs } from '~/trpc/shared'
 
 type PageProps = {
   params: {
@@ -9,11 +11,19 @@ type PageProps = {
 }
 
 export default async function CategoryIdPage({ params }: PageProps) {
-  const category = await api.category.one.query({ id: params.categoryId })
+  let category: RouterOutputs['category']['one'] | undefined = undefined
 
-  if (!category) {
-    redirect('/categories?error=not-found')
+  if (params.categoryId !== SEARCH_PARAM_NEW) {
+    category = await api.category.one({ id: params.categoryId })
+
+    if (!category) {
+      redirect('/categories?error=not-found')
+    }
   }
 
-  return <EditCategory initialCategory={category} />
+  return category ? (
+    <EditCategory initialCategory={category} />
+  ) : (
+    <CreateCategory />
+  )
 }

@@ -86,9 +86,9 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
 
   return (
     <>
-      <div className="grid flex-grow grid-cols-2 gap-1">
+      <div className="grid flex-grow grid-cols-2 gap-1 overflow-hidden">
         <DndContext onDragEnd={onDragEnd} sensors={[mouseSensor, touchSensor]}>
-          <div className="grid grid-rows-2 gap-1">
+          <div className="grid grid-rows-2 gap-1 overflow-hidden">
             <DayOfWeek
               baseDate={start}
               dayOfWeek={6}
@@ -108,7 +108,7 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
               weekStart={weekStart}
             />
           </div>
-          <div className="grid grid-rows-5 gap-1">
+          <div className="grid grid-rows-5 gap-1 overflow-hidden">
             <DayOfWeek
               baseDate={start}
               dayOfWeek={5}

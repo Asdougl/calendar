@@ -4,9 +4,9 @@ import { getServerAuthSession } from '~/server/auth'
 import { Logo } from '~/components/Logo'
 
 export default async function LoginPage({
-  searchParams: { origin },
+  searchParams: { from },
 }: {
-  searchParams: { origin?: string }
+  searchParams: { from?: string }
 }) {
   const session = await getServerAuthSession()
 
@@ -18,7 +18,7 @@ export default async function LoginPage({
     <main className="flex min-h-screen flex-col px-2 md:px-0">
       <div className="container mx-auto flex flex-grow grid-cols-2 flex-col-reverse justify-end gap-4 divide-neutral-800 lg:grid lg:divide-x lg:py-20">
         <div className="flex flex-col justify-center">
-          <Login signup={origin === 'sign-up'} />
+          <Login signup={from === 'sign-up'} />
         </div>{' '}
         <div className="flex items-center justify-center pt-6">
           <Logo />

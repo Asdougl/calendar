@@ -1,20 +1,20 @@
 /* eslint-disable react-refresh/only-export-components */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { httpLink } from '@trpc/client'
+import { unstable_httpBatchStreamLink } from '@trpc/client'
 import { useState, type ReactNode } from 'react'
-import { api } from '~/trpc/react'
-import { getUrl, transformer } from '~/trpc/shared'
+import { SuperJSON } from 'superjson'
+import { api, getBaseUrl } from '~/trpc/react'
 
 export const testQueryClient = new QueryClient()
 
 export const TestWrapper = ({ children }: { children: ReactNode }) => {
   const [trpcClient] = useState(() =>
     api.createClient({
-      transformer,
       links: [
-        httpLink({
-          url: getUrl(),
+        unstable_httpBatchStreamLink({
+          transformer: SuperJSON,
+          url: getBaseUrl() + '/api/trpc',
           headers() {
             return {
               'x-trpc-source': 'react',

@@ -11,6 +11,7 @@ type DeleteButtonProps = {
   title: string
   body?: string
   buttonText?: string
+  disabled?: boolean
 }
 
 export const DeleteButton: FC<PropsWithChildren<DeleteButtonProps>> = ({
@@ -20,6 +21,7 @@ export const DeleteButton: FC<PropsWithChildren<DeleteButtonProps>> = ({
   title,
   children,
   buttonText,
+  disabled,
 }) => {
   const [open, toggleOpen] = useToggle(false)
 
@@ -31,7 +33,9 @@ export const DeleteButton: FC<PropsWithChildren<DeleteButtonProps>> = ({
   return (
     <Dialog.Root open={open} onOpenChange={toggleOpen}>
       <Dialog.Trigger asChild>
-        <Button intent="danger">{children}</Button>
+        <Button disabled={disabled} intent="danger">
+          {children}
+        </Button>
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" />

@@ -1,3 +1,5 @@
+import { env } from '~/env.mjs'
+
 export const match = (pattern: RegExp, string: string) => {
   const match = string.match(pattern)
   return match ? [...match] : []
@@ -41,4 +43,12 @@ export const wait = (ms: number) => {
 
 export const getWindow = () => {
   return typeof window === 'undefined' ? null : window
+}
+
+export const createURL = (...params: ConstructorParameters<typeof URL>) => {
+  try {
+    return new URL(...params)
+  } catch (_) {
+    return null
+  }
 }

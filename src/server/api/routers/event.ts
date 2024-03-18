@@ -95,7 +95,7 @@ export const eventRouter = createTRPCRouter({
     .input(
       z.object({
         starting: z.date(),
-        direction: z.enum(['before', 'after']).default('after'),
+        timeDirection: z.enum(['before', 'after']).default('after'),
         limit: z.number().min(1).max(100).default(50),
         cursor: z.string().nullish(),
         query: z.string().nullish(),
@@ -107,7 +107,7 @@ export const eventRouter = createTRPCRouter({
         where: {
           createdById: ctx.session.user.id,
           datetime:
-            input.direction === 'after'
+            input.timeDirection === 'after'
               ? {
                   gte: input.starting.toISOString(),
                 }
@@ -131,7 +131,7 @@ export const eventRouter = createTRPCRouter({
         },
         select,
         orderBy: {
-          datetime: input.direction === 'after' ? 'asc' : 'desc',
+          datetime: input.timeDirection === 'after' ? 'asc' : 'desc',
         },
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,

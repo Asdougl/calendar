@@ -28,8 +28,8 @@ export const Login = ({ signup }: { signup: boolean }) => {
         </h1>
         <p className="text-neutral-400">
           {signup
-            ? 'Start your new calendar journey'
-            : 'Continue your calendar journey'}
+            ? 'Get started with the calendar for humans'
+            : 'Get back to your calendar'}
         </p>
       </div>
       <div className="flex max-w-md flex-col gap-4">
@@ -43,7 +43,7 @@ export const Login = ({ signup }: { signup: boolean }) => {
         <Button
           onClick={signInWith('github')}
           disabled={env.NEXT_PUBLIC_DEVELOPMENT}
-          className="flex items-center justify-center gap-2 bg-[#24292F] lg:hover:bg-[#1B1F23]"
+          className="flex items-center justify-center gap-2 bg-[#24292F] disabled:text-neutral-50 disabled:opacity-50 disabled:hover:bg-[#24292F] lg:hover:bg-[#1B1F23]"
         >
           <Image
             src="/github-mark.svg"
@@ -52,11 +52,13 @@ export const Login = ({ signup }: { signup: boolean }) => {
             height={20}
             className={env.NEXT_PUBLIC_DEVELOPMENT ? 'opacity-75' : ''}
           />
-          Continue with Github
+          {env.NEXT_PUBLIC_DEVELOPMENT
+            ? 'Disabled in development'
+            : 'Continue with Github'}
         </Button>
         <Button
           onClick={signInWith('google')}
-          className="flex items-center justify-center gap-2 bg-white text-[#1F1F1F] lg:hover:bg-[#F2F2F2]"
+          className="flex items-center justify-center gap-2 bg-white text-[#1F1F1F] disabled:opacity-50 disabled:hover:bg-white lg:hover:bg-[#F2F2F2]"
           disabled={env.NEXT_PUBLIC_DEVELOPMENT}
         >
           <Image
@@ -68,18 +70,20 @@ export const Login = ({ signup }: { signup: boolean }) => {
               'opacity-75': env.NEXT_PUBLIC_DEVELOPMENT,
             })}
           />
-          Continue with Google
+          {env.NEXT_PUBLIC_DEVELOPMENT
+            ? 'Disabled in development'
+            : 'Continue with Google'}
         </Button>
       </div>
       <p className="text-neutral-400">
-        Need another way to sign in?{' '}
+        <div>Need another way to sign in?</div>
         <a
           href="https://github.com/asdougl/calendar/issues"
           target="_blank"
           rel="noopener noreferrer"
           className="text-neutral-300 underline hover:text-neutral-400"
         >
-          Create an issue on github
+          Let us known on Github
         </a>
       </p>
       {error && (

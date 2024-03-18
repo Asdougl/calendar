@@ -141,7 +141,7 @@ export const EventForm: FC<EventFormProps> = ({
     },
   })
 
-  const { mutate: deleteMutate, isLoading: isDeleting } =
+  const { mutate: deleteMutate, isPending: isDeleting } =
     api.event.delete.useMutation({
       onSuccess: (victim) => {
         queryClient.event
@@ -387,6 +387,7 @@ export const EventForm: FC<EventFormProps> = ({
         {Object.keys(errors).length > 0 && (
           <Alert
             level="error"
+            title="Errors"
             message={Object.values(errors)
               .map((error) => error.message)
               .join(', ')}

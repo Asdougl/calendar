@@ -75,7 +75,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
     {
       starting: starting,
       limit: 10,
-      direction,
+      timeDirection: direction,
       query,
       category,
     },
@@ -107,7 +107,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
       skeleton={isLoading}
     >
       {notFound && (
-        <Alert level="error" message="Event not found" className="mb-4" />
+        <Alert level="error" title="Event not found" className="mb-4" />
       )}
       {query && <PathLink path="/events">Clear</PathLink>}
       <ul className="flex flex-col gap-2 overflow-auto">

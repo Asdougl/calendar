@@ -46,7 +46,7 @@ export const EventModal: FC = () => {
 
   const queryClient = api.useUtils()
 
-  const { mutate, isLoading: isMutating } = api.event.complete.useMutation({
+  const { mutate, isPending: isMutating } = api.event.complete.useMutation({
     onMutate: (data) => {
       const foundEvent = queryClient.event.one.getData({ id: data.id })
       if (foundEvent) {
@@ -74,7 +74,7 @@ export const EventModal: FC = () => {
   const onOpenChange = (value: boolean, jumpTo?: Date) => {
     if (!value) {
       const url = modifyCurrentSearchParams({
-        remove: ['event', 'date', 'title'],
+        remove: ['event', 'date', 'title', 'time'],
         update: {
           of: jumpTo ? stdFormat(jumpTo) : undefined,
         },
@@ -182,6 +182,11 @@ export const EventModal: FC = () => {
               wipValues={{
                 date:
                   searchParams.get(SearchParamKeys.Values.date) ?? undefined,
+                time:
+                  searchParams.get(SearchParamKeys.Values.time) ?? undefined,
+                type: searchParams.get(SearchParamKeys.Values.time)
+                  ? 'STANDARD'
+                  : 'NO_TIME',
               }}
               extraActions={
                 <ButtonRawLink

@@ -4,6 +4,7 @@ import { api } from './react'
 import { type RouterOutputs } from './shared'
 import { time } from '~/utils/dates'
 
+/** @deprecated */
 export const usePreferences = (
   initialData?: RouterOutputs['preferences']['getAll']
 ) => {

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { DateEvents } from './date-events'
+import { DaySchedule } from './day-schedule'
 
 type PathParams = {
   params: {
@@ -20,5 +20,5 @@ export default function DayDatePage({ params: { date } }: PathParams) {
     redirect('/inbox')
   }
 
-  return <DateEvents date={dateAsDate} />
+  return <DaySchedule date={date} />
 }

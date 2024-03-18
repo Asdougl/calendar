@@ -27,9 +27,9 @@ export const PreferencesSection = () => {
   const queryClient = api.useUtils()
   const [initialUpdate, setInitialUpdate] = useState(false)
 
-  const { data: preferences, isInitialLoading } =
+  const { data: preferences, isLoading: isInitialLoading } =
     api.preferences.getAll.useQuery()
-  const { mutate: updatePreferences, isLoading: isUpdating } =
+  const { mutate: updatePreferences, isPending: isUpdating } =
     api.preferences.update.useMutation({
       onMutate: async (data) => {
         if (!initialUpdate) {

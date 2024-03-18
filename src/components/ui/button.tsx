@@ -14,7 +14,7 @@ import { cn } from '~/utils/classnames'
 import { type Pathname } from '~/utils/nav/path'
 
 const button = cva(
-  'rounded-lg border focus:outline-none focus:ring focus:ring-opacity-50',
+  'rounded-lg border focus:outline-none focus:ring focus:ring-opacity-50 text-center',
   {
     variants: {
       intent: {

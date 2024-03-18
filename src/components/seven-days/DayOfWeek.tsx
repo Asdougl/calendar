@@ -10,6 +10,7 @@ import { SEARCH_PARAM_NEW, modifySearchParams } from '~/utils/nav/search'
 import { eventSort } from '~/utils/sort'
 import { cn, color } from '~/utils/classnames'
 import { PathLink } from '~/utils/nav/Link'
+import { createURL, getWindow } from '~/utils/misc'
 
 const DayOfWeekLabel = ({ date }: { date: Date }) => {
   // Using built in formatters because they're
@@ -56,17 +57,21 @@ type DayOfWeekProps = {
 }
 
 const eventLink = (id: string, date?: Date) => {
-  const url = new URL(window.location.href)
-  modifySearchParams({
-    update: {
-      event: id,
-      date: date ? stdFormat(date) : undefined,
-    },
-    remove: ['period'],
-    searchParams: url.searchParams,
-  })
+  const url = createURL(getWindow()?.location.href || '')
+  if (url) {
+    modifySearchParams({
+      update: {
+        event: id,
+        date: date ? stdFormat(date) : undefined,
+      },
+      remove: ['period'],
+      searchParams: url.searchParams,
+    })
 
-  return url.toString()
+    return url.toString()
+  } else {
+    return '#'
+  }
 }
 
 const periodLink = (id: string, date?: Date) => {
@@ -153,7 +158,7 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
       </div>
       <div
         ref={setNodeRef}
-        className="relative flex flex-grow flex-col px-1.5 md:gap-0.5 md:px-3 lg:pb-1"
+        className="relative flex flex-shrink flex-grow flex-col overflow-auto px-1.5 md:gap-0.5 md:px-3 lg:pb-1"
       >
         {loadingEvents ? (
           <div className="flex justify-between">

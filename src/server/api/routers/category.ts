@@ -82,7 +82,18 @@ export const categoryRouter = createTRPCRouter({
     }),
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      // remove from all events
+      await ctx.db.event.updateMany({
+        where: {
+          categoryId: input.id,
+          createdById: ctx.session.user.id,
+        },
+        data: {
+          categoryId: null,
+        },
+      })
+
       return ctx.db.category.delete({
         where: {
           id: input.id,
