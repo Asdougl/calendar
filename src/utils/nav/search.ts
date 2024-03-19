@@ -7,11 +7,14 @@ export const SearchParams = z.object({
   event: z.string().optional(),
   period: z.string().optional(),
   date: z.string().optional(),
+  time: z.string().optional(),
   endDate: z.string().optional(),
   title: z.string().optional(),
   q: z.string().optional(),
   from: z.string().optional(),
   category: z.string().optional(),
+  person: z.string().optional(),
+  fromWeek: z.string().optional(),
 })
 export type SearchParams = z.infer<typeof SearchParams>
 
@@ -20,6 +23,9 @@ export type SearchParamKeys = z.infer<typeof SearchParamKeys>
 
 export const SEARCH_PARAM_NEW = 'new'
 export type SEARCH_PARAM_NEW = typeof SEARCH_PARAM_NEW
+
+export const SEARCH_PARAM_SEARCH = 'search'
+export type SEARCH_PARAM_SEARCH = typeof SEARCH_PARAM_SEARCH
 
 export type ModifySearchParamsConfig = {
   update?: Partial<
@@ -69,6 +75,5 @@ export const modifyCurrentSearchParams = (
     ...config,
     searchParams: url.searchParams,
   })
-
   return url.toString()
 }

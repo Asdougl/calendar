@@ -27,7 +27,7 @@ const avatar = cva(
 
 type AvatarProps = VariantProps<typeof avatar> & {
   src?: string | null
-  name: string
+  name?: string
   className?: string
 }
 
@@ -40,7 +40,12 @@ const fallbackName = (name: string) => {
   )
 }
 
-export const Avatar: FC<AvatarProps> = ({ src, name, className, ...props }) => {
+export const Avatar: FC<AvatarProps> = ({
+  src,
+  name = 'User',
+  className,
+  ...props
+}) => {
   return (
     <RadixAvatar.Root className={cn(avatar(props), className)}>
       {src && (

@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { cn } from '~/utils/classnames'
 
 const sizes = {
@@ -26,7 +27,7 @@ type LogoProps = {
 
 export const Logo = ({ size = 'lg', mobileHide }: LogoProps) => {
   return (
-    <div className="flex items-center gap-2">
+    <Link href="/" className="flex items-center gap-2 hover:opacity-70">
       <Image
         src="/asdougl-mark.svg"
         alt="Logo"
@@ -34,14 +35,14 @@ export const Logo = ({ size = 'lg', mobileHide }: LogoProps) => {
         height={sizes[size].dim}
       />
       <h1 className={cn('flex flex-col', { hidden: mobileHide })}>
-        <span
+        <div
           className={cn(
             'font-mono leading-none tracking-wide text-neutral-300',
             sizes[size].subtitle
           )}
         >
           asdougl
-        </span>
+        </div>
         <span
           className={cn(
             'font-bold leading-none tracking-wider',
@@ -51,6 +52,6 @@ export const Logo = ({ size = 'lg', mobileHide }: LogoProps) => {
           Calendar
         </span>
       </h1>
-    </div>
+    </Link>
   )
 }

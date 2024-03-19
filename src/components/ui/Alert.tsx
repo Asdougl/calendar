@@ -4,25 +4,29 @@ import type { FC } from 'react'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
+  ExclamationTriangleIcon,
   InformationCircleIcon,
 } from '@heroicons/react/24/solid'
 import { Header3 } from './headers'
 import { cn } from '~/utils/classnames'
 
-const alert = cva('rounded-md px-3 py-2 flex gap-4 border items-center', {
+const alert = cva('rounded-md px-4 py-1 flex flex-col border', {
   variants: {
     level: {
-      info: 'bg-blue-950 bg-opacity-50 text-blue-50 border-blue-900',
-      success: 'bg-green-950 bg-opacity-50 text-green-50 border-green-900',
-      warning: 'bg-yellow-950 bg-opacity-50 text-yellow-50 border-yellow-900',
-      error: 'bg-red-950 bg-opacity-50 text-red-50 border-red-900',
+      info: 'bg-blue-950 bg-opacity-50 text-blue-50 border-blue-900 [&>p]:text-blue-100',
+      success:
+        'bg-green-950 bg-opacity-50 text-green-50 border-green-900 [&>p]:text-green-100',
+      warning:
+        'bg-yellow-950 bg-opacity-50 text-yellow-50 border-yellow-900 [&>p]:text-yellow-100',
+      error:
+        'bg-red-950 bg-opacity-50 text-red-50 border-red-900 [&>p]:text-red-100 [&>svg]:text-error-900',
     },
   },
 })
 
 type AlertProps = VariantProps<typeof alert> & {
-  message: string
-  title?: string
+  message?: string
+  title: string
   className?: string
 }
 
@@ -35,26 +39,28 @@ export const Alert: FC<AlertProps> = ({
   let icon: React.ReactNode
   switch (true) {
     case props.level === 'success':
-      icon = <CheckCircleIcon height={20} />
+      icon = <CheckCircleIcon className="text-green-500" height={20} />
       break
     case props.level === 'warning':
-      icon = <ExclamationCircleIcon height={20} />
+      icon = <ExclamationTriangleIcon className="text-yellow-500" height={20} />
       break
     case props.level === 'error':
-      icon = <ExclamationCircleIcon height={20} />
+      icon = <ExclamationCircleIcon className="text-red-500" height={20} />
       break
     default:
-      icon = <InformationCircleIcon height={20} />
+      icon = <InformationCircleIcon className="text-blue-500" height={20} />
       break
   }
 
   return (
     <div className={cn(alert(props), className)}>
-      <div className="py-2">{icon}</div>
-      <div className="flex flex-col">
+      <div className="flex items-center gap-2">
+        <div className="icon py-2">{icon}</div>
         {title && <Header3>{title}</Header3>}
-        <p data-testid={props.level}>{message}</p>
       </div>
+      <p className="pb-2" data-testid={props.level}>
+        {message}
+      </p>
     </div>
   )
 }

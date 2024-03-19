@@ -40,7 +40,7 @@ export default async function PeriodEdit({
   params: { id: string }
   searchParams: { origin?: string }
 }) {
-  const period = id !== 'new' ? await api.periods.one.query({ id }) : null
+  const period = id !== 'new' ? await api.periods.one({ id }) : null
 
   const { path, query } = decodeOrigin(origin)
 

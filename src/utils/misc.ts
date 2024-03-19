@@ -42,3 +42,11 @@ export const wait = (ms: number) => {
 export const getWindow = () => {
   return typeof window === 'undefined' ? null : window
 }
+
+export const createURL = (...params: ConstructorParameters<typeof URL>) => {
+  try {
+    return new URL(...params)
+  } catch (_) {
+    return null
+  }
+}

@@ -9,17 +9,23 @@ const CheckboxRaw = (
   {
     onCheckedChange,
     checked,
+    id,
     ...props
   }: CheckboxProps &
-    Pick<RadixCheckbox.CheckboxProps, 'onCheckedChange' | 'checked'>,
+    Pick<
+      RadixCheckbox.CheckboxProps,
+      'onCheckedChange' | 'checked' | 'disabled'
+    >,
   ref: ForwardedRef<HTMLInputElement>
 ) => {
   return (
     <RadixCheckbox.Root
+      id={id}
       onCheckedChange={onCheckedChange}
       checked={checked}
+      disabled={props.disabled}
       className={cn(
-        'flex h-6 w-6 items-center justify-center rounded-lg border hover:bg-neutral-900',
+        'flex h-6 w-6 shrink-0 grow-0 items-center justify-center rounded-lg border hover:bg-neutral-900',
         checked ? 'border-neutral-400' : 'border-neutral-600'
       )}
     >

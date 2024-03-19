@@ -1,11 +1,9 @@
 import '~/styles/globals.css'
 
 import { Atkinson_Hyperlegible } from 'next/font/google'
-import { cookies } from 'next/headers'
 import { Analytics } from '@vercel/analytics/react'
 
 import { TRPCReactProvider } from '~/trpc/react'
-import { LastLocationProvider } from '~/utils/context'
 
 const atkinson_hyperlegible = Atkinson_Hyperlegible({
   subsets: ['latin'],
@@ -14,8 +12,8 @@ const atkinson_hyperlegible = Atkinson_Hyperlegible({
 })
 
 export const metadata = {
-  title: 'Asdougl Calendar',
-  description: "Asdougl's personal calendar app",
+  title: 'asdougl/calendar',
+  description: 'Asdougl Calendar - A calendar for non-calendar people',
   icons: [{ rel: 'icon', url: '/favicon.svg' }],
 }
 
@@ -29,9 +27,7 @@ export default function RootLayout({
       <body
         className={`bg-neutral-950 font-sans text-neutral-100 ${atkinson_hyperlegible.variable}`}
       >
-        <TRPCReactProvider cookies={cookies().toString()}>
-          <LastLocationProvider>{children}</LastLocationProvider>
-        </TRPCReactProvider>
+        <TRPCReactProvider>{children}</TRPCReactProvider>
         <Analytics />
       </body>
     </html>

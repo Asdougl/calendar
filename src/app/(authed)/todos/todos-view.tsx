@@ -22,7 +22,7 @@ export const TodosView = () => {
     }
   )
 
-  const { mutate, isLoading, error } = api.event.update.useMutation({
+  const { mutate, isPending, error } = api.event.update.useMutation({
     onMutate: ({ id, done }) => {
       const previousTodos = queryClient.event.todos.getData({ done: showDone })
       if (previousTodos && done !== undefined) {
@@ -86,7 +86,7 @@ export const TodosView = () => {
                     done: !!value,
                   })
                 }
-                disabled={isLoading}
+                disabled={isPending}
                 className="flex h-4 w-4 items-center justify-center rounded bg-neutral-800"
               >
                 <Checkbox.Indicator>

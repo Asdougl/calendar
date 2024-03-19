@@ -19,7 +19,7 @@ describe('EventItem', () => {
     )
 
     expect(screen.getByText('Hello World')).toBeInTheDocument()
-    expect(screen.getByText('10:30 am')).toBeInTheDocument()
+    expect(screen.getByText(/10:30 am/i)).toBeInTheDocument()
   })
 
   it('should mark as complete', () => {
@@ -80,6 +80,6 @@ describe('EventItem', () => {
     )
 
     expect(screen.queryByText('All Day')).toBeFalsy()
-    expect(screen.queryByText('10:30 am')).toBeFalsy()
+    expect(screen.queryByText(/10:30 am/i)).toBeFalsy()
   })
 })

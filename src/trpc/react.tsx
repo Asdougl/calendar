@@ -2,26 +2,45 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { loggerLink, unstable_httpBatchStreamLink } from '@trpc/client'
-import { createTRPCReact } from '@trpc/react-query'
-import { useState } from 'react'
+import { createTRPCReact, getQueryKey } from '@trpc/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-
 import { SessionProvider } from 'next-auth/react'
-import { getUrl, transformer } from './shared'
-import { type AppRouter } from '~/server/api/root'
+import { useState } from 'react'
+import { SuperJSON } from 'superjson'
 
-// eslint-disable-next-line react-refresh/only-export-components
+import { type AppRouter } from '~/server/api/root'
+import { Duration } from '~/utils/dates'
+
+const createQueryClient = () => {
+  const queryClient = new QueryClient()
+
+  queryClient.setQueryDefaults(getQueryKey(api.preferences.getAll), {
+    staleTime: Duration.minutes(60),
+    refetchInterval: Duration.hours(1),
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  })
+
+  return queryClient
+}
+
+let clientQueryClientSingleton: QueryClient | undefined = undefined
+const getQueryClient = () => {
+  if (typeof window === 'undefined') {
+    // Server: always make a new query client
+    return createQueryClient()
+  }
+  // Browser: use singleton pattern to keep the same query client
+  return (clientQueryClientSingleton ??= createQueryClient())
+}
+
 export const api = createTRPCReact<AppRouter>()
 
-export function TRPCReactProvider(props: {
-  children: React.ReactNode
-  cookies: string
-}) {
-  const [queryClient] = useState(() => new QueryClient())
+export function TRPCReactProvider(props: { children: React.ReactNode }) {
+  const queryClient = getQueryClient()
 
   const [trpcClient] = useState(() =>
     api.createClient({
-      transformer,
       links: [
         loggerLink({
           enabled: (op) =>
@@ -29,12 +48,12 @@ export function TRPCReactProvider(props: {
             (op.direction === 'down' && op.result instanceof Error),
         }),
         unstable_httpBatchStreamLink({
-          url: getUrl(),
-          headers() {
-            return {
-              cookie: props.cookies,
-              'x-trpc-source': 'react',
-            }
+          transformer: SuperJSON,
+          url: getBaseUrl() + '/api/trpc',
+          headers: () => {
+            const headers = new Headers()
+            headers.set('x-trpc-source', 'nextjs-react')
+            return headers
           },
         }),
       ],
@@ -46,9 +65,15 @@ export function TRPCReactProvider(props: {
       <QueryClientProvider client={queryClient}>
         <api.Provider client={trpcClient} queryClient={queryClient}>
           {props.children}
-          <ReactQueryDevtools />
         </api.Provider>
+        <ReactQueryDevtools />
       </QueryClientProvider>
     </SessionProvider>
   )
+}
+
+export function getBaseUrl() {
+  if (typeof window !== 'undefined') return window.location.origin
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return `http://localhost:${process.env.PORT ?? 3000}`
 }

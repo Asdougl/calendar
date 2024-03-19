@@ -54,7 +54,7 @@ export const NextSevenDays: FC = () => {
       fullscreen
       headerLeft={
         <RefreshIcon
-          onClick={() => queryClient.event.range.invalidate(focusDate)}
+          onClick={() => queryClient.event.range.invalidate()}
           loading={isFetching}
         />
       }
@@ -72,6 +72,7 @@ export const NextSevenDays: FC = () => {
           periods={periods}
           loading={loading}
           weekStart={getDay(focusDate.start)}
+          usedIn="inbox"
         />
       )}
     </InnerPageLayout>

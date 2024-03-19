@@ -101,7 +101,7 @@ export const PeriodForm: FC<PeriodFormProps> = ({
   const { mutateAsync: createMutateAsync } =
     api.periods.create.useMutation(mutationOptions)
 
-  const { mutate: deleteMutate, isLoading: isDeleting } =
+  const { mutate: deleteMutate, isPending: isDeleting } =
     api.periods.delete.useMutation(mutationOptions)
 
   const onSubmit = handleSubmit(async (data) => {
@@ -239,6 +239,7 @@ export const PeriodForm: FC<PeriodFormProps> = ({
         {Object.keys(errors).length > 0 && (
           <Alert
             level="error"
+            title="Errors"
             message={Object.values(errors)
               .map((error) => error.message)
               .join(', ')}

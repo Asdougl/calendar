@@ -31,7 +31,7 @@ const useWeekDate = createClientDateRangeHook({
 })
 
 export const WeekView = () => {
-  const [focusWeek, focusMounted] = useWeekDate()
+  const [focusWeek, focusMounted, , week] = useWeekDate()
 
   const { data: events, isLoading } = api.event.range.useQuery(focusWeek, {
     enabled: focusMounted,
@@ -94,6 +94,8 @@ export const WeekView = () => {
           loading={isLoading}
           periods={periods}
           outlines={true}
+          usedIn="week"
+          week={week || undefined}
         />
       )}
     </InnerPageLayout>

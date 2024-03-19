@@ -12,6 +12,7 @@ export const createMockCategory = (partial?: Partial<Category>): Category => {
     color: randomFromArray(CategoryColors),
     private: false,
     hidden: false,
+    CategoryShare: [],
     ...partial,
   }
 }

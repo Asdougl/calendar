@@ -5,15 +5,16 @@ import Link from 'next/link'
 import { PlusIcon } from '@heroicons/react/24/solid'
 import { ACCESSIBLE_FORMAT, stdFormat } from '../ui/dates/common'
 import { EventItem } from './EventItem'
+import { useSevenDaysCtx } from './common'
 import { type RouterOutputs } from '~/trpc/shared'
 import { SEARCH_PARAM_NEW, modifySearchParams } from '~/utils/nav/search'
 import { eventSort } from '~/utils/sort'
 import { cn, color } from '~/utils/classnames'
 import { PathLink } from '~/utils/nav/Link'
+import { createURL, getWindow } from '~/utils/misc'
 
 const DayOfWeekLabel = ({ date }: { date: Date }) => {
-  // Using built in formatters because they're
-  // "probably" more performant than date-fns
+  const { usedIn, week } = useSevenDaysCtx()
 
   const isToday = differenceInCalendarDays(date, new Date()) === 0
 
@@ -21,6 +22,10 @@ const DayOfWeekLabel = ({ date }: { date: Date }) => {
     <PathLink
       path="/day/:date"
       params={{ date: stdFormat(date) }}
+      query={{
+        from: usedIn,
+        fromWeek: usedIn === 'week' && week ? week : undefined,
+      }}
       className="flex items-center gap-1 rounded px-1 leading-tight lg:hover:bg-neutral-800 xl:gap-2"
     >
       {isToday && (
@@ -45,28 +50,27 @@ const DayOfWeekLabel = ({ date }: { date: Date }) => {
 }
 
 type DayOfWeekProps = {
-  baseDate: Date
   dayOfWeek: number
-  loadingEvents?: boolean
-  loadingPeriods?: boolean
   events?: RouterOutputs['event']['range'][]
   periods?: RouterOutputs['periods']['range'][]
-  outlines?: boolean
-  weekStart?: 0 | 1 | 6 | 3 | 2 | 4 | 5
 }
 
 const eventLink = (id: string, date?: Date) => {
-  const url = new URL(window.location.href)
-  modifySearchParams({
-    update: {
-      event: id,
-      date: date ? stdFormat(date) : undefined,
-    },
-    remove: ['period'],
-    searchParams: url.searchParams,
-  })
+  const url = createURL(getWindow()?.location.href || '')
+  if (url) {
+    modifySearchParams({
+      update: {
+        event: id,
+        date: date ? stdFormat(date) : undefined,
+      },
+      remove: ['period'],
+      searchParams: url.searchParams,
+    })
 
-  return url.toString()
+    return url.toString()
+  } else {
+    return '#'
+  }
 }
 
 const periodLink = (id: string, date?: Date) => {
@@ -83,14 +87,17 @@ const periodLink = (id: string, date?: Date) => {
 }
 
 export const DayOfWeek: FC<DayOfWeekProps> = ({
-  baseDate,
   dayOfWeek,
   events,
   periods,
-  loadingEvents,
-  outlines = true,
-  weekStart = 1,
 }) => {
+  const {
+    baseDate,
+    weekStart,
+    outlines,
+    loading: loadingEvents,
+  } = useSevenDaysCtx()
+
   const date = setDay(baseDate, dayOfWeek, { weekStartsOn: weekStart })
 
   const { setNodeRef, isOver } = useDroppable({
@@ -153,7 +160,7 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
       </div>
       <div
         ref={setNodeRef}
-        className="relative flex flex-grow flex-col px-1.5 md:gap-0.5 md:px-3 lg:pb-1"
+        className="relative flex flex-shrink flex-grow flex-col overflow-auto px-1.5 md:gap-0.5 md:px-3 lg:pb-1"
       >
         {loadingEvents ? (
           <div className="flex justify-between">

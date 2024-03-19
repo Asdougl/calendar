@@ -107,7 +107,7 @@ export const PeriodEditForm: FC<PeriodEditFormProps> = ({ period, origin }) => {
     }
   })
 
-  const { mutateAsync: deletePeriod, isLoading: isDeleting } =
+  const { mutateAsync: deletePeriod, isPending: isDeleting } =
     api.periods.delete.useMutation({
       onSuccess: async (data) => {
         await confirmDeletePeriod(data.id)

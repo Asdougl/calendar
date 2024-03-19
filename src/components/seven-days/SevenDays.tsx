@@ -8,6 +8,7 @@ import {
   TouchSensor,
 } from '@dnd-kit/core'
 import { DayOfWeek } from './DayOfWeek'
+import { SevenDaysProvider } from './common'
 import { type RouterInputs, type RouterOutputs } from '~/trpc/shared'
 import { api } from '~/trpc/react'
 import { warn } from '~/utils/logging'
@@ -20,6 +21,8 @@ export type SevenDaysProps = {
   loading?: boolean
   outlines?: boolean
   weekStart?: 0 | 1 | 6 | 3 | 2 | 4 | 5
+  usedIn: 'inbox' | 'shared' | 'week'
+  week?: string
 }
 
 export type SevenDaysShellProps = SevenDaysProps & {
@@ -36,6 +39,8 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
   weekStart,
   findEvent,
   updateEvent,
+  usedIn,
+  week,
 }) => {
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
@@ -85,79 +90,25 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
   }
 
   return (
-    <>
-      <div className="grid flex-grow grid-cols-2 gap-1">
+    <SevenDaysProvider
+      value={{ baseDate: start, weekStart, usedIn, week, outlines, loading }}
+    >
+      <div className="grid flex-grow grid-cols-2 gap-1 overflow-hidden">
         <DndContext onDragEnd={onDragEnd} sensors={[mouseSensor, touchSensor]}>
-          <div className="grid grid-rows-2 gap-1">
-            <DayOfWeek
-              baseDate={start}
-              dayOfWeek={6}
-              events={events}
-              periods={periods}
-              loadingEvents={loading}
-              outlines={outlines}
-              weekStart={weekStart}
-            />
-            <DayOfWeek
-              baseDate={start}
-              dayOfWeek={0}
-              events={events}
-              periods={periods}
-              loadingEvents={loading}
-              outlines={outlines}
-              weekStart={weekStart}
-            />
+          <div className="grid grid-rows-2 gap-1 overflow-hidden">
+            <DayOfWeek dayOfWeek={6} events={events} periods={periods} />
+            <DayOfWeek dayOfWeek={0} events={events} periods={periods} />
           </div>
-          <div className="grid grid-rows-5 gap-1">
-            <DayOfWeek
-              baseDate={start}
-              dayOfWeek={5}
-              events={events}
-              periods={periods}
-              loadingEvents={loading}
-              outlines={outlines}
-              weekStart={weekStart}
-            />
-            <DayOfWeek
-              baseDate={start}
-              dayOfWeek={4}
-              events={events}
-              periods={periods}
-              loadingEvents={loading}
-              outlines={outlines}
-              weekStart={weekStart}
-            />
-            <DayOfWeek
-              baseDate={start}
-              dayOfWeek={3}
-              events={events}
-              periods={periods}
-              loadingEvents={loading}
-              outlines={outlines}
-              weekStart={weekStart}
-            />
-            <DayOfWeek
-              baseDate={start}
-              dayOfWeek={2}
-              events={events}
-              periods={periods}
-              loadingEvents={loading}
-              outlines={outlines}
-              weekStart={weekStart}
-            />
-            <DayOfWeek
-              baseDate={start}
-              dayOfWeek={1}
-              events={events}
-              periods={periods}
-              loadingEvents={loading}
-              outlines={outlines}
-              weekStart={weekStart}
-            />
+          <div className="grid grid-rows-5 gap-1 overflow-hidden">
+            <DayOfWeek dayOfWeek={5} events={events} periods={periods} />
+            <DayOfWeek dayOfWeek={4} events={events} periods={periods} />
+            <DayOfWeek dayOfWeek={3} events={events} periods={periods} />
+            <DayOfWeek dayOfWeek={2} events={events} periods={periods} />
+            <DayOfWeek dayOfWeek={1} events={events} periods={periods} />
           </div>
         </DndContext>
       </div>
-    </>
+    </SevenDaysProvider>
   )
 }
 

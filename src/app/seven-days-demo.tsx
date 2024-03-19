@@ -56,6 +56,20 @@ const createShowcaseData = (focus: Date): RouterOutputs['event']['range'] => {
         name: 'Health',
       },
     }),
+    createEvent({
+      title: 'Grab milk from the shops',
+      datetime: set(setDay(focus, 0, { weekStartsOn }), {
+        hours: 12,
+        minutes: 0,
+      }),
+      timeStatus: 'NO_TIME',
+      done: false,
+      category: {
+        id: createTempId(),
+        color: 'red',
+        name: 'Health',
+      },
+    }),
     // Monday
     createEvent({
       title: 'Day off',
@@ -81,6 +95,7 @@ const createShowcaseData = (focus: Date): RouterOutputs['event']['range'] => {
         hours: 9,
         minutes: 0,
       }),
+      timeStatus: 'NO_TIME',
     }),
     createEvent({
       title: 'Workout',
@@ -196,6 +211,7 @@ export const DemoSevenDays = () => {
       weekStart={getDay(demoData.dates.start)}
       updateEvent={updateEvent}
       findEvent={findEvent}
+      usedIn="inbox"
     />
   )
 }

@@ -38,12 +38,27 @@ model Session {
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum Plan {
+    FREE
+    PRO
+}
+
+enum Privacy {
+    PUBLIC
+    PRIVATE
+    HIDDEN
+}
+
 model User {
     id            String    @id @default(uuid())
     name          String?
     email         String?   @unique
     emailVerified DateTime?
     image         String?
+
+    plan    Plan    @default(FREE)
+    privacy Privacy @default(PRIVATE)
+    handle  Handle?
 
     preferences Json?
 
@@ -54,6 +69,10 @@ model User {
     Period    Period[]
     Recursion Recursion[]
     Share     Share[]
+
+    Following     Follow[]        @relation("follower")
+    Followers     Follow[]        @relation("following")
+    CategoryShare CategoryShare[]
 }
 
 model VerificationToken {
@@ -62,6 +81,12 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Handle {
+    value  String @id
+    user   User   @relation(fields: [userId], references: [id])
+    userId String @unique
 }
 
 // Data
@@ -113,9 +138,10 @@ model Category {
     createdBy   User   @relation(fields: [createdById], references: [id])
     createdById String
 
-    Event     Event[]
-    Period    Period[]
-    Recursion Recursion[]
+    Event         Event[]
+    Period        Period[]
+    Recursion     Recursion[]
+    CategoryShare CategoryShare[]
 }
 
 model Period {
@@ -186,6 +212,8 @@ model EventLink {
     targetId String
 }
 
+// MULTIPLAYER
+
 model Share {
     id       String   @id @default(uuid())
     nickname String
@@ -196,4 +224,40 @@ model Share {
 
     createdBy   User   @relation(fields: [createdById], references: [id])
     createdById String
+}
+
+enum FRIEND_STATUS {
+    PENDING
+    ACCEPTED
+    REJECTED
+}
+
+model Follow {
+    id          String @id @default(uuid())
+    follower    User   @relation(fields: [followerId], references: [id], name: "follower")
+    followerId  String
+    following   User   @relation(fields: [followingId], references: [id], name: "following")
+    followingId String
+
+    status FRIEND_STATUS @default(PENDING)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([followerId, followingId])
+}
+
+model CategoryShare {
+    id String @id @default(uuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    sharedWith    User   @relation(fields: [sharedWidthId], references: [id])
+    sharedWidthId String
+
+    category   Category @relation(fields: [categoryId], references: [id])
+    categoryId String
+
+    @@unique([sharedWidthId, categoryId])
 }

@@ -9,11 +9,13 @@ export const PathMap = z.object({
   '/events': z.null(),
   '/events/past': z.null(),
   '/inbox': z.null(),
+  '/shared': z.null(),
   '/login': z.null(),
   '/month': z.null(),
   '/periods': z.null(),
   '/periods/:id': z.object({ id: z.string() }),
   '/profile': z.null(),
+  '/people': z.null(),
   '/week': z.null(),
   '/year': z.null(),
 })

@@ -38,17 +38,20 @@ const inputStyle = cva(
 )
 export type InputVariantProps = VariantProps<typeof inputStyle>
 
-export type InputProps = Omit<ComponentProps<'input'>, 'ref'> &
+export type InputProps = Omit<ComponentProps<'input'>, 'ref' | 'size'> &
   InputVariantProps
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   function InputWithRef(
-    { className, error, warning, disabled, ...props },
+    { className, error, warning, disabled, size, ...props },
     ref
   ) {
     return (
       <input
-        className={cn(inputStyle({ ...props, error, warning }), className)}
+        className={cn(
+          inputStyle({ ...props, size, error, warning }),
+          className
+        )}
         disabled={props.skeleton || disabled}
         {...props}
         ref={ref}
