@@ -16,13 +16,11 @@ export const Preferences = z.object({
   timezone: z.string(),
   developer: z.boolean(),
   timeFormat: z.enum(['12', '24']),
-  workHours: z
-    .object({
-      start: z.number(),
-      end: z.number(),
-    })
-    .optional(),
-  workDays: z.array(DayOfWeek).optional(),
+  workHours: z.object({
+    start: z.number(),
+    end: z.number(),
+  }),
+  workDays: z.array(DayOfWeek),
 })
 export type Preferences = z.infer<typeof Preferences>
 

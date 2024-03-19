@@ -5,11 +5,17 @@ type PathParams = {
   params: {
     date?: string
   }
+  searchParams: {
+    from?: string
+  }
 }
 
 const dateTest = /^\d{4}-\d{2}-\d{2}$/
 
-export default function DayDatePage({ params: { date } }: PathParams) {
+export default function DayDatePage({
+  params: { date },
+  searchParams: { from },
+}: PathParams) {
   if (!date || !dateTest.test(date)) {
     redirect('/inbox')
   }
@@ -20,5 +26,5 @@ export default function DayDatePage({ params: { date } }: PathParams) {
     redirect('/inbox')
   }
 
-  return <DaySchedule date={date} />
+  return <DaySchedule date={date} from={from} />
 }

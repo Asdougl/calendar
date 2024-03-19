@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { PlusIcon } from '@heroicons/react/24/solid'
 import { ACCESSIBLE_FORMAT, stdFormat } from '../ui/dates/common'
 import { EventItem } from './EventItem'
+import { useSevenDaysCtx } from './common'
 import { type RouterOutputs } from '~/trpc/shared'
 import { SEARCH_PARAM_NEW, modifySearchParams } from '~/utils/nav/search'
 import { eventSort } from '~/utils/sort'
@@ -13,8 +14,7 @@ import { PathLink } from '~/utils/nav/Link'
 import { createURL, getWindow } from '~/utils/misc'
 
 const DayOfWeekLabel = ({ date }: { date: Date }) => {
-  // Using built in formatters because they're
-  // "probably" more performant than date-fns
+  const { usedIn, week } = useSevenDaysCtx()
 
   const isToday = differenceInCalendarDays(date, new Date()) === 0
 
@@ -22,6 +22,10 @@ const DayOfWeekLabel = ({ date }: { date: Date }) => {
     <PathLink
       path="/day/:date"
       params={{ date: stdFormat(date) }}
+      query={{
+        from: usedIn,
+        fromWeek: usedIn === 'week' && week ? week : undefined,
+      }}
       className="flex items-center gap-1 rounded px-1 leading-tight lg:hover:bg-neutral-800 xl:gap-2"
     >
       {isToday && (
@@ -46,14 +50,9 @@ const DayOfWeekLabel = ({ date }: { date: Date }) => {
 }
 
 type DayOfWeekProps = {
-  baseDate: Date
   dayOfWeek: number
-  loadingEvents?: boolean
-  loadingPeriods?: boolean
   events?: RouterOutputs['event']['range'][]
   periods?: RouterOutputs['periods']['range'][]
-  outlines?: boolean
-  weekStart?: 0 | 1 | 6 | 3 | 2 | 4 | 5
 }
 
 const eventLink = (id: string, date?: Date) => {
@@ -88,14 +87,17 @@ const periodLink = (id: string, date?: Date) => {
 }
 
 export const DayOfWeek: FC<DayOfWeekProps> = ({
-  baseDate,
   dayOfWeek,
   events,
   periods,
-  loadingEvents,
-  outlines = true,
-  weekStart = 1,
 }) => {
+  const {
+    baseDate,
+    weekStart,
+    outlines,
+    loading: loadingEvents,
+  } = useSevenDaysCtx()
+
   const date = setDay(baseDate, dayOfWeek, { weekStartsOn: weekStart })
 
   const { setNodeRef, isOver } = useDroppable({

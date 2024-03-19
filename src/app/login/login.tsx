@@ -59,7 +59,6 @@ export const Login = ({ signup }: { signup: boolean }) => {
         <Button
           onClick={signInWith('google')}
           className="flex items-center justify-center gap-2 bg-white text-[#1F1F1F] disabled:opacity-50 disabled:hover:bg-white lg:hover:bg-[#F2F2F2]"
-          disabled={env.NEXT_PUBLIC_DEVELOPMENT}
         >
           <Image
             src="/google-mark.svg"

@@ -211,6 +211,7 @@ export const DemoSevenDays = () => {
       weekStart={getDay(demoData.dates.start)}
       updateEvent={updateEvent}
       findEvent={findEvent}
+      usedIn="inbox"
     />
   )
 }

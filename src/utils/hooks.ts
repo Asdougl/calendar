@@ -1,5 +1,3 @@
-'use client'
-
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
 import type { EffectCallback } from 'react'
@@ -130,6 +128,7 @@ export const useStateMap = <Key extends string, Value>(
     const old = map.get(key)
     if (old === value) return
     map.set(key, value)
+    render(Date.now())
   }
 
   const remove = (key: Key) => {
@@ -334,5 +333,5 @@ export const createClientDateRangeHook =
       setDate(processor(date))
     }, [paramValue])
 
-    return [date, mountedRef.current, setDate] as const
+    return [date, mountedRef.current, setDate, paramValue] as const
   }

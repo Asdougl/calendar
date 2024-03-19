@@ -9,6 +9,7 @@ const CheckboxRaw = (
   {
     onCheckedChange,
     checked,
+    id,
     ...props
   }: CheckboxProps &
     Pick<
@@ -19,6 +20,7 @@ const CheckboxRaw = (
 ) => {
   return (
     <RadixCheckbox.Root
+      id={id}
       onCheckedChange={onCheckedChange}
       checked={checked}
       disabled={props.disabled}

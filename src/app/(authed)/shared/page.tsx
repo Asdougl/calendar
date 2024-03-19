@@ -1,15 +1,15 @@
 'use client'
 
 import { endOfWeek, getDay, startOfDay } from 'date-fns'
-import { type FC } from 'react'
+import { RefreshIcon } from '~/components/RefreshIcon'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
+import { SevenDays } from '~/components/seven-days/SevenDays'
+import { Alert } from '~/components/ui/Alert'
+import { Header1 } from '~/components/ui/headers'
 import { api } from '~/trpc/react'
 import { Duration } from '~/utils/dates'
-import { Header1 } from '~/components/ui/headers'
 import { createClientDateRangeHook } from '~/utils/hooks'
-import { SevenDays } from '~/components/seven-days/SevenDays'
-import { createPeriodsByDaySorter, eventsByDay } from '~/utils/sort'
-import { RefreshIcon } from '~/components/RefreshIcon'
+import { eventsByDay } from '~/utils/sort'
 
 const useClientDate = createClientDateRangeHook({
   initialState: { start: new Date(), end: new Date() },
@@ -21,7 +21,7 @@ const useClientDate = createClientDateRangeHook({
   },
 })
 
-export const NextSevenDays: FC = () => {
+export default function SharedPage() {
   const [focusDate, focusMounted] = useClientDate()
 
   const queryClient = api.useUtils()
@@ -30,49 +30,42 @@ export const NextSevenDays: FC = () => {
     data: events,
     isLoading,
     isFetching,
-  } = api.event.range.useQuery(focusDate, {
+  } = api.event.sharedRange.useQuery(focusDate, {
     enabled: focusMounted,
     refetchOnWindowFocus: false,
-    staleTime: Duration.minutes(5),
-    refetchInterval: Duration.minutes(10),
+    staleTime: Duration.minutes(2),
+    refetchInterval: Duration.minutes(5),
     select: eventsByDay,
   })
 
-  const { data: periods } = api.periods.range.useQuery(focusDate, {
-    enabled: focusMounted,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    staleTime: Duration.minutes(10),
-    refetchInterval: Duration.minutes(15),
-    select: createPeriodsByDaySorter(focusDate.start),
-  })
-
-  const loading = isLoading
+  const { data: followers } = api.follow.followers.useQuery()
 
   return (
     <InnerPageLayout
       fullscreen
       headerLeft={
         <RefreshIcon
-          onClick={() => queryClient.event.range.invalidate()}
+          onClick={() => queryClient.event.sharedRange.invalidate()}
           loading={isFetching}
         />
       }
       title={
         <div className="relative z-10">
-          <Header1 className="relative bg-neutral-950 text-2xl">Inbox</Header1>
+          <Header1 className="relative bg-neutral-950 text-2xl">Shared</Header1>
         </div>
       }
     >
+      {followers && followers.length === 0 && (
+        <Alert level="info" title="Shared" message="No followers yet" />
+      )}
       {focusDate && (
         <SevenDays
           start={focusDate.start}
           end={focusDate.end}
           events={events}
-          periods={periods}
-          loading={loading}
+          loading={isLoading}
           weekStart={getDay(focusDate.start)}
-          usedIn="inbox"
+          usedIn="shared"
         />
       )}
     </InnerPageLayout>

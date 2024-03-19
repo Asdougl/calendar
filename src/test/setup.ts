@@ -25,3 +25,16 @@ vi.mock('next/navigation', () => ({
   },
   usePathname: () => '/',
 }))
+
+vi.mock('next-auth/react', () => ({
+  useSession: () => {
+    return {
+      data: {
+        user: {
+          name: 'test',
+          email: 'test@example.com',
+        },
+      },
+    }
+  },
+}))

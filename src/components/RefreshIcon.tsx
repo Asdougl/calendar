@@ -1,5 +1,3 @@
-'use client'
-
 import { ArrowPathIcon, CheckIcon } from '@heroicons/react/24/solid'
 import { useEffect, useState } from 'react'
 

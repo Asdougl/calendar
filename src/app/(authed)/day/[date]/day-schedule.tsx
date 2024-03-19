@@ -20,10 +20,11 @@ import {
   setHours,
   startOfDay,
 } from 'date-fns'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { type TimeStatus } from '@prisma/client'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { type TIME_INVERVAL, type TimeStatus } from '@prisma/client'
 import Link from 'next/link'
-import { ChevronLeftIcon } from '@heroicons/react/24/solid'
+import { ArrowLeftIcon, ChevronLeftIcon } from '@heroicons/react/24/solid'
+import { useSession } from 'next-auth/react'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { Loader } from '~/components/ui/Loader'
 import { Header1, Header2 } from '~/components/ui/headers'
@@ -38,7 +39,7 @@ import { stdFormat } from '~/components/ui/dates/common'
 import { PathLink } from '~/utils/nav/Link'
 import { useMountEffect } from '~/utils/hooks'
 import { type DayOfWeek } from '~/types/preferences'
-import { getWindow } from '~/utils/misc'
+import { Avatar } from '~/components/ui/avatar'
 
 const FIVE_MINUTE_HEIGHT = 6 //px
 const HOUR_HEIGHT = 12 * FIVE_MINUTE_HEIGHT //px
@@ -57,15 +58,44 @@ const eventItemTime = (event: RouterOutputs['event']['range'][number]) => {
   return timeFormatter.format(event.datetime)
 }
 
+type EventableItem = {
+  category: {
+    id: string
+    name: string
+    color: string
+  } | null
+  recursion: {
+    id: string
+    interval: TIME_INVERVAL
+    intervalCount: number
+    triggered: boolean
+  } | null
+  id: string
+  done: boolean | null
+  title: string
+  datetime: Date
+  timeStatus: TimeStatus
+  location: string | null
+  cancelled: boolean
+  endDateTime: Date | null
+  createdBy?: {
+    id: string
+    name: string | null
+    image: string | null
+  } | null
+}
+
 const DayScheduleItem = ({
   event,
   unplanned = false,
   getScroll,
 }: {
-  event: RouterOutputs['event']['range'][number]
+  event: EventableItem
   unplanned?: boolean
   getScroll: () => number
 }) => {
+  const session = useSession()
+
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: event.id,
@@ -73,6 +103,7 @@ const DayScheduleItem = ({
         status: event.timeStatus,
         time: format(event.datetime, 'HH:mm'),
       },
+      disabled: event.createdBy?.id !== session.data?.user?.id,
     })
 
   const [, setQueryParams] = useQueryParams()
@@ -106,12 +137,22 @@ const DayScheduleItem = ({
         { 'mx-10': unplanned && isDragging }
       )}
     >
-      <div
-        className={cn(
-          'w-1 flex-shrink-0 rounded-full',
-          color('bg')(event.category?.color)
-        )}
-      ></div>
+      {event.createdBy ? (
+        <div className="flex items-center pr-px lg:pr-1">
+          <Avatar
+            size="xs"
+            src={event.createdBy.image}
+            name={event.createdBy.name || 'User'}
+          />
+        </div>
+      ) : (
+        <div
+          className={cn(
+            'w-1 flex-shrink-0 rounded-full',
+            color('bg')(event.category?.color)
+          )}
+        ></div>
+      )}
       <div className="flex grow flex-wrap items-center justify-between gap-x-2 overflow-hidden">
         <div className="truncate whitespace-nowrap">{event.title}</div>
         <div className="text-xs text-neutral-400">{eventItemTime(event)}</div>
@@ -382,7 +423,47 @@ const NowIndicator = () => {
   )
 }
 
-export const DaySchedule = ({ date }: { date: string }) => {
+const eventsSelector = (data: RouterOutputs['event']['range']) => {
+  const allDay: typeof data = []
+  const noTime: typeof data = []
+  const timed: typeof data = []
+
+  data.forEach((event) => {
+    if (event.timeStatus === 'ALL_DAY') {
+      allDay.push(event)
+    } else if (event.timeStatus === 'NO_TIME') {
+      noTime.push(event)
+    } else {
+      timed.push(event)
+    }
+  })
+
+  return { allDay, noTime, timed: buildScheduleSlots(timed) }
+}
+
+const useDateEvents = (
+  queryParams: { start: Date; end: Date },
+  shared: boolean
+) => {
+  const sharedEvents = api.event.sharedRange.useQuery(queryParams, {
+    select: eventsSelector,
+    enabled: shared,
+  })
+  const unsharedEvents = api.event.range.useQuery(queryParams, {
+    select: eventsSelector,
+    enabled: !shared,
+  })
+
+  return shared ? sharedEvents : unsharedEvents
+}
+
+export const DaySchedule = ({
+  date,
+  from,
+}: {
+  date: string
+  from?: string
+}) => {
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
       distance: 10,
@@ -398,6 +479,8 @@ export const DaySchedule = ({ date }: { date: string }) => {
 
   const containerRef = useRef<HTMLDivElement>(null)
 
+  const [searchParams] = useQueryParams()
+
   const queryParams = useMemo(
     () => ({
       start: startOfDay(new Date(date)),
@@ -410,25 +493,7 @@ export const DaySchedule = ({ date }: { date: string }) => {
 
   const queryClient = api.useUtils()
 
-  const events = api.event.range.useQuery(queryParams, {
-    select: (data) => {
-      const allDay: typeof data = []
-      const noTime: typeof data = []
-      const timed: typeof data = []
-
-      data.forEach((event) => {
-        if (event.timeStatus === 'ALL_DAY') {
-          allDay.push(event)
-        } else if (event.timeStatus === 'NO_TIME') {
-          noTime.push(event)
-        } else {
-          timed.push(event)
-        }
-      })
-
-      return { allDay, noTime, timed: buildScheduleSlots(timed) }
-    },
-  })
+  const events = useDateEvents(queryParams, from === 'shared')
 
   const updateEvent = api.event.update.useMutation({
     onMutate: (input) => {
@@ -502,8 +567,34 @@ export const DaySchedule = ({ date }: { date: string }) => {
   const now = new Date()
   const isToday = isSameDay(queryParams.start, now)
 
+  let backLink: ReactNode
+  if (from === 'shared') {
+    backLink = (
+      <PathLink path="/shared" className="flex items-center justify-center">
+        <ArrowLeftIcon height={20} className="" />
+      </PathLink>
+    )
+  } else if (from === 'week' && searchParams.get('fromWeek')) {
+    backLink = (
+      <PathLink
+        path="/week"
+        query={{ of: searchParams.get('fromWeek') }}
+        className="flex items-center justify-center"
+      >
+        <ArrowLeftIcon height={20} className="" />
+      </PathLink>
+    )
+  } else {
+    backLink = (
+      <PathLink path="/inbox" className="flex items-center justify-center">
+        <ArrowLeftIcon height={20} className="" />
+      </PathLink>
+    )
+  }
+
   return (
     <InnerPageLayout
+      headerLeft={backLink}
       title={
         <div className="flex flex-col items-center">
           <Header2 className="text-base font-normal text-neutral-500">

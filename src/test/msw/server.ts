@@ -84,7 +84,8 @@ export const server = setupServer(
     async ({ request, params }) => {
       const trpcComponent = params.trpc
 
-      console.log(trpcComponent, typeof trpcComponent)
+      // eslint-disable-next-line no-console
+      console.log('WAHOO', trpcComponent, typeof trpcComponent)
 
       if (!trpcComponent || typeof trpcComponent !== 'string') {
         return HttpResponse.text('Bad TRPC Component', { status: 400 })
@@ -138,8 +139,6 @@ export const server = setupServer(
         },
         {} as Record<number, Result>
       )
-
-      console.log(queries, JSON.stringify(resultingJson), results)
 
       return Response.json(resultingJson)
     }

@@ -1,6 +1,7 @@
 import { addDays, startOfWeek } from 'date-fns'
 import { render, screen } from '@testing-library/react'
 import { DayOfWeek } from './DayOfWeek'
+import { SevenDaysProvider } from './common'
 import { TestWrapper } from '~/test/wrapper'
 import { createMockEvent } from '~/test/mock/events'
 import { eventsByDay } from '~/utils/sort'
@@ -39,7 +40,9 @@ describe('DayOfWeek', () => {
   it('should render', () => {
     render(
       <TestWrapper>
-        <DayOfWeek events={EVENTS_BY_DAY} baseDate={MONDAY} dayOfWeek={2} />
+        <SevenDaysProvider value={{ baseDate: MONDAY }}>
+          <DayOfWeek events={EVENTS_BY_DAY} dayOfWeek={2} />
+        </SevenDaysProvider>
       </TestWrapper>
     )
 
@@ -62,7 +65,9 @@ describe('DayOfWeek', () => {
 
     render(
       <TestWrapper>
-        <DayOfWeek events={eventsByDay} baseDate={new Date()} dayOfWeek={1} />
+        <SevenDaysProvider value={{ baseDate: new Date() }}>
+          <DayOfWeek events={eventsByDay} dayOfWeek={1} />
+        </SevenDaysProvider>
       </TestWrapper>
     )
 

@@ -28,6 +28,7 @@ describe('SevenDays', () => {
           events={SORTED_EVENTS}
           findEvent={findEvent}
           updateEvent={vi.fn()}
+          usedIn="inbox"
         />
       </TestWrapper>
     )
@@ -42,6 +43,7 @@ describe('SevenDays', () => {
           events={SORTED_EVENTS}
           findEvent={findEvent}
           updateEvent={vi.fn()}
+          usedIn="inbox"
         />
       </TestWrapper>
     )

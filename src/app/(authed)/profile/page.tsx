@@ -2,6 +2,7 @@ import {
   ClockIcon,
   ListBulletIcon,
   TicketIcon,
+  UsersIcon,
 } from '@heroicons/react/24/solid'
 import { type ReactNode } from 'react'
 import {
@@ -9,6 +10,7 @@ import {
   LogoutSection,
   PreferencesSection,
 } from './profile-sections'
+import { FollowStats } from './follow-stats'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { PathLink } from '~/utils/nav/Link'
 import { Avatar } from '~/components/ui/avatar'
@@ -24,15 +26,20 @@ type ProfileLink<T extends Pathname> = PathArgs<T> & {
 
 const LINKS = [
   {
-    path: '/periods',
-    icon: <ClockIcon className="mr-2 h-5 w-5" />,
-    title: 'Periods',
-  } as ProfileLink<'/periods'>,
+    path: '/people',
+    icon: <UsersIcon className="mr-2 h-5 w-5" />,
+    title: 'People',
+  } as ProfileLink<'/people'>,
   {
     path: '/categories',
     icon: <ListBulletIcon className="mr-2 h-5 w-5" />,
     title: 'Categories',
   } as ProfileLink<'/categories'>,
+  {
+    path: '/periods',
+    icon: <ClockIcon className="mr-2 h-5 w-5" />,
+    title: 'Periods',
+  } as ProfileLink<'/periods'>,
   {
     path: '/events/past',
     icon: <TicketIcon className="mr-2 h-5 w-5" />,
@@ -56,6 +63,9 @@ export default async function ProfilePage() {
         )
       }
     >
+      <div className="flex justify-center pb-12">
+        <FollowStats />
+      </div>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2 px-4">
           {LINKS.map((link) => (

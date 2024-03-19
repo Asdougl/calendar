@@ -33,7 +33,14 @@ const select = {
 
 export const eventRouter = createTRPCRouter({
   range: protectedProcedure
-    .input(z.object({ start: z.date(), end: z.date() }).optional())
+    .input(
+      z
+        .object({
+          start: z.date(),
+          end: z.date(),
+        })
+        .optional()
+    )
     .query(({ ctx, input }) => {
       if (!input) return []
 
@@ -58,6 +65,61 @@ export const eventRouter = createTRPCRouter({
           ],
         },
         select,
+        orderBy: {
+          datetime: 'asc',
+        },
+      })
+    }),
+  sharedRange: protectedProcedure
+    .input(
+      z
+        .object({
+          start: z.date(),
+          end: z.date(),
+        })
+        .optional()
+    )
+    .query(({ ctx, input }) => {
+      if (!input) return []
+
+      return ctx.db.event.findMany({
+        where: {
+          datetime: {
+            gte: input.start.toISOString(),
+            lt: input.end.toISOString(),
+          },
+          OR: [
+            {
+              category: {
+                CategoryShare: {
+                  some: {
+                    sharedWidthId: ctx.session.user.id,
+                  },
+                },
+                private: false,
+                hidden: false,
+              },
+            },
+            {
+              createdById: ctx.session.user.id,
+              category: {
+                CategoryShare: {
+                  some: {},
+                },
+              },
+            },
+          ],
+        },
+        select: {
+          ...select,
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+        },
         orderBy: {
           datetime: 'asc',
         },
@@ -231,6 +293,7 @@ export const eventRouter = createTRPCRouter({
       return ctx.db.event.update({
         where: {
           id: input.id,
+          createdById: ctx.session.user.id,
         },
         data: {
           title: input.title,
@@ -250,6 +313,7 @@ export const eventRouter = createTRPCRouter({
       return ctx.db.event.delete({
         where: {
           id: input.id,
+          createdById: ctx.session.user.id,
         },
         select,
       })
@@ -261,6 +325,7 @@ export const eventRouter = createTRPCRouter({
       const event = await ctx.db.event.update({
         where: {
           id: input.id,
+          createdById: ctx.session.user.id,
         },
         data: {
           done: input.completed,

@@ -9,7 +9,7 @@ import { Button } from '~/components/ui/button'
 import { Select, type SelectOption } from '~/components/ui/select'
 import { Switch } from '~/components/ui/switch'
 import { api } from '~/trpc/react'
-import { Preferences } from '~/types/preferences'
+import { Preferences, PreferencesDefaults } from '~/types/preferences'
 import { useClientNow, useClientTimezone } from '~/utils/hooks'
 
 const timeFormatOptions: SelectOption<Preferences['timeFormat']>[] = [
@@ -39,12 +39,14 @@ export const PreferencesSection = () => {
         await queryClient.preferences.getAll.cancel()
         // Snapshot the previous value
         const old = queryClient.preferences.getAll.getData()
+
+        const withDefaults = PreferencesDefaults.parse(data)
         // Optimistically update to the new value
         queryClient.preferences.getAll.setData(
           undefined,
           Preferences.parse({
             ...old,
-            ...data,
+            ...withDefaults,
           })
         )
         // Return a context object with the snapshotted value

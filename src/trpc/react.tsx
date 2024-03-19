@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { loggerLink, unstable_httpBatchStreamLink } from '@trpc/client'
 import { createTRPCReact, getQueryKey } from '@trpc/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { SessionProvider } from 'next-auth/react'
 import { useState } from 'react'
 import { SuperJSON } from 'superjson'
@@ -65,6 +66,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
         <api.Provider client={trpcClient} queryClient={queryClient}>
           {props.children}
         </api.Provider>
+        <ReactQueryDevtools />
       </QueryClientProvider>
     </SessionProvider>
   )

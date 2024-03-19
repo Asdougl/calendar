@@ -1,6 +1,5 @@
 import { type ReactNode } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { ButtonAnchor, ButtonLink } from '../ui/button'
 import { Logo } from '../Logo'
 
