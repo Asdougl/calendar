@@ -103,7 +103,9 @@ const DayScheduleItem = ({
         status: event.timeStatus,
         time: format(event.datetime, 'HH:mm'),
       },
-      disabled: event.createdBy?.id !== session.data?.user?.id,
+      disabled: event.createdBy
+        ? event.createdBy.id !== session.data?.user?.id
+        : false,
     })
 
   const [, setQueryParams] = useQueryParams()

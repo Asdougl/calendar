@@ -55,7 +55,9 @@ export const EventItem = ({ event }: { event: EventableItem }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: event.id,
-      disabled: event.createdBy?.id !== session.data?.user?.id,
+      disabled: event.createdBy
+        ? event.createdBy.id !== session.data?.user?.id
+        : false,
     })
 
   const [, setQueryParams] = useQueryParams()
