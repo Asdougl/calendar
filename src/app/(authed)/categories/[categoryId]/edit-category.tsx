@@ -1,7 +1,6 @@
 'use client'
 
-import { ChevronLeftIcon } from '@heroicons/react/24/outline'
-import { MinusIcon } from '@heroicons/react/24/solid'
+import { ArrowLeftIcon, MinusIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import upperFirst from 'lodash/upperFirst'
 import { Controller, useForm } from 'react-hook-form'
@@ -158,7 +157,7 @@ const EditCategoryForm = ({
     <>
       <form
         onSubmit={onSubmit}
-        className="mx-auto flex w-full max-w-lg flex-col gap-2 px-2"
+        className="mx-auto flex w-full max-w-lg flex-col gap-2 overflow-y-auto px-2"
       >
         <Field id="name" label="Name" width="full">
           <Input
@@ -175,7 +174,7 @@ const EditCategoryForm = ({
             control={form.control}
             name="color"
             render={({ field }) => (
-              <ul className="grid grid-cols-9 gap-4 rounded-lg border border-neutral-800 p-4">
+              <ul className="grid grid-cols-6 gap-4 rounded-lg border border-neutral-800 p-4 sm:grid-cols-9">
                 {CategorySelectColors.map((categoryColor) => (
                   <li key={categoryColor.value}>
                     <input
@@ -204,7 +203,7 @@ const EditCategoryForm = ({
           <div className="pl-1 text-sm group-focus-within:text-neutral-50">
             Visibility
           </div>
-          <div className="flex gap-4 rounded-lg border border-neutral-800 p-4">
+          <div className="flex flex-col gap-4 rounded-lg border border-neutral-800 p-4 lg:flex-row">
             <div className="flex flex-1 items-center gap-2 px-2">
               <Controller
                 control={form.control}
@@ -252,7 +251,7 @@ const EditCategoryForm = ({
           <div className="pl-1 text-sm group-focus-within:text-neutral-50">
             Share
           </div>
-          <div className="flex min-h-12 gap-4 rounded-lg border border-neutral-800 p-4">
+          <div className="flex min-h-12 flex-col gap-4 rounded-lg border border-neutral-800 p-4">
             <Controller
               control={form.control}
               name="sharedWith"
@@ -292,7 +291,7 @@ const EditCategoryForm = ({
               path="/categories/:categoryId"
               params={{ categoryId: category?.id ?? SEARCH_PARAM_NEW }}
               query={{ person: SEARCH_PARAM_SEARCH }}
-              className="flex items-center"
+              className="flex items-center justify-center"
             >
               +
             </ButtonLink>
@@ -339,7 +338,7 @@ export const CreateCategory = () => {
           path="/categories"
           className="flex items-center justify-center"
         >
-          <ChevronLeftIcon height={20} />
+          <ArrowLeftIcon height={20} />
         </PathLink>
       }
       title={`Create Category`}
@@ -370,7 +369,7 @@ export const EditCategory = ({ initialCategory }: EditCategoryProps) => {
           path="/categories"
           className="flex items-center justify-center"
         >
-          <ChevronLeftIcon height={20} />
+          <ArrowLeftIcon height={20} />
         </PathLink>
       }
       title={`Edit ${category.name}`}

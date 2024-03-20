@@ -81,7 +81,7 @@ export const PersonModal: FC<PersonModalProps> = ({ ...props }) => {
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-10 z-10 w-full max-w-xl -translate-x-1/2 p-6 lg:top-24">
+        <Dialog.Content className="fixed left-1/2 top-0 z-10 flex h-full max-h-screen w-full max-w-xl -translate-x-1/2 flex-col p-6 pt-16 lg:top-24">
           {/* Title */}
           <div className="flex justify-between pb-2">
             <Dialog.Title asChild>
@@ -97,11 +97,15 @@ export const PersonModal: FC<PersonModalProps> = ({ ...props }) => {
             </Dialog.Close>
           </div>
           {/* Content */}
-          <ul>
+          <ul className="flex grow flex-col gap-2 overflow-y-scroll">
             {following?.length ? (
               following.map((f) => (
                 <li key={f.following.id}>
-                  <Person id={f.following.id} name={f.following.name}>
+                  <Person
+                    id={f.following.id}
+                    name={f.following.name}
+                    image={f.following.image}
+                  >
                     <Button
                       size="sm"
                       intent={
