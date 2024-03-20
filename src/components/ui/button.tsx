@@ -10,7 +10,7 @@ import {
 import NextLink from 'next/link'
 import { Loader } from './Loader'
 import { PathLink, type PathLinkProps } from '~/utils/nav/Link'
-import { cn } from '~/utils/classnames'
+import { cmerge } from '~/utils/classnames'
 import { type Pathname } from '~/utils/nav/path'
 
 const button = cva(
@@ -55,7 +55,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps<'button'>>(
         {...props}
         type={type}
         ref={ref}
-        className={cn(button(props), className)}
+        className={cmerge(button(props), className)}
       />
     )
   }
@@ -63,7 +63,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps<'button'>>(
 
 export const ButtonAnchor = forwardRef<HTMLAnchorElement, ButtonProps<'a'>>(
   function FwdButtonLink({ className, ...props }, ref) {
-    return <a {...props} ref={ref} className={cn(button(props), className)} />
+    return (
+      <a {...props} ref={ref} className={cmerge(button(props), className)} />
+    )
   }
 )
 
@@ -76,7 +78,10 @@ export const ButtonLink = <Path extends Pathname>(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { className, ...rest } = props
   return (
-    <PathLink<Path> {...props} className={cn(button(rest), props.className)} />
+    <PathLink<Path>
+      {...props}
+      className={cmerge(button(rest), props.className)}
+    />
   )
 }
 
@@ -85,7 +90,11 @@ export const ButtonRawLink = forwardRef<
   ButtonProps<typeof NextLink>
 >(function FwdButtonRawLink({ className, ...props }, ref) {
   return (
-    <NextLink {...props} ref={ref} className={cn(button(props), className)} />
+    <NextLink
+      {...props}
+      ref={ref}
+      className={cmerge(button(props), className)}
+    />
   )
 })
 
@@ -94,7 +103,7 @@ export const SkeletonButton: FC<
 > = ({ children, className, ...props }) => {
   return (
     <div
-      className={cn(
+      className={cmerge(
         button(props),
         'animate-pulse bg-neutral-800 text-transparent',
         className
@@ -119,7 +128,7 @@ export const SubmitButton = forwardRef<HTMLButtonElement, SubmitButtonProps>(
         {...props}
         type={type}
         ref={ref}
-        className={cn(button(props), 'relative', className)}
+        className={cmerge(button(props), 'relative', className)}
       >
         <span className={loading ? 'opacity-0' : 'opacity-100'}>
           {children}
