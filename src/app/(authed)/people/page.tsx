@@ -60,7 +60,7 @@ export default function PeoplePage() {
       }
       title="People"
     >
-      <div className="flex flex-col px-4">
+      <div className="flex flex-col overflow-y-auto px-4">
         <div className="py-6">
           <Label htmlFor="search">Search</Label>
           <Input

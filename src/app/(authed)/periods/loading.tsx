@@ -1,4 +1,4 @@
-import { PageLayout } from '~/components/layout/PageLayout'
+import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { SkeletonText } from '~/components/skeleton/Text'
 import { Skeleton } from '~/components/skeleton/skeleton'
 import { SkeletonButton } from '~/components/ui/button'
@@ -7,7 +7,7 @@ const dummyPeriods = [null, null, null, null]
 
 export default function PeriodsLoading() {
   return (
-    <PageLayout title="Periods" skeleton>
+    <InnerPageLayout title="Periods" skeleton>
       <ul className="flex flex-col gap-2 pb-6">
         {dummyPeriods.map((_, index) => (
           <li
@@ -33,6 +33,6 @@ export default function PeriodsLoading() {
         ))}
       </ul>
       <SkeletonButton>Create New</SkeletonButton>
-    </PageLayout>
+    </InnerPageLayout>
   )
 }

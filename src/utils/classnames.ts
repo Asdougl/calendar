@@ -1,6 +1,7 @@
 import type { ClassValue } from 'clsx'
 import clsx from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import upperFirst from 'lodash/upperFirst'
 
 export const cn = clsx
 export const cmerge = (...inputs: ClassValue[]) => twMerge(clsx(...inputs))
@@ -208,55 +209,15 @@ type CategoryColorOption = {
 
 export const CATEGORY_SELECT_OPTIONS: CategoryColorOption[] = [
   {
-    name: 'None',
+    name: 'No Colour',
     value: '_none',
     color: '_none',
   },
-  {
-    name: 'Yellow',
-    value: 'yellow',
-    color: 'yellow',
-  },
-  {
-    name: 'Blue',
-    value: 'blue',
-    color: 'blue',
-  },
-  {
-    name: 'Green',
-    value: 'green',
-    color: 'green',
-  },
-  {
-    name: 'Pink',
-    value: 'pink',
-    color: 'pink',
-  },
-  {
-    name: 'Purple',
-    value: 'purple',
-    color: 'purple',
-  },
-  {
-    name: 'Red',
-    value: 'red',
-    color: 'red',
-  },
-  {
-    name: 'Indigo',
-    value: 'indigo',
-    color: 'indigo',
-  },
-  {
-    name: 'Gray',
-    value: 'gray',
-    color: 'gray',
-  },
-  {
-    name: 'Orange',
-    value: 'orange',
-    color: 'orange',
-  },
+  ...CategoryColors.map((color) => ({
+    value: color,
+    name: upperFirst(color),
+    color,
+  })),
 ]
 
 /**

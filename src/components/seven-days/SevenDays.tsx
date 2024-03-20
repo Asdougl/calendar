@@ -6,6 +6,7 @@ import {
   useSensor,
   MouseSensor,
   TouchSensor,
+  pointerWithin,
 } from '@dnd-kit/core'
 import { DayOfWeek } from './DayOfWeek'
 import { SevenDaysProvider } from './common'
@@ -93,19 +94,54 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
     <SevenDaysProvider
       value={{ baseDate: start, weekStart, usedIn, week, outlines, loading }}
     >
-      <div className="grid flex-grow grid-cols-2 gap-1 overflow-hidden">
-        <DndContext onDragEnd={onDragEnd} sensors={[mouseSensor, touchSensor]}>
-          <div className="grid grid-rows-2 gap-1 overflow-hidden">
-            <DayOfWeek dayOfWeek={6} events={events} periods={periods} />
-            <DayOfWeek dayOfWeek={0} events={events} periods={periods} />
-          </div>
-          <div className="grid grid-rows-5 gap-1 overflow-hidden">
-            <DayOfWeek dayOfWeek={5} events={events} periods={periods} />
-            <DayOfWeek dayOfWeek={4} events={events} periods={periods} />
-            <DayOfWeek dayOfWeek={3} events={events} periods={periods} />
-            <DayOfWeek dayOfWeek={2} events={events} periods={periods} />
-            <DayOfWeek dayOfWeek={1} events={events} periods={periods} />
-          </div>
+      <div className="grid grow grid-cols-2 grid-rows-10 gap-1 overflow-hidden">
+        <DndContext
+          onDragEnd={onDragEnd}
+          sensors={[mouseSensor, touchSensor]}
+          collisionDetection={pointerWithin}
+        >
+          <DayOfWeek
+            className="row-span-5"
+            dayOfWeek={6}
+            events={events}
+            periods={periods}
+          />
+          <DayOfWeek
+            className="row-span-2"
+            dayOfWeek={5}
+            events={events}
+            periods={periods}
+          />
+          <DayOfWeek
+            className="row-span-2"
+            dayOfWeek={4}
+            events={events}
+            periods={periods}
+          />
+          <DayOfWeek
+            className="row-span-2"
+            dayOfWeek={3}
+            events={events}
+            periods={periods}
+          />
+          <DayOfWeek
+            className="row-span-5"
+            dayOfWeek={0}
+            events={events}
+            periods={periods}
+          />
+          <DayOfWeek
+            className="row-span-2"
+            dayOfWeek={2}
+            events={events}
+            periods={periods}
+          />
+          <DayOfWeek
+            className="row-span-2"
+            dayOfWeek={1}
+            events={events}
+            periods={periods}
+          />
         </DndContext>
       </div>
     </SevenDaysProvider>

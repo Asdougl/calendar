@@ -23,7 +23,11 @@ import {
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { type TIME_INVERVAL, type TimeStatus } from '@prisma/client'
 import Link from 'next/link'
-import { ArrowLeftIcon, ChevronLeftIcon } from '@heroicons/react/24/solid'
+import {
+  ArrowLeftIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+} from '@heroicons/react/24/solid'
 import { useSession } from 'next-auth/react'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { Loader } from '~/components/ui/Loader'
@@ -146,6 +150,15 @@ const DayScheduleItem = ({
             src={event.createdBy.image}
             name={event.createdBy.name || 'User'}
           />
+        </div>
+      ) : event.done !== null ? (
+        <div
+          className={cn(
+            'flex w-5 flex-shrink-0 items-center justify-center rounded border-2',
+            color('border')(event.category?.color)
+          )}
+        >
+          {event.done && <CheckIcon height={14} />}
         </div>
       ) : (
         <div

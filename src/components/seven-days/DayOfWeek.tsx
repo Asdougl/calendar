@@ -9,7 +9,7 @@ import { useSevenDaysCtx } from './common'
 import { type RouterOutputs } from '~/trpc/shared'
 import { SEARCH_PARAM_NEW, modifySearchParams } from '~/utils/nav/search'
 import { eventSort } from '~/utils/sort'
-import { cn, color } from '~/utils/classnames'
+import { cmerge, cn, color } from '~/utils/classnames'
 import { PathLink } from '~/utils/nav/Link'
 import { createURL, getWindow } from '~/utils/misc'
 
@@ -51,6 +51,7 @@ const DayOfWeekLabel = ({ date }: { date: Date }) => {
 
 type DayOfWeekProps = {
   dayOfWeek: number
+  className?: string
   events?: RouterOutputs['event']['range'][]
   periods?: RouterOutputs['periods']['range'][]
 }
@@ -90,6 +91,7 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
   dayOfWeek,
   events,
   periods,
+  className,
 }) => {
   const {
     baseDate,
@@ -100,7 +102,7 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
 
   const date = setDay(baseDate, dayOfWeek, { weekStartsOn: weekStart })
 
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef, isOver, active } = useDroppable({
     id: stdFormat(date),
   })
 
@@ -114,7 +116,7 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
 
   return (
     <div
-      className={cn(
+      className={cmerge(
         'flex min-w-0 flex-col rounded-lg border border-neutral-800',
         outlines && {
           'border-neutral-300': distanceToStart === 0,
@@ -125,7 +127,8 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
         },
         {
           'bg-neutral-900': isOver,
-        }
+        },
+        className
       )}
     >
       <div className="flex w-full items-center justify-between px-0.5 pt-0.5 md:px-2 md:pt-2">
@@ -160,7 +163,10 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
       </div>
       <div
         ref={setNodeRef}
-        className="relative flex flex-shrink flex-grow flex-col overflow-auto px-1.5 md:gap-0.5 md:px-3 lg:pb-1"
+        className={cn(
+          'flex flex-shrink flex-grow flex-col px-1.5 md:gap-0.5 md:px-3 lg:pb-1',
+          { 'overflow-y-auto overflow-x-hidden': !active }
+        )}
       >
         {loadingEvents ? (
           <div className="flex justify-between">
@@ -181,7 +187,7 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
                 href={eventLink(SEARCH_PARAM_NEW, date)}
                 className={cn(
                   'flex flex-shrink-0 flex-grow flex-col justify-end rounded text-xs lg:hover:bg-neutral-900',
-                  { 'pointer-events-none -z-10': isOver }
+                  { 'pointer-events-none hidden': active }
                 )}
               >
                 <span className="flex items-center gap-1 px-1 pb-1 text-neutral-500">

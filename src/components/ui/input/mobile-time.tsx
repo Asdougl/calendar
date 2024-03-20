@@ -25,6 +25,7 @@ type MobileTimeInputProps = {
   type: '12' | '24'
   disabled?: boolean
   className?: string
+  readonly?: boolean
 }
 
 type UpdateMap = {
@@ -42,6 +43,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
   type,
   disabled,
   className,
+  readonly,
 }) => {
   const [hours, setHours] = useState<number>(() => {
     if (!value) return type === '12' ? 8 : 0
@@ -148,6 +150,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
         value={hours}
         onChange={updateHours}
         disabled={disabled}
+        readonly={readonly}
         size="lg"
         className="flex-1"
         labels={(value) => `hour ${value}`}
@@ -157,6 +160,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
         value={minutes.toString().padStart(2, '0')}
         onChange={updateMinutes}
         disabled={disabled}
+        readonly={readonly}
         size="lg"
         className="flex-1"
         labels={(value) => `minute ${value}`}
@@ -167,6 +171,7 @@ export const MobileTimeInput: FC<MobileTimeInputProps> = ({
           value={meridiem}
           onChange={updateMeridiem}
           disabled={disabled}
+          readonly={readonly}
           size="lg"
           className="flex-1"
         />

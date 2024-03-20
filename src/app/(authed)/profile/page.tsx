@@ -63,10 +63,10 @@ export default async function ProfilePage() {
         )
       }
     >
-      <div className="flex justify-center pb-12">
-        <FollowStats />
-      </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 overflow-y-auto">
+        <div className="flex justify-center">
+          <FollowStats />
+        </div>
         <div className="flex flex-col gap-2 px-4">
           {LINKS.map((link) => (
             <PathLink

@@ -32,9 +32,8 @@ export const NextSevenDays: FC = () => {
     isFetching,
   } = api.event.range.useQuery(focusDate, {
     enabled: focusMounted,
-    refetchOnWindowFocus: false,
-    staleTime: Duration.minutes(5),
-    refetchInterval: Duration.minutes(10),
+    staleTime: Duration.seconds(30),
+    refetchInterval: Duration.minutes(2),
     select: eventsByDay,
   })
 
@@ -73,6 +72,7 @@ export const NextSevenDays: FC = () => {
           loading={loading}
           weekStart={getDay(focusDate.start)}
           usedIn="inbox"
+          outlines
         />
       )}
     </InnerPageLayout>

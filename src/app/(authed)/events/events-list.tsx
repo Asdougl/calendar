@@ -143,19 +143,21 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                     >
                       {format(event.datetime, 'MMMM yyyy')}
                     </PathLink>
-                    <PathLink
-                      path={direction === 'before' ? '/events/past' : '/events'}
-                      query={{
-                        event: SEARCH_PARAM_NEW,
-                        date: stdFormat(startOfMonth(event.datetime)),
-                      }}
-                      className="group flex items-center justify-between gap-1 rounded px-2 text-neutral-300 hover:text-neutral-50 lg:hover:bg-neutral-800"
-                    >
-                      <span className="opacity-0 transition-opacity lg:group-hover:opacity-100">
-                        Add Event in {format(event.datetime, 'MMM')}
-                      </span>
-                      <PlusIcon height={20} />
-                    </PathLink>
+                    {direction !== 'before' && (
+                      <PathLink
+                        path="/events"
+                        query={{
+                          event: SEARCH_PARAM_NEW,
+                          date: stdFormat(startOfMonth(event.datetime)),
+                        }}
+                        className="group flex items-center justify-between gap-1 rounded px-2 text-neutral-300 hover:text-neutral-50 lg:hover:bg-neutral-800"
+                      >
+                        <span className="opacity-0 transition-opacity lg:group-hover:opacity-100">
+                          Add Event in {format(event.datetime, 'MMM')}
+                        </span>
+                        <PlusIcon height={20} />
+                      </PathLink>
+                    )}
                   </li>
                 )}
                 <li>

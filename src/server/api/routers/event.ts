@@ -216,9 +216,27 @@ export const eventRouter = createTRPCRouter({
       return ctx.db.event.findUnique({
         where: {
           id: input.id,
-          createdById: ctx.session.user.id,
+          OR: [
+            {
+              category: {
+                CategoryShare: {
+                  some: {
+                    sharedWidthId: ctx.session.user.id,
+                  },
+                },
+                private: false,
+                hidden: false,
+              },
+            },
+            {
+              createdById: ctx.session.user.id,
+            },
+          ],
         },
-        select,
+        select: {
+          ...select,
+          createdById: true,
+        },
       })
     }),
   todos: protectedProcedure

@@ -1,6 +1,6 @@
 import { ChevronUpIcon } from '@heroicons/react/24/solid'
 import { useEffect, useRef } from 'react'
-import { cn } from '~/utils/classnames'
+import { cmerge, cn } from '~/utils/classnames'
 
 type SpinnerProps<T extends string | number> = {
   options: T[]
@@ -11,6 +11,7 @@ type SpinnerProps<T extends string | number> = {
   size?: 'sm' | 'md' | 'lg' | 'auto'
   className?: string
   labels?: (value: T) => string
+  readonly?: boolean
 }
 
 export const Spinner = <T extends string | number>({
@@ -22,6 +23,7 @@ export const Spinner = <T extends string | number>({
   size = 'md',
   className,
   labels,
+  readonly,
 }: SpinnerProps<T>) => {
   const scrollRef = useRef<HTMLDivElement>(null)
   const updateTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -81,14 +83,15 @@ export const Spinner = <T extends string | number>({
             aria-label={`${labels ? labels(option) : option.toString()} ${
               value === option ? 'selected' : ''
             }`.trim()}
-            className={cn(
+            className={cmerge(
               'snap-center border-y border-neutral-800 px-4 py-4 text-center font-mono',
               disabled ? 'text-neutral-600' : 'text-neutral-50',
               {
                 'w-6 text-lg': size === 'sm',
                 'w-12 text-xl': size === 'md',
                 'w-18 text-xl': size === 'lg',
-              }
+              },
+              { 'text-neutral-50': readonly }
             )}
           >
             {option}

@@ -1,6 +1,6 @@
 'use client'
 
-import { PlusIcon } from '@heroicons/react/24/solid'
+import { ArrowLeftIcon, PlusIcon } from '@heroicons/react/24/solid'
 import { addYears, differenceInDays, isSameDay, startOfDay } from 'date-fns'
 import Link from 'next/link'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
@@ -9,6 +9,7 @@ import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn, color } from '~/utils/classnames'
 import { pluralize } from '~/utils/misc'
+import { PathLink } from '~/utils/nav/Link'
 import { modifyCurrentSearchParams } from '~/utils/nav/search'
 
 const formatter = new Intl.DateTimeFormat('default', {
@@ -55,8 +56,8 @@ const PeriodItem = ({
       <div className="flex flex-grow justify-end">
         <ButtonLink
           className="flex flex-col items-center justify-center"
-          path="/periods/:id"
-          params={{ id: period.id }}
+          path="/periods"
+          query={{ period: period.id }}
         >
           Edit
         </ButtonLink>
@@ -73,6 +74,11 @@ export const PeriodsView = () => {
 
   return (
     <InnerPageLayout
+      headerLeft={
+        <PathLink path="/profile" className="flex items-center justify-center">
+          <ArrowLeftIcon height={20} className="" />
+        </PathLink>
+      }
       title="Periods"
       headerRight={
         <Link
@@ -86,7 +92,9 @@ export const PeriodsView = () => {
         </Link>
       }
     >
-      {range?.map((period) => <PeriodItem key={period.id} period={period} />)}
+      <ul className="flex flex-col gap-1 overflow-y-auto">
+        {range?.map((period) => <PeriodItem key={period.id} period={period} />)}
+      </ul>
     </InnerPageLayout>
   )
 }

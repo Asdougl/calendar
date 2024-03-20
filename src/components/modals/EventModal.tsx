@@ -4,13 +4,13 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { type FC } from 'react'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Header2 } from '../ui/headers'
 import { EventForm } from '../form/event/event-form'
 import { stdFormat } from '../ui/dates/common'
 import { ButtonRawLink } from '../ui/button'
 import { cn, color } from '~/utils/classnames'
 import { api } from '~/trpc/react'
-import { Duration } from '~/utils/dates'
 import {
   SearchParamKeys,
   SEARCH_PARAM_NEW,
@@ -28,6 +28,7 @@ const getInitialDate = (date: string | null) => {
 export const EventModal: FC = () => {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const session = useSession()
 
   const enabled =
     searchParams.has(SearchParamKeys.Values.event) &&
@@ -37,8 +38,6 @@ export const EventModal: FC = () => {
     { id: searchParams.get(SearchParamKeys.Values.event) || '' },
     {
       enabled,
-      staleTime: Duration.minutes(5),
-      refetchOnMount: false,
     }
   )
 
@@ -110,7 +109,10 @@ export const EventModal: FC = () => {
                         event &&
                         mutate({ id: event.id, completed: !event.done })
                       }
-                      disabled={isMutating}
+                      disabled={
+                        isMutating ||
+                        event.createdById !== session.data?.user?.id
+                      }
                       className={cn(
                         'flex h-6 w-6 items-center justify-center rounded border-2',
                         color('border')(event?.category?.color)
@@ -172,7 +174,11 @@ export const EventModal: FC = () => {
               </div>
             </div>
           ) : event ? (
-            <EventForm event={event} onSubmit={() => onOpenChange(false)} />
+            <EventForm
+              event={event}
+              onSubmit={() => onOpenChange(false)}
+              readonly={event.createdById !== session.data?.user?.id}
+            />
           ) : (
             <EventForm
               date={getInitialDate(

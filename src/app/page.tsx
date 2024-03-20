@@ -1,5 +1,4 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { DemoSevenDays } from './seven-days-demo'
 import { ButtonLink } from '~/components/ui/button'
 import { getServerAuthSession } from '~/server/auth'
@@ -108,6 +107,14 @@ export default async function IndexPage() {
               </div>
               <div className="rounded-lg border border-neutral-900 px-4 py-3">
                 <h3 className="flex items-center gap-2 text-2xl font-bold">
+                  Multiplayer
+                </h3>
+                <p className="text-neutral-400">
+                  Share event categories with friends and family
+                </p>
+              </div>
+              <div className="rounded-lg border border-neutral-900 px-4 py-3">
+                <h3 className="flex items-center gap-2 text-2xl font-bold">
                   Import and Export
                   <span className="rounded-full bg-orange-900 px-2 text-sm text-orange-200">
                     Coming Soon
@@ -123,20 +130,12 @@ export default async function IndexPage() {
                   <span className="rounded-full bg-blue-900 px-2 text-sm text-blue-200">
                     Pro
                   </span>
-                </h3>
-                <p className="text-neutral-400">
-                  Share your events with anyone. No account required.
-                </p>
-              </div>
-              <div className="rounded-lg border border-neutral-900 px-4 py-3">
-                <h3 className="flex items-center gap-2 text-2xl font-bold">
-                  Multiplayer
-                  <span className="rounded-full bg-blue-900 px-2 text-sm text-blue-200">
-                    Pro
+                  <span className="rounded-full bg-orange-900 px-2 text-sm text-orange-200">
+                    Coming Soon
                   </span>
                 </h3>
                 <p className="text-neutral-400">
-                  Schedule events with friends and family.
+                  Share your events with anyone. No account required.
                 </p>
               </div>
               <div className="rounded-lg border border-neutral-900 px-4 py-3">
@@ -145,19 +144,22 @@ export default async function IndexPage() {
                   <span className="rounded-full bg-blue-900 px-2 text-sm text-blue-200">
                     Pro
                   </span>
+                  <span className="rounded-full bg-orange-900 px-2 text-sm text-orange-200">
+                    Coming Soon
+                  </span>
                 </h3>
                 <p className="text-neutral-400">
                   Themes, light mode, and custom domains.
                 </p>
               </div>
             </div>
-            <p className="py-12">
+            {/* <p className="py-12">
               We&apos;re committed to a great free experience, but find our
               other plans on our{' '}
               <Link href="/pricing" className="font-bold hover:underline">
                 Pricing Page
               </Link>
-            </p>
+            </p> */}
           </section>
         </div>
       </main>

@@ -44,13 +44,17 @@ const UpdateEventSchema = z.object({
 type UpdateEventFormValues = z.infer<typeof UpdateEventSchema>
 
 type EditEventFormProps = {
-  event: RouterOutputs['event']['range'][number]
-  onSubmit?: (event: RouterOutputs['event']['one']) => void
+  event: Omit<NonNullable<RouterOutputs['event']['one']>, 'createdById'>
+  onSubmit?: (
+    event: Omit<NonNullable<RouterOutputs['event']['one']>, 'createdById'>
+  ) => void
 }
 
 type CreateEventFormProps = {
   date: Date
-  onSubmit?: (event: RouterOutputs['event']['one']) => void
+  onSubmit?: (
+    event: Omit<NonNullable<RouterOutputs['event']['one']>, 'createdById'>
+  ) => void
 }
 
 type EventFormProps = {
@@ -58,6 +62,8 @@ type EventFormProps = {
   labels?: boolean
   wipValues?: Partial<UpdateEventFormValues>
   extraActions?: ReactNode
+  title?: ReactNode
+  readonly?: boolean
 } & (EditEventFormProps | CreateEventFormProps)
 
 const formatStd = (date: Date) =>
@@ -77,6 +83,8 @@ export const EventForm: FC<EventFormProps> = ({
   labels,
   wipValues,
   extraActions,
+  title,
+  readonly,
   ...props
 }) => {
   const { preferences } = usePreferences()
@@ -194,8 +202,11 @@ export const EventForm: FC<EventFormProps> = ({
 
   const timeStatus = watch('type')
 
+  const lockForm = readonly || isSubmitting
+
   return (
     <form onSubmit={onSubmit} className="flex flex-col items-start gap-4">
+      {title}
       {/* Row 1 -- title */}
       <div className="flex w-full flex-col gap-1">
         <label htmlFor="title" className={cn({ 'sr-only': !labels })}>
@@ -205,9 +216,11 @@ export const EventForm: FC<EventFormProps> = ({
           id="title"
           placeholder="Event Name"
           autoComplete="off"
-          className="min-w-full flex-grow"
+          className={cn('min-w-full flex-grow', {
+            '!text-neutral-50': readonly,
+          })}
           error={!!errors.title}
-          disabled={isSubmitting}
+          disabled={lockForm}
           {...register('title')}
         />
       </div>
@@ -222,36 +235,38 @@ export const EventForm: FC<EventFormProps> = ({
           <Controller
             control={control}
             name="date"
-            render={({ field, formState }) => (
+            render={({ field }) => (
               <DatePicker
                 id="date"
-                className="flex-1"
-                disabled={formState.isSubmitting}
+                className={cn('flex-1', { '!text-neutral-50': readonly })}
+                disabled={lockForm}
                 value={field.value ? new Date(field.value) : new Date()}
                 onChange={(value) => field.onChange(formatStd(value))}
               />
             )}
           />
         </div>
-        <div className="flex flex-1 flex-col gap-1">
-          <label htmlFor="categoryId" className={cn({ 'sr-only': !labels })}>
-            Category
-          </label>
-          <Controller
-            control={control}
-            name="categoryId"
-            render={({ field, formState }) => (
-              <CategorySelect
-                id="categoryId"
-                value={field.value}
-                disabled={formState.isSubmitting}
-                onChange={field.onChange}
-                className="flex-1"
-                width="full"
-              />
-            )}
-          />
-        </div>
+        {!readonly && (
+          <div className="flex flex-1 flex-col gap-1">
+            <label htmlFor="categoryId" className={cn({ 'sr-only': !labels })}>
+              Category
+            </label>
+            <Controller
+              control={control}
+              name="categoryId"
+              render={({ field }) => (
+                <CategorySelect
+                  id="categoryId"
+                  value={field.value}
+                  disabled={lockForm}
+                  onChange={field.onChange}
+                  className="flex-1"
+                  width="full"
+                />
+              )}
+            />
+          </div>
+        )}
       </div>
       {/* Row 3 -- Time */}
       <div className="flex w-full flex-col gap-1">
@@ -261,13 +276,20 @@ export const EventForm: FC<EventFormProps> = ({
             <Controller
               control={control}
               name="type"
-              render={({ field, formState }) => (
+              render={({ field }) => (
                 <>
                   <button
                     type="button"
                     name="time-status"
-                    disabled={formState.isSubmitting}
-                    className="flex flex-1 items-center gap-2 rounded-lg p-2 disabled:text-neutral-600 md:hover:bg-neutral-900 lg:disabled:hover:bg-transparent"
+                    disabled={lockForm}
+                    className={cn(
+                      'flex flex-1 items-center justify-center gap-2 rounded-lg p-2 text-sm md:hover:bg-neutral-900 lg:justify-start lg:px-4 lg:disabled:hover:bg-transparent',
+                      readonly
+                        ? field.value === 'STANDARD'
+                          ? 'text-neutral-50'
+                          : 'text-neutral-600'
+                        : 'disabled:text-neutral-600'
+                    )}
                     onClick={() =>
                       field.onChange(
                         field.value === 'STANDARD' ? 'NO_TIME' : 'STANDARD'
@@ -276,19 +298,26 @@ export const EventForm: FC<EventFormProps> = ({
                   >
                     {field.value === 'STANDARD' ? (
                       <>
-                        <MinusCircleIcon height={20} /> Clear Time
+                        <MinusCircleIcon height={20} /> Schedule
                       </>
                     ) : (
                       <>
-                        <PlusCircleIcon height={20} /> Add Time
+                        <PlusCircleIcon height={20} /> Schedule
                       </>
                     )}
                   </button>
                   <button
                     type="button"
                     name="all-day"
-                    disabled={formState.isSubmitting}
-                    className="flex flex-1 items-center gap-2 rounded-lg p-2 disabled:text-neutral-600 md:hover:bg-neutral-900 lg:disabled:hover:bg-transparent"
+                    disabled={lockForm}
+                    className={cn(
+                      'flex flex-1 items-center justify-center gap-2 rounded-lg p-2 text-sm md:hover:bg-neutral-900 lg:justify-start lg:px-4 lg:disabled:hover:bg-transparent',
+                      readonly
+                        ? field.value === 'ALL_DAY'
+                          ? 'text-neutral-50'
+                          : 'text-neutral-600'
+                        : 'disabled:text-neutral-600'
+                    )}
                     onClick={() =>
                       field.onChange(
                         field.value === 'ALL_DAY' ? 'NO_TIME' : 'ALL_DAY'
@@ -308,12 +337,19 @@ export const EventForm: FC<EventFormProps> = ({
             <Controller
               control={control}
               name="todo"
-              render={({ field, formState }) => (
+              render={({ field }) => (
                 <button
                   type="button"
                   name="todo"
-                  disabled={formState.isSubmitting}
-                  className="flex flex-1 items-center gap-2 rounded-lg p-2 disabled:text-neutral-600 md:hover:bg-neutral-900 lg:disabled:hover:bg-transparent"
+                  disabled={lockForm}
+                  className={cn(
+                    'flex flex-1 items-center justify-center gap-2 rounded-lg p-2 text-sm md:hover:bg-neutral-900 lg:justify-start lg:px-4 lg:disabled:hover:bg-transparent',
+                    readonly
+                      ? field.value !== null
+                        ? 'text-neutral-50'
+                        : 'text-neutral-600'
+                      : 'disabled:text-neutral-600'
+                  )}
                   onClick={() =>
                     field.onChange(field.value === null ? false : null)
                   }
@@ -324,12 +360,12 @@ export const EventForm: FC<EventFormProps> = ({
                         height={20}
                         className="flex-none"
                       />{' '}
-                      Add Todo
+                      Todo
                     </>
                   ) : (
                     <>
                       <XCircleIconSolid height={20} className="flex-none" />{' '}
-                      Remove Todo
+                      Todo
                     </>
                   )}
                 </button>
@@ -339,11 +375,14 @@ export const EventForm: FC<EventFormProps> = ({
           <Controller
             control={control}
             name="time"
-            render={({ field, formState }) => (
+            render={({ field }) => (
               <MobileTimeInput
-                className={cn({ 'flex-1': !labels })}
+                className={cn({
+                  'flex-1': !labels,
+                })}
+                readonly={readonly && timeStatus === 'STANDARD'}
                 type={preferences?.timeFormat || '12'}
-                disabled={timeStatus !== 'STANDARD' || formState.isSubmitting}
+                disabled={timeStatus !== 'STANDARD' || lockForm}
                 value={field.value}
                 onChange={field.onChange}
               />
@@ -363,7 +402,7 @@ export const EventForm: FC<EventFormProps> = ({
               placeholder="Location (optional)"
               autoComplete="off"
               className="w-auto min-w-full flex-grow"
-              disabled={isSubmitting}
+              disabled={lockForm}
               {...register('location')}
             />
           </div>
@@ -373,6 +412,7 @@ export const EventForm: FC<EventFormProps> = ({
             render={({ field }) => (
               <Button
                 type="button"
+                disabled={lockForm}
                 onClick={() => field.onChange(!field.value)}
               >
                 {field.value ? 'Un-cancel event' : 'Cancel event'}
@@ -401,7 +441,7 @@ export const EventForm: FC<EventFormProps> = ({
           {extraActions}
         </div>
         <div className="flex justify-end gap-4">
-          {expanded && isUpdate && (
+          {expanded && isUpdate && !readonly && (
             <DeleteButton
               isDeleting={isDeleting}
               onDelete={() => deleteMutate({ id: props.event.id })}
@@ -411,7 +451,7 @@ export const EventForm: FC<EventFormProps> = ({
               Delete
             </DeleteButton>
           )}
-          {!initialExpanded && (
+          {!readonly && !initialExpanded && (
             <FormButton
               control={control}
               type="button"
@@ -421,14 +461,16 @@ export const EventForm: FC<EventFormProps> = ({
               {expanded ? 'Less' : 'More'}
             </FormButton>
           )}
-          <FormSubmitButton
-            control={control}
-            intent="primary"
-            type="submit"
-            className="px-8"
-          >
-            Save
-          </FormSubmitButton>
+          {!readonly && (
+            <FormSubmitButton
+              control={control}
+              intent="primary"
+              type="submit"
+              className="px-8"
+            >
+              Save
+            </FormSubmitButton>
+          )}
         </div>
       </div>
     </form>

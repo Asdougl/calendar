@@ -27,7 +27,7 @@ export const Categories = () => {
       }
       title="Categories"
     >
-      <ul className="flex flex-col gap-4">
+      <ul className="flex flex-col gap-4 overflow-y-auto">
         <li className="flex items-center justify-between gap-4 rounded-lg border border-neutral-800">
           <div className="flex items-center gap-2 px-4 py-2">
             <div

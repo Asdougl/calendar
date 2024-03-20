@@ -8,7 +8,8 @@ import { useMountEffect } from '~/utils/hooks'
 import { createTempId } from '~/utils/misc'
 import { eventsByDay } from '~/utils/sort'
 
-type Event = RouterOutputs['event']['range'][number]
+type Event = Omit<RouterOutputs['event']['sharedRange'][number], 'createdBy'> &
+  Partial<Pick<RouterOutputs['event']['sharedRange'][number], 'createdBy'>>
 
 const createEvent = (
   params: Pick<Event, 'title' | 'datetime'> & Partial<Omit<Event, 'id'>>
@@ -120,6 +121,11 @@ const createShowcaseData = (focus: Date): RouterOutputs['event']['range'] => {
         id: createTempId(),
         color: 'green',
         name: 'Friends',
+      },
+      createdBy: {
+        id: createTempId(),
+        name: 'asdougl',
+        image: 'https://avatars.githubusercontent.com/u/25199427?v=4',
       },
     }),
     // Saturday

@@ -32,9 +32,7 @@ export default function SharedPage() {
     isFetching,
   } = api.event.sharedRange.useQuery(focusDate, {
     enabled: focusMounted,
-    refetchOnWindowFocus: false,
-    staleTime: Duration.minutes(2),
-    refetchInterval: Duration.minutes(5),
+    refetchInterval: Duration.minutes(2),
     select: eventsByDay,
   })
 
