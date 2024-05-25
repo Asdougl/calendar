@@ -32,7 +32,7 @@ const NavBarItem = <Path extends Pathname>(
     <Link
       href={navPath}
       className={cn(
-        'flex w-full flex-col items-center gap-2 rounded-lg px-4 py-2 md:hover:bg-neutral-900 md:hover:text-neutral-50',
+        'flex w-full flex-col items-center gap-2 rounded-lg px-4 py-2 md:hover:bg-neutral-900 md:hover:text-neutral-50 xl:flex-row',
         active ? 'text-neutral-50' : 'text-neutral-500'
       )}
     >
@@ -50,7 +50,9 @@ const ProfileNavItem = () => {
   return (
     <PathLink
       path="/profile"
-      className="flex flex-col items-center gap-2 rounded-lg px-4 py-2 md:hover:bg-neutral-900 md:hover:text-neutral-50"
+      className={cn(
+        'flex flex-col items-center gap-2 rounded-lg px-4 py-2 md:hover:bg-neutral-900 md:hover:text-neutral-50 xl:flex-row'
+      )}
     >
       <ProfileAvatar
         size="sm"
