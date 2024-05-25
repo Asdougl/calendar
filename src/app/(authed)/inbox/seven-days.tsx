@@ -1,7 +1,8 @@
 'use client'
 
 import { endOfWeek, getDay, startOfDay } from 'date-fns'
-import { type FC } from 'react'
+import { useState, type FC } from 'react'
+import { UserGroupIcon, UserIcon } from '@heroicons/react/24/solid'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { api } from '~/trpc/react'
 import { Duration } from '~/utils/dates'
@@ -23,6 +24,7 @@ const useClientDate = createClientDateRangeHook({
 
 export const NextSevenDays: FC = () => {
   const [focusDate, focusMounted] = useClientDate()
+  const [showShared, setShowShared] = useState(true)
 
   const queryClient = api.useUtils()
 
@@ -30,12 +32,18 @@ export const NextSevenDays: FC = () => {
     data: events,
     isLoading,
     isFetching,
-  } = api.event.range.useQuery(focusDate, {
-    enabled: focusMounted,
-    staleTime: Duration.seconds(30),
-    refetchInterval: Duration.minutes(2),
-    select: eventsByDay,
-  })
+  } = api.event.range.useQuery(
+    {
+      ...focusDate,
+      shared: showShared,
+    },
+    {
+      enabled: focusMounted,
+      staleTime: Duration.seconds(30),
+      refetchInterval: Duration.minutes(2),
+      select: eventsByDay,
+    }
+  )
 
   const { data: periods } = api.periods.range.useQuery(focusDate, {
     enabled: focusMounted,
@@ -51,7 +59,7 @@ export const NextSevenDays: FC = () => {
   return (
     <InnerPageLayout
       fullscreen
-      headerLeft={
+      headerRight={
         <RefreshIcon
           onClick={() => queryClient.event.range.invalidate()}
           loading={isFetching}
@@ -61,6 +69,15 @@ export const NextSevenDays: FC = () => {
         <div className="relative z-10">
           <Header1 className="relative bg-neutral-950 text-2xl">Inbox</Header1>
         </div>
+      }
+      headerLeft={
+        <button onClick={() => setShowShared(!showShared)}>
+          {showShared ? (
+            <UserGroupIcon height={20} />
+          ) : (
+            <UserIcon height={20} />
+          )}
+        </button>
       }
     >
       {focusDate && (

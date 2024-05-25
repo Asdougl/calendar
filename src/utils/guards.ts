@@ -1,4 +1,5 @@
 import { type ZodError } from 'zod'
+import isNil from 'lodash/isNil'
 
 export const isError = (error: unknown): error is Error => {
   return typeof error === 'object' && error !== null && 'message' in error
@@ -17,7 +18,7 @@ export const isArray = <T>(value: unknown): value is T[] => {
 }
 
 export const exists = <T>(value: T | null | undefined): value is T => {
-  return value !== null && value !== undefined
+  return isNil(value) === false
 }
 
 export const isZodError = (error: Error): error is ZodError => {

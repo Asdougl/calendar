@@ -1,6 +1,6 @@
 'use client'
 
-import { type FC, useMemo } from 'react'
+import { type FC, useMemo, useState } from 'react'
 import {
   addDays,
   addMonths,
@@ -20,20 +20,18 @@ import {
   subDays,
   subMonths,
 } from 'date-fns'
-import { ChevronLeftIcon } from '@heroicons/react/24/solid'
+import {
+  ChevronLeftIcon,
+  UserGroupIcon,
+  UserIcon,
+} from '@heroicons/react/24/solid'
+import { MonthItem } from './month-item'
 import { cn, color } from '~/utils/classnames'
 import { api } from '~/trpc/react'
-import {
-  Duration,
-  isEventComplete,
-  timeFormat,
-  toCalendarDate,
-  weekDatesOfDateRange,
-} from '~/utils/dates'
+import { Duration, toCalendarDate, weekDatesOfDateRange } from '~/utils/dates'
 import { type RouterOutputs } from '~/trpc/shared'
 import { PathLink } from '~/utils/nav/Link'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
-import { usePreferences } from '~/trpc/hooks'
 import { createClientDateRangeHook } from '~/utils/hooks'
 import { stdFormat } from '~/components/ui/dates/common'
 
@@ -50,10 +48,9 @@ const colorBg = color('bg')
 
 export const MonthView: FC = () => {
   const [focusMonth, focusMounted] = useMonthDate()
+  const [showShared, setShowShared] = useState(true)
 
   const queryClient = api.useUtils()
-
-  const { preferences } = usePreferences()
 
   const { data: periodsByDay } = api.periods.range.useQuery(
     {
@@ -120,6 +117,7 @@ export const MonthView: FC = () => {
     {
       start: startOfDay(subDays(focusMonth.start, 7)),
       end: endOfDay(addDays(focusMonth.end, 7)),
+      shared: showShared,
     },
     {
       enabled: focusMounted,
@@ -187,6 +185,15 @@ export const MonthView: FC = () => {
 
   return (
     <InnerPageLayout
+      headerLeft={
+        <button onClick={() => setShowShared(!showShared)}>
+          {showShared ? (
+            <UserGroupIcon height={20} />
+          ) : (
+            <UserIcon height={20} />
+          )}
+        </button>
+      }
       title={format(focusMonth.start, 'MMMM yyyy')}
       headerRight={
         <div className="flex gap-2">
@@ -280,35 +287,11 @@ export const MonthView: FC = () => {
                     </div>
                   )}
                   {eventsForDay?.map((event) => (
-                    <div
+                    <MonthItem
                       key={event.id}
-                      className={cn(
-                        'relative flex flex-col gap-0.5 pl-1 hover:bg-neutral-900',
-                        {
-                          'animate-pulse opacity-50': isFetching,
-                        }
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          'absolute left-0 top-0 h-full w-0.5 rounded-lg',
-                          colorBg(event.category?.color)
-                        )}
-                      ></div>
-                      <div
-                        className={cn('truncate whitespace-nowrap text-xs', {
-                          'text-neutral-500 line-through':
-                            isEventComplete(event),
-                        })}
-                      >
-                        {event.title}
-                      </div>
-                      {event.timeStatus === 'STANDARD' && (
-                        <div className="-mt-1 hidden text-xs opacity-50 md:block">
-                          {timeFormat(event.datetime, preferences)}
-                        </div>
-                      )}
-                    </div>
+                      event={event}
+                      loading={isFetching}
+                    />
                   ))}
                 </div>
               )

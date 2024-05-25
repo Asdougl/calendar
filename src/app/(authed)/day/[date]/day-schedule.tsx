@@ -56,7 +56,12 @@ const timeFormatter = new Intl.DateTimeFormat('en', {
   hour12: true,
 })
 
-const eventItemTime = (event: RouterOutputs['event']['range'][number]) => {
+const eventItemTime = (
+  event: Pick<
+    RouterOutputs['event']['range'][number],
+    'timeStatus' | 'datetime'
+  >
+) => {
   if (event.timeStatus === 'ALL_DAY') return 'All Day'
   if (event.timeStatus === 'NO_TIME') return ''
   return timeFormatter.format(event.datetime)

@@ -15,6 +15,11 @@ export const createMockEvent = (partial?: Partial<RangeEvent>): RangeEvent => {
     done: null,
     cancelled: false,
     recursion: null,
+    createdBy: {
+      id: createTempId(),
+      name: 'Test User',
+      image: 'https://avatars.githubusercontent.com/u/25199427?v=4',
+    },
     ...partial,
   }
 }

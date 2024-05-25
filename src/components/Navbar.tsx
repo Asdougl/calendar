@@ -3,8 +3,9 @@
 import {
   CalendarDaysIcon,
   InboxIcon,
-  QueueListIcon,
-  UserGroupIcon,
+  MagnifyingGlassIcon,
+  TagIcon,
+  TicketIcon,
 } from '@heroicons/react/24/solid'
 import { usePathname } from 'next/navigation'
 import type { FC, ReactNode } from 'react'
@@ -31,12 +32,12 @@ const NavBarItem = <Path extends Pathname>(
     <Link
       href={navPath}
       className={cn(
-        'flex flex-col items-center gap-2 rounded-lg px-4 py-2 md:hover:bg-neutral-900 md:hover:text-neutral-50',
+        'flex w-full flex-col items-center gap-2 rounded-lg px-4 py-2 md:hover:bg-neutral-900 md:hover:text-neutral-50',
         active ? 'text-neutral-50' : 'text-neutral-500'
       )}
     >
       {props.icon}
-      <span className="hidden lg:block">{props.label}</span>
+      <span className="hidden text-sm lg:block">{props.label}</span>
     </Link>
   )
 }
@@ -55,8 +56,24 @@ const ProfileNavItem = () => {
         size="sm"
         className={cn('ring-neutral-300', { ring: active })}
       />
-      <span className="hidden lg:block">profile</span>
+      <span className="hidden text-sm lg:block">profile</span>
     </PathLink>
+  )
+}
+
+const NavLi = ({ children }: { children: ReactNode }) => {
+  return (
+    <li className="flex h-16 w-full flex-1 items-center justify-center">
+      {children}
+    </li>
+  )
+}
+
+const DesktopNavLi = ({ children }: { children: ReactNode }) => {
+  return (
+    <li className="hidden h-16 w-full flex-1 items-center justify-center lg:flex">
+      {children}
+    </li>
   )
 }
 
@@ -65,37 +82,44 @@ export const Navbar: FC<{ loading?: boolean }> = () => {
     <footer className="sticky bottom-0 bg-neutral-950 pb-6 lg:static">
       <nav className="left-0 top-0 lg:fixed lg:h-screen">
         <ul className="flex items-center justify-evenly lg:flex-col lg:justify-start lg:gap-6 lg:px-2 lg:py-4">
-          <li className="flex h-16 flex-1 items-center justify-center">
+          <NavLi>
             <NavBarItem
               path="/inbox"
               icon={<InboxIcon height={22} />}
               label="inbox"
             />
-          </li>
-          <li className="flex h-16 flex-1 items-center justify-center">
-            <NavBarItem
-              path="/shared"
-              icon={<UserGroupIcon height={22} />}
-              label="shared"
-            />
-          </li>
-          <li className="flex h-16 flex-1 items-center justify-center">
+          </NavLi>
+          <NavLi>
             <NavBarItem
               path="/month"
               icon={<CalendarDaysIcon height={22} />}
               label="month"
             />
-          </li>
-          <li className="flex h-16 flex-1 items-center justify-center">
+          </NavLi>
+          <NavLi>
+            <NavBarItem
+              path="/search/people"
+              icon={<MagnifyingGlassIcon height={22} />}
+              label="search"
+            />
+          </NavLi>
+          <DesktopNavLi>
             <NavBarItem
               path="/events"
-              icon={<QueueListIcon height={22} />}
+              icon={<TicketIcon height={22} />}
               label="events"
             />
-          </li>
-          <li className="flex h-16 flex-1 items-center justify-center">
+          </DesktopNavLi>
+          <DesktopNavLi>
+            <NavBarItem
+              path="/categories"
+              icon={<TagIcon height={22} />}
+              label="categories"
+            />
+          </DesktopNavLi>
+          <NavLi>
             <ProfileNavItem />
-          </li>
+          </NavLi>
         </ul>
       </nav>
     </footer>

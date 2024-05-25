@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'next/navigation'
-import type { EffectCallback } from 'react'
+import type { Dispatch, EffectCallback, SetStateAction } from 'react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import throttle from 'lodash/throttle'
 import { startOfDay } from 'date-fns'
@@ -9,7 +9,15 @@ import { getWindow } from '~/utils/misc'
 /**
  * A hook that returns a debounced value.
  */
-export const useDebouncedState = <T>(initialValue: T, delay: number) => {
+export const useDebouncedState = <T>(
+  initialValue: T,
+  delay: number
+): [
+  debouncedValue: T,
+  setValue: Dispatch<SetStateAction<T>>,
+  isDebounced: boolean,
+  undebouncedValue: T,
+] => {
   const [value, setValue] = useState(initialValue)
   const [debouncedValue, setDebouncedValue] = useState(initialValue)
   useEffect(() => {
@@ -18,7 +26,7 @@ export const useDebouncedState = <T>(initialValue: T, delay: number) => {
     }, delay)
     return () => clearTimeout(timeout)
   }, [value, delay])
-  return [debouncedValue, setValue, value === debouncedValue, value] as const
+  return [debouncedValue, setValue, value === debouncedValue, value]
 }
 
 /**

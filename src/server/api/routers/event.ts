@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { EVENT_LINK_RELATION, TimeStatus } from '@prisma/client'
+import { EVENT_LINK_RELATION, type Prisma, TimeStatus } from '@prisma/client'
 import { add, addDays } from 'date-fns'
 import { createTRPCRouter, protectedProcedure } from '../trpc'
 import { eventSort } from '~/utils/sort'
@@ -38,33 +38,60 @@ export const eventRouter = createTRPCRouter({
         .object({
           start: z.date(),
           end: z.date(),
+          shared: z.boolean().default(false),
         })
         .optional()
     )
     .query(({ ctx, input }) => {
       if (!input) return []
 
+      const whereOr: Prisma.EventWhereInput['OR'] = [
+        {
+          createdById: ctx.session.user.id,
+          category: {
+            NOT: {
+              hidden: true,
+            },
+          },
+        },
+        {
+          createdById: ctx.session.user.id,
+          category: null,
+        },
+      ]
+
+      if (input.shared) {
+        whereOr.push({
+          category: {
+            CategoryShare: {
+              some: {
+                sharedWidthId: ctx.session.user.id,
+              },
+            },
+            private: false,
+            hidden: false,
+          },
+        })
+      }
+
       return ctx.db.event.findMany({
         where: {
-          createdById: ctx.session.user.id,
           datetime: {
             gte: input.start.toISOString(),
             lt: input.end.toISOString(),
           },
-          OR: [
-            {
-              category: {
-                NOT: {
-                  hidden: true,
-                },
-              },
-            },
-            {
-              category: null,
-            },
-          ],
+          OR: whereOr,
         },
-        select,
+        select: {
+          ...select,
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+        },
         orderBy: {
           datetime: 'asc',
         },
@@ -235,7 +262,13 @@ export const eventRouter = createTRPCRouter({
         },
         select: {
           ...select,
-          createdById: true,
+          createdBy: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
         },
       })
     }),

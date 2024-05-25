@@ -1,16 +1,49 @@
 'use client'
 
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
-import { signOut } from 'next-auth/react'
-import { useState } from 'react'
 import { TimezoneSelect } from '~/components/form/TimezoneSelect'
 import { SettingItem, SettingList } from '~/components/layout/Settings'
+import { Avatar } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
 import { Select, type SelectOption } from '~/components/ui/select'
 import { Switch } from '~/components/ui/switch'
 import { api } from '~/trpc/react'
 import { Preferences, PreferencesDefaults } from '~/types/preferences'
 import { useClientNow, useClientTimezone } from '~/utils/hooks'
+
+export const ProfileSection = () => {
+  const { data: user } = api.users.me.useQuery()
+
+  return (
+    <SettingList title="Profile">
+      <SettingItem title="Name" skeleton={!user}>
+        {user?.name && (
+          <input
+            type="text"
+            defaultValue={user.name}
+            className="h-full w-full bg-transparent text-center ring-neutral-600 focus:outline-none focus:ring"
+          />
+        )}
+      </SettingItem>
+      <SettingItem title="Email" skeleton={!user}>
+        {user?.email}
+      </SettingItem>
+      <SettingItem title="Handle" skeleton={!user}>
+        {user && (
+          <input
+            type="text"
+            defaultValue={user.handle?.value || ''}
+            placeholder="Your @handle"
+            className="h-full w-full bg-transparent text-center ring-neutral-600 focus:outline-none focus:ring"
+          />
+        )}
+      </SettingItem>
+      <SettingItem title="Profile Picture" skeleton={!user}>
+        <Avatar size="sm" src={user?.image} name={user?.name || 'Nobody'} />
+      </SettingItem>
+    </SettingList>
+  )
+}
 
 const timeFormatOptions: SelectOption<Preferences['timeFormat']>[] = [
   { value: '12', name: '12h' },
@@ -25,50 +58,49 @@ const leftWeekendsOptions: SelectOption<Preferences['weekends']>[] = [
 
 export const PreferencesSection = () => {
   const queryClient = api.useUtils()
-  const [initialUpdate, setInitialUpdate] = useState(false)
 
   const { data: preferences, isLoading: isInitialLoading } =
     api.preferences.getAll.useQuery()
-  const { mutate: updatePreferences, isPending: isUpdating } =
-    api.preferences.update.useMutation({
-      onMutate: async (data) => {
-        if (!initialUpdate) {
-          setInitialUpdate(true)
-        }
-        // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-        await queryClient.preferences.getAll.cancel()
-        // Snapshot the previous value
-        const old = queryClient.preferences.getAll.getData()
+  const {
+    mutate: updatePreferences,
+    isPending: isUpdating,
+    isSuccess,
+  } = api.preferences.update.useMutation({
+    onMutate: async (data) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.preferences.getAll.cancel()
+      // Snapshot the previous value
+      const old = queryClient.preferences.getAll.getData()
 
-        const withDefaults = PreferencesDefaults.parse(data)
-        // Optimistically update to the new value
-        queryClient.preferences.getAll.setData(
-          undefined,
-          Preferences.parse({
-            ...old,
-            ...withDefaults,
-          })
-        )
-        // Return a context object with the snapshotted value
-        return { prevData: old }
-      },
-      onError: (err, newPrefs, ctx) => {
-        if (ctx?.prevData) {
-          // If the mutation fails, use the context returned from onMutate to roll back
-          queryClient.preferences.getAll.setData(undefined, ctx.prevData)
-        }
-      },
-      onSettled: () => {
-        // Invalidate and refetch
-        // eslint-disable-next-line no-console
-        queryClient.preferences.getAll.invalidate().catch(console.error)
-      },
-    })
+      const withDefaults = PreferencesDefaults.parse(data)
+      // Optimistically update to the new value
+      queryClient.preferences.getAll.setData(
+        undefined,
+        Preferences.parse({
+          ...old,
+          ...withDefaults,
+        })
+      )
+      // Return a context object with the snapshotted value
+      return { prevData: old }
+    },
+    onError: (err, newPrefs, ctx) => {
+      if (ctx?.prevData) {
+        // If the mutation fails, use the context returned from onMutate to roll back
+        queryClient.preferences.getAll.setData(undefined, ctx.prevData)
+      }
+    },
+    onSettled: () => {
+      // Invalidate and refetch
+      // eslint-disable-next-line no-console
+      queryClient.preferences.getAll.invalidate().catch(console.error)
+    },
+  })
 
   return (
     <SettingList
       title="Preferences"
-      saving={initialUpdate ? (isUpdating ? true : false) : undefined}
+      saving={isSuccess ? (isUpdating ? true : false) : undefined}
     >
       <SettingItem title="Weekends left" skeleton={isInitialLoading}>
         {preferences && (
@@ -179,14 +211,4 @@ export const DebugSection = () => {
       </SettingItem>
     </SettingList>
   ) : null
-}
-
-export const LogoutSection = () => {
-  return (
-    <div className="flex items-center justify-center py-12">
-      <Button onClick={() => signOut()} intent="secondary" className="w-40">
-        Logout
-      </Button>
-    </div>
-  )
 }

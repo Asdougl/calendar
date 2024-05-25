@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react'
 
 type SevenDaysContext = {
   baseDate: Date
-  weekStart?: 0 | 1 | 2 | 3 | 4 | 5 | 6
+  weekStart: 0 | 1 | 2 | 3 | 4 | 5 | 6
   outlines?: boolean
   loading?: boolean
   usedIn?: 'shared' | 'inbox' | 'week'
@@ -11,6 +11,7 @@ type SevenDaysContext = {
 
 export const SevenDaysContext = createContext<SevenDaysContext>({
   baseDate: new Date(),
+  weekStart: 1,
 })
 
 export const SevenDaysProvider = SevenDaysContext.Provider

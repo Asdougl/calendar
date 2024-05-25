@@ -1,7 +1,12 @@
 'use client'
 
-import { ArrowLeftIcon, ChevronLeftIcon } from '@heroicons/react/24/solid'
+import {
+  ChevronLeftIcon,
+  UserGroupIcon,
+  UserIcon,
+} from '@heroicons/react/24/solid'
 import { addWeeks, endOfWeek, startOfWeek } from 'date-fns'
+import { useState } from 'react'
 import { SevenDays } from '~/components/seven-days/SevenDays'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { PathLink } from '~/utils/nav/Link'
@@ -32,14 +37,21 @@ const useWeekDate = createClientDateRangeHook({
 
 export const WeekView = () => {
   const [focusWeek, focusMounted, , week] = useWeekDate()
+  const [showShared, setShowShared] = useState(true)
 
-  const { data: events, isLoading } = api.event.range.useQuery(focusWeek, {
-    enabled: focusMounted,
-    refetchOnWindowFocus: false,
-    staleTime: Duration.minutes(5),
-    refetchInterval: Duration.minutes(10),
-    select: eventsByDay,
-  })
+  const { data: events, isLoading } = api.event.range.useQuery(
+    {
+      ...focusWeek,
+      shared: showShared,
+    },
+    {
+      enabled: focusMounted,
+      refetchOnWindowFocus: false,
+      staleTime: Duration.minutes(5),
+      refetchInterval: Duration.minutes(10),
+      select: eventsByDay,
+    }
+  )
 
   const { data: periods } = api.periods.range.useQuery(focusWeek, {
     enabled: focusMounted,
@@ -54,13 +66,13 @@ export const WeekView = () => {
     <InnerPageLayout
       fullscreen
       headerLeft={
-        <PathLink
-          path="/month"
-          query={{ of: stdFormat(focusWeek.start) }}
-          className="flex items-center justify-center"
-        >
-          <ArrowLeftIcon height={20} className="" />
-        </PathLink>
+        <button onClick={() => setShowShared(!showShared)}>
+          {showShared ? (
+            <UserGroupIcon height={20} />
+          ) : (
+            <UserIcon height={20} />
+          )}
+        </button>
       }
       headerRight={
         <div className="flex gap-2">

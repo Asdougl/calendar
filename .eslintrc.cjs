@@ -4,12 +4,18 @@ const config = {
   parserOptions: {
     project: true,
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'react-refresh'],
   extends: [
     'next/core-web-vitals',
     'plugin:@typescript-eslint/recommended-type-checked',
     'plugin:@typescript-eslint/stylistic-type-checked',
-    '@asdougl',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:jsx-a11y/recommended',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
+    'plugin:lodash/recommended',
+    'prettier',
   ],
   rules: {
     // These opinionated rules are enabled in stylistic-type-checked above.
@@ -32,8 +38,20 @@ const config = {
       },
     ],
     '@typescript-eslint/prefer-nullish-coalescing': 0,
-    'react/jsx-props-no-spreading': 0,
-    'lodash/prefer-is-nil': 0,
+    'react/react-in-jsx-scope': 0,
+    'react/prop-types': 0, // pointless in TS
+    'import/order': 2,
+    'import/namespace': 0,
+    'no-warning-comments': [2, { terms: ['TODO', 'FIXME'], location: 'start' }],
+    'no-console': 1,
+    'lodash/prefer-lodash-method': 0,
+    'lodash/prefer-constant': 0,
+    'lodash/prefer-lodash-typecheck': 0,
+    'react-refresh/only-export-components': [
+      'warn',
+      { allowConstantExport: true },
+    ],
+    'jsx-a11y/label-has-associated-control': 'off', // caused too many false positives
   },
   overrides: [
     {

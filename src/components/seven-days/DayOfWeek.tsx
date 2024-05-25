@@ -3,6 +3,7 @@ import { differenceInCalendarDays, format, setDay } from 'date-fns'
 import { useDroppable } from '@dnd-kit/core'
 import Link from 'next/link'
 import { PlusIcon } from '@heroicons/react/24/solid'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { ACCESSIBLE_FORMAT, stdFormat } from '../ui/dates/common'
 import { EventItem } from './EventItem'
 import { useSevenDaysCtx } from './common'
@@ -11,7 +12,6 @@ import { SEARCH_PARAM_NEW, modifySearchParams } from '~/utils/nav/search'
 import { eventSort } from '~/utils/sort'
 import { cmerge, cn, color } from '~/utils/classnames'
 import { PathLink } from '~/utils/nav/Link'
-import { createURL, getWindow } from '~/utils/misc'
 
 const DayOfWeekLabel = ({ date }: { date: Date }) => {
   const { usedIn, week } = useSevenDaysCtx()
@@ -35,10 +35,10 @@ const DayOfWeekLabel = ({ date }: { date: Date }) => {
         </div>
       )}
       <div className="flex items-baseline gap-1">
-        <span className="font-bold xl:text-xl">
+        <span className="font-bold xl:text-xl" data-testid="day-of-week">
           {date.toLocaleString('default', { weekday: 'short' })}
         </span>
-        <span className="text-sm xl:text-base">
+        <span className="text-sm xl:text-base" data-testid="date-of-month">
           {date.getDate().toString().padStart(2, '0')}
         </span>
         <span className="text-sm xl:text-base">
@@ -56,22 +56,25 @@ type DayOfWeekProps = {
   periods?: RouterOutputs['periods']['range'][]
 }
 
-const eventLink = (id: string, date?: Date) => {
-  const url = createURL(getWindow()?.location.href || '')
-  if (url) {
-    modifySearchParams({
-      update: {
-        event: id,
-        date: date ? stdFormat(date) : undefined,
-      },
-      remove: ['period'],
-      searchParams: url.searchParams,
-    })
+type EventLinkParams = {
+  currPath: string
+  currSearch: URLSearchParams
+  id: string
+  date?: Date
+}
 
-    return url.toString()
-  } else {
-    return '#'
-  }
+const eventLink = ({ currPath, currSearch, id, date }: EventLinkParams) => {
+  const searchParams = new URLSearchParams(currSearch.toString())
+  modifySearchParams({
+    update: {
+      event: id,
+      date: date ? stdFormat(date) : undefined,
+    },
+    remove: ['period'],
+    searchParams,
+  })
+
+  return currPath + '?' + searchParams.toString()
 }
 
 const periodLink = (id: string, date?: Date) => {
@@ -99,6 +102,9 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
     outlines,
     loading: loadingEvents,
   } = useSevenDaysCtx()
+
+  const pathname = usePathname()
+  const search = useSearchParams()
 
   const date = setDay(baseDate, dayOfWeek, { weekStartsOn: weekStart })
 
@@ -184,7 +190,12 @@ export const DayOfWeek: FC<DayOfWeekProps> = ({
             ))}
             {distanceToStart >= 0 && (
               <Link
-                href={eventLink(SEARCH_PARAM_NEW, date)}
+                href={eventLink({
+                  currPath: pathname,
+                  currSearch: search,
+                  id: SEARCH_PARAM_NEW,
+                  date,
+                })}
                 className={cn(
                   'flex flex-shrink-0 flex-grow flex-col justify-end rounded text-xs lg:hover:bg-neutral-900',
                   { 'pointer-events-none hidden': active }

@@ -3,6 +3,7 @@ import {
   addDays,
   differenceInCalendarDays,
   differenceInDays,
+  endOfDay,
   endOfWeek,
   format,
   getDate,
@@ -213,10 +214,16 @@ export const timeFormat = (
 }
 
 export const isEventComplete = (
-  event: Pick<Event, 'datetime' | 'done' | 'cancelled'>
+  event: Pick<Event, 'datetime' | 'done' | 'cancelled' | 'timeStatus'>
 ) => {
   const now = new Date()
-  return (
-    event.cancelled || (event.done !== null ? event.done : event.datetime < now)
-  )
+
+  if (event.cancelled) return true
+
+  if (event.done !== null && event.done) return true
+
+  if (event.timeStatus === 'ALL_DAY' || event.timeStatus === 'NO_TIME')
+    return endOfDay(event.datetime) < now
+
+  return event.datetime < now
 }

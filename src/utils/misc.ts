@@ -50,3 +50,11 @@ export const createURL = (...params: ConstructorParameters<typeof URL>) => {
     return null
   }
 }
+
+export const createArray = <T>(length: number, fill: T) => {
+  return Array.from({ length }, () => fill)
+}
+
+export const createRandomArray = <T>(from: number, to: number, fill: T) => {
+  return createArray(Math.floor(Math.random() * (to - from + 1)) + from, fill)
+}

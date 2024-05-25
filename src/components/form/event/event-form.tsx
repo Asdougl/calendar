@@ -44,16 +44,16 @@ const UpdateEventSchema = z.object({
 type UpdateEventFormValues = z.infer<typeof UpdateEventSchema>
 
 type EditEventFormProps = {
-  event: Omit<NonNullable<RouterOutputs['event']['one']>, 'createdById'>
+  event: NonNullable<RouterOutputs['event']['one']>
   onSubmit?: (
-    event: Omit<NonNullable<RouterOutputs['event']['one']>, 'createdById'>
+    event: Omit<NonNullable<RouterOutputs['event']['one']>, 'createdBy'>
   ) => void
 }
 
 type CreateEventFormProps = {
   date: Date
   onSubmit?: (
-    event: Omit<NonNullable<RouterOutputs['event']['one']>, 'createdById'>
+    event: Omit<NonNullable<RouterOutputs['event']['one']>, 'createdBy'>
   ) => void
 }
 
@@ -208,7 +208,7 @@ export const EventForm: FC<EventFormProps> = ({
     <form onSubmit={onSubmit} className="flex flex-col items-start gap-4">
       {title}
       {/* Row 1 -- title */}
-      <div className="flex w-full flex-col gap-1">
+      <div className={cn('flex w-full flex-col gap-1', { hidden: readonly })}>
         <label htmlFor="title" className={cn({ 'sr-only': !labels })}>
           Title
         </label>
@@ -270,7 +270,7 @@ export const EventForm: FC<EventFormProps> = ({
       </div>
       {/* Row 3 -- Time */}
       <div className="flex w-full flex-col gap-1">
-        <label className={cn({ 'sr-only': !labels })}>Time</label>
+        <div className={cn({ 'sr-only': !labels })}>Time</div>
         <div className={cn('flex flex-col gap-4', { 'lg:flex-row': !labels })}>
           <div className="flex flex-1 flex-row rounded-lg border border-neutral-800 bg-neutral-950 lg:flex-col">
             <Controller

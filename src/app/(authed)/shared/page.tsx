@@ -64,6 +64,7 @@ export default function SharedPage() {
           loading={isLoading}
           weekStart={getDay(focusDate.start)}
           usedIn="shared"
+          outlines
         />
       )}
     </InnerPageLayout>

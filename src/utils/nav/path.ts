@@ -15,9 +15,12 @@ export const PathMap = z.object({
   '/periods': z.null(),
   '/periods/:id': z.object({ id: z.string() }),
   '/profile': z.null(),
+  '/settings': z.null(),
   '/people': z.null(),
   '/week': z.null(),
   '/year': z.null(),
+  '/search/people': z.null(),
+  '/search/events': z.null(),
 })
 export type PathMap = z.infer<typeof PathMap>
 export type Pathname = keyof PathMap

@@ -1,5 +1,5 @@
 import { set } from 'date-fns'
-import { type FC } from 'react'
+import { useCallback, type FC } from 'react'
 import {
   DndContext,
   type DragEndEvent,
@@ -37,7 +37,7 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
   periods,
   loading,
   outlines,
-  weekStart,
+  weekStart = 1,
   findEvent,
   updateEvent,
   usedIn,
@@ -56,39 +56,42 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
     },
   })
 
-  const onDragEnd = (e: DragEndEvent) => {
-    if (!e.over?.id) return
+  const onDragEnd = useCallback(
+    (e: DragEndEvent) => {
+      if (!e.over?.id) return
 
-    const [year, month, date] = e.over.id.toString().split('-')
+      const [year, month, date] = e.over.id.toString().split('-')
 
-    if (!year || !month || !date) return
+      if (!year || !month || !date) return
 
-    const yearInt = parseInt(year, 10)
-    const monthInt = parseInt(month, 10)
-    const dateInt = parseInt(date, 10)
+      const yearInt = parseInt(year, 10)
+      const monthInt = parseInt(month, 10)
+      const dateInt = parseInt(date, 10)
 
-    if (isNaN(yearInt) || isNaN(monthInt) || isNaN(dateInt)) return
+      if (isNaN(yearInt) || isNaN(monthInt) || isNaN(dateInt)) return
 
-    const event = findEvent(e.active.id.toString())
+      const event = findEvent(e.active.id.toString())
 
-    if (!event) return
+      if (!event) return
 
-    if (
-      event.datetime.getFullYear() === yearInt &&
-      event.datetime.getMonth() === monthInt - 1 &&
-      event.datetime.getDate() === dateInt
-    )
-      return
+      if (
+        event.datetime.getFullYear() === yearInt &&
+        event.datetime.getMonth() === monthInt - 1 &&
+        event.datetime.getDate() === dateInt
+      )
+        return
 
-    updateEvent({
-      id: event.id,
-      datetime: set(event.datetime, {
-        year: yearInt,
-        month: monthInt - 1, // 0 indexed
-        date: dateInt,
-      }),
-    })
-  }
+      updateEvent({
+        id: event.id,
+        datetime: set(event.datetime, {
+          year: yearInt,
+          month: monthInt - 1, // 0 indexed
+          date: dateInt,
+        }),
+      })
+    },
+    [findEvent, updateEvent]
+  )
 
   return (
     <SevenDaysProvider
@@ -100,42 +103,49 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
           sensors={[mouseSensor, touchSensor]}
           collisionDetection={pointerWithin}
         >
+          {/* Saturday */}
           <DayOfWeek
             className="row-span-5"
             dayOfWeek={6}
             events={events}
             periods={periods}
           />
+          {/* Friday */}
           <DayOfWeek
             className="row-span-2"
             dayOfWeek={5}
             events={events}
             periods={periods}
           />
+          {/* Thursday */}
           <DayOfWeek
             className="row-span-2"
             dayOfWeek={4}
             events={events}
             periods={periods}
           />
+          {/* Wednesday */}
           <DayOfWeek
             className="row-span-2"
             dayOfWeek={3}
             events={events}
             periods={periods}
           />
+          {/* Sunday */}
           <DayOfWeek
             className="row-span-5"
             dayOfWeek={0}
             events={events}
             periods={periods}
           />
+          {/* Tuesday */}
           <DayOfWeek
             className="row-span-2"
             dayOfWeek={2}
             events={events}
             periods={periods}
           />
+          {/* Wednesday */}
           <DayOfWeek
             className="row-span-2"
             dayOfWeek={1}
@@ -188,16 +198,19 @@ export const SevenDays = (props: SevenDaysProps) => {
     },
   })
 
-  const findEvent = (id: string) => {
-    const events = queryClient.event.range.getData({
-      start: props.start,
-      end: props.end,
-    })
+  const findEvent = useCallback(
+    (id: string) => {
+      const events = queryClient.event.range.getData({
+        start: props.start,
+        end: props.end,
+      })
 
-    if (!events) return
+      if (!events) return
 
-    return events.find((event) => event.id === id)
-  }
+      return events.find((event) => event.id === id)
+    },
+    [queryClient, props.end, props.start]
+  )
 
   return (
     <SevenDaysShell {...props} findEvent={findEvent} updateEvent={mutate} />

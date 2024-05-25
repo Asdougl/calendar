@@ -1,16 +1,14 @@
 import {
+  ChevronRightIcon,
   ClockIcon,
-  ListBulletIcon,
+  Cog6ToothIcon,
+  TagIcon,
   TicketIcon,
   UsersIcon,
 } from '@heroicons/react/24/solid'
 import { type ReactNode } from 'react'
-import {
-  DebugSection,
-  LogoutSection,
-  PreferencesSection,
-} from './profile-sections'
 import { FollowStats } from './follow-stats'
+import { LogoutButton } from './logout'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { PathLink } from '~/utils/nav/Link'
 import { Avatar } from '~/components/ui/avatar'
@@ -32,7 +30,7 @@ const LINKS = [
   } as ProfileLink<'/people'>,
   {
     path: '/categories',
-    icon: <ListBulletIcon className="mr-2 h-5 w-5" />,
+    icon: <TagIcon className="mr-2 h-5 w-5" />,
     title: 'Categories',
   } as ProfileLink<'/categories'>,
   {
@@ -41,10 +39,20 @@ const LINKS = [
     title: 'Periods',
   } as ProfileLink<'/periods'>,
   {
-    path: '/events/past',
+    path: '/events',
     icon: <TicketIcon className="mr-2 h-5 w-5" />,
+    title: 'Events',
+  } as ProfileLink<'/events'>,
+  {
+    path: '/events/past',
+    icon: <ClockIcon className="mr-2 h-5 w-5" />,
     title: 'Past Events',
   } as ProfileLink<'/events/past'>,
+  {
+    path: '/settings',
+    icon: <Cog6ToothIcon className="mr-2 h-5 w-5" />,
+    title: 'Settings',
+  } as ProfileLink<'/settings'>,
 ]
 
 export default async function ProfilePage() {
@@ -72,16 +80,17 @@ export default async function ProfilePage() {
             <PathLink
               key={link.path}
               path={link.path}
-              className="flex items-center gap-1 rounded-lg border border-neutral-800 px-4 py-2 hover:bg-neutral-900"
+              className="flex items-center justify-between rounded-lg border border-neutral-800 px-4 py-2 hover:bg-neutral-900"
             >
-              {link.icon}
-              {link.title}
+              <div className="flex items-center gap-1">
+                {link.icon}
+                {link.title}
+              </div>
+              <ChevronRightIcon className="h-5 w-5" />
             </PathLink>
           ))}
         </div>
-        <PreferencesSection />
-        <DebugSection />
-        <LogoutSection />
+        <LogoutButton />
       </div>
     </InnerPageLayout>
   )

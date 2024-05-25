@@ -13,7 +13,7 @@ type Event = Omit<RouterOutputs['event']['sharedRange'][number], 'createdBy'> &
 
 const createEvent = (
   params: Pick<Event, 'title' | 'datetime'> & Partial<Omit<Event, 'id'>>
-): Event => {
+): RouterOutputs['event']['range'][number] => {
   return {
     id: createTempId(),
     category: null,
@@ -23,6 +23,11 @@ const createEvent = (
     cancelled: false,
     done: null,
     recursion: null,
+    createdBy: {
+      id: createTempId(),
+      name: 'asdougl',
+      image: 'https://avatars.githubusercontent.com/u/25199427?v=4',
+    },
     ...params,
   }
 }

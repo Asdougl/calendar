@@ -9,6 +9,7 @@ import { Header2 } from '../ui/headers'
 import { EventForm } from '../form/event/event-form'
 import { stdFormat } from '../ui/dates/common'
 import { ButtonRawLink } from '../ui/button'
+import { Avatar } from '../ui/avatar'
 import { cn, color } from '~/utils/classnames'
 import { api } from '~/trpc/react'
 import {
@@ -83,6 +84,45 @@ export const EventModal: FC = () => {
     }
   }
 
+  const isShared = event && event.createdBy.id !== session.data?.user.id
+
+  let eventIcon
+  if (isShared) {
+    eventIcon = (
+      <Avatar
+        size="sm"
+        src={event.createdBy.image}
+        name={event.createdBy.name || 'User'}
+        className={cn('ring-2', color('ring')(event.category?.color))}
+      />
+    )
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+  } else if (event && event.done !== null) {
+    eventIcon = (
+      <button
+        className={cn(
+          'flex items-center rounded border-2 pr-px lg:pr-1',
+          color('border')(event?.category?.color)
+        )}
+        onClick={() =>
+          event && mutate({ id: event.id, completed: !event.done })
+        }
+        disabled={isMutating || event.createdBy.id !== session.data?.user?.id}
+      >
+        {event.done ? <CheckIcon height={18} /> : null}
+      </button>
+    )
+  } else {
+    eventIcon = (
+      <div
+        className={cn(
+          'h-5 w-1 flex-shrink-0 rounded-full xl:w-1',
+          color('bg')(event?.category?.color)
+        )}
+      ></div>
+    )
+  }
+
   return (
     <Dialog.Root
       open={searchParams.has(SearchParamKeys.Values.event)}
@@ -100,36 +140,19 @@ export const EventModal: FC = () => {
                   </div>
                 </div>
               ) : (
-                <Header2 className="flex items-center gap-2">
-                  {/* eslint-disable-next-line @typescript-eslint/prefer-optional-chain */}
-                  {event && event?.done !== null ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        event &&
-                        mutate({ id: event.id, completed: !event.done })
-                      }
-                      disabled={
-                        isMutating ||
-                        event.createdById !== session.data?.user?.id
-                      }
-                      className={cn(
-                        'flex h-6 w-6 items-center justify-center rounded border-2',
-                        color('border')(event?.category?.color)
+                <>
+                  <Header2 className="flex items-center gap-2">
+                    {eventIcon}
+                    <div className="pl-1">
+                      {event ? event.title : 'Add Event'}
+                      {isShared && (
+                        <div className="text-sm font-normal text-neutral-400">
+                          Shared by {event?.createdBy.name}
+                        </div>
                       )}
-                    >
-                      {event?.done ? <CheckIcon height={18} /> : ' '}
-                    </button>
-                  ) : (
-                    <div
-                      className={cn(
-                        'h-6 w-1 rounded-full',
-                        color('bg')(event?.category?.color)
-                      )}
-                    ></div>
-                  )}
-                  {event ? event.title : 'Add Event'}
-                </Header2>
+                    </div>
+                  </Header2>
+                </>
               )}
             </Dialog.Title>
             <Dialog.Close asChild>
@@ -177,7 +200,7 @@ export const EventModal: FC = () => {
             <EventForm
               event={event}
               onSubmit={() => onOpenChange(false)}
-              readonly={event.createdById !== session.data?.user?.id}
+              readonly={event.createdBy.id !== session.data?.user?.id}
             />
           ) : (
             <EventForm

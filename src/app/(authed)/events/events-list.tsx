@@ -1,13 +1,7 @@
 'use client'
 
 import { ClockIcon, PlusIcon } from '@heroicons/react/24/solid'
-import {
-  format,
-  isBefore,
-  isSameMonth,
-  startOfDay,
-  startOfMonth,
-} from 'date-fns'
+import { format, isSameMonth, startOfDay, startOfMonth } from 'date-fns'
 import { Fragment, useState } from 'react'
 import { SkeletonDivider, SkeletonEvent } from './skeleton'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
@@ -17,7 +11,7 @@ import { SubmitButton } from '~/components/ui/button'
 import { api } from '~/trpc/react'
 import { type RouterOutputs } from '~/trpc/shared'
 import { cn, color } from '~/utils/classnames'
-import { Duration, timeFormat } from '~/utils/dates'
+import { Duration, isEventComplete, timeFormat } from '~/utils/dates'
 import { usePreferences } from '~/trpc/hooks'
 import { stdFormat } from '~/components/ui/dates/common'
 import { SEARCH_PARAM_NEW } from '~/utils/nav/search'
@@ -185,10 +179,8 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                           className={cn(
                             'flex-grow-0 truncate text-left text-lg leading-snug',
                             {
-                              'text-neutral-500 line-through': isBefore(
-                                event.datetime,
-                                new Date()
-                              ),
+                              'text-neutral-500 line-through':
+                                isEventComplete(event),
                             }
                           )}
                         >

@@ -62,9 +62,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps<'button'>>(
 )
 
 export const ButtonAnchor = forwardRef<HTMLAnchorElement, ButtonProps<'a'>>(
-  function FwdButtonLink({ className, ...props }, ref) {
+  function FwdButtonLink({ className, children, ...props }, ref) {
     return (
-      <a {...props} ref={ref} className={cmerge(button(props), className)} />
+      <a {...props} ref={ref} className={cmerge(button(props), className)}>
+        {children}
+      </a>
     )
   }
 )

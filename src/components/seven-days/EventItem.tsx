@@ -7,10 +7,9 @@ import { format } from 'date-fns'
 import { Avatar } from '../ui/avatar'
 import { useQueryParams } from '~/utils/nav/hooks'
 import { cmerge, cn, color } from '~/utils/classnames'
-import { type RouterOutputs } from '~/trpc/shared'
 import { isEventComplete } from '~/utils/dates'
 
-const eventItemTime = (event: RouterOutputs['event']['range'][number]) => {
+const eventItemTime = (event: { timeStatus: TimeStatus; datetime: Date }) => {
   if (event.timeStatus === 'ALL_DAY') return 'All Day'
   if (event.timeStatus === 'NO_TIME') return ''
   return format(event.datetime, 'h:mm a').toLowerCase()
@@ -72,14 +71,14 @@ export const EventItem = ({ event }: { event: EventableItem }) => {
   }
 
   let icon: ReactNode
-  if (event.createdBy) {
+  if (event.createdBy && event.createdBy.id !== session.data?.user.id) {
     icon = (
       <div className="flex items-center pr-px lg:pr-1">
         <Avatar
           size="xs"
           src={event.createdBy.image}
           name={event.createdBy.name || 'User'}
-          className="ring-2 ring-neutral-700"
+          className={cn('ring-2', color('ring')(event.category?.color))}
         />
       </div>
     )
@@ -113,7 +112,7 @@ export const EventItem = ({ event }: { event: EventableItem }) => {
       {...attributes}
       style={style}
       className={cmerge(
-        'flex flex-shrink-0 items-center justify-between rounded bg-neutral-950 text-sm lg:text-base lg:hover:bg-neutral-900',
+        'flex flex-shrink-0 items-center justify-between rounded bg-neutral-950 text-sm hover:bg-neutral-900 lg:text-base',
         { 'pointer-events-none z-10': isDragging }
       )}
     >

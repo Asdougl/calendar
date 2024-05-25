@@ -40,7 +40,7 @@ describe('DayOfWeek', () => {
   it('should render', () => {
     render(
       <TestWrapper>
-        <SevenDaysProvider value={{ baseDate: MONDAY }}>
+        <SevenDaysProvider value={{ baseDate: MONDAY, weekStart: 1 }}>
           <DayOfWeek events={EVENTS_BY_DAY} dayOfWeek={2} />
         </SevenDaysProvider>
       </TestWrapper>
@@ -65,7 +65,7 @@ describe('DayOfWeek', () => {
 
     render(
       <TestWrapper>
-        <SevenDaysProvider value={{ baseDate: new Date() }}>
+        <SevenDaysProvider value={{ baseDate: new Date(), weekStart: 1 }}>
           <DayOfWeek events={eventsByDay} dayOfWeek={1} />
         </SevenDaysProvider>
       </TestWrapper>
