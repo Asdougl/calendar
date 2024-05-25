@@ -4,17 +4,25 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
-  CalendarDaysIcon,
+  CalendarDaysIcon as OutlineCalendarDaysIcon,
+  InboxIcon as OutlineInboxIcon,
+  MagnifyingGlassIcon as OutlineMagnifyingGlassIcon,
+  TagIcon as OutlineTagIcon,
+  TicketIcon as OutlineTicketIcon,
+  UserCircleIcon as OutlineUserCircleIcon,
+} from '@heroicons/react/24/outline'
+import {
+  CalendarDaysIcon as SolidCalendarDaysIcon,
   ChevronLeftIcon,
-  InboxIcon,
-  MagnifyingGlassIcon,
+  InboxIcon as SolidInboxIcon,
+  MagnifyingGlassIcon as SolidMagnifyingGlassIcon,
   PlusIcon,
-  TagIcon,
-  TicketIcon,
+  TagIcon as SolidTagIcon,
+  TicketIcon as SolidTicketIcon,
+  UserCircleIcon as SolidUserCircleIcon,
 } from '@heroicons/react/24/solid'
 import { format, subMonths } from 'date-fns'
 import { useSession } from 'next-auth/react'
-import { ProfileAvatar } from './ui/avatar'
 import { Logo } from './Logo'
 import { MiniCalendar } from './MiniCalendar'
 import { stdFormat } from './ui/dates/common'
@@ -76,7 +84,8 @@ const NavCalendar = () => {
 
 const NavBarItem = <Path extends Pathname>(
   props: {
-    icon: ReactNode
+    inactiveIcon: ReactNode
+    activeIcon: ReactNode
     label: string
     desktop?: boolean
   } & PathArgs<Path>
@@ -98,7 +107,7 @@ const NavBarItem = <Path extends Pathname>(
         }
       )}
     >
-      {props.icon}
+      {active ? props.activeIcon : props.inactiveIcon}
       <span className="hidden text-sm lg:block">{props.label}</span>
     </Link>
   )
@@ -118,12 +127,11 @@ const ProfileNavItem = () => {
         active ? 'text-neutral-50 lg:bg-neutral-900' : ''
       )}
     >
-      <ProfileAvatar
-        size="sm"
-        className={cn('ring-neutral-300', {
-          ring: active,
-        })}
-      />
+      {active ? (
+        <SolidUserCircleIcon height={22} />
+      ) : (
+        <OutlineUserCircleIcon height={22} />
+      )}
       <span className="hidden text-sm lg:block">
         {data?.user?.name || 'profile'}
       </span>
@@ -153,28 +161,33 @@ export const PowerNavBar = () => {
       <NavCalendar />
       <NavBarItem
         path="/inbox"
-        icon={<InboxIcon height={22} />}
+        activeIcon={<SolidInboxIcon height={22} />}
+        inactiveIcon={<OutlineInboxIcon height={22} />}
         label="inbox"
       />
       <NavBarItem
         path="/month"
-        icon={<CalendarDaysIcon height={22} />}
+        activeIcon={<SolidCalendarDaysIcon height={22} />}
+        inactiveIcon={<OutlineCalendarDaysIcon height={22} />}
         label="month"
       />
       <NavBarItem
         path="/search/people"
-        icon={<MagnifyingGlassIcon height={22} />}
+        activeIcon={<SolidMagnifyingGlassIcon height={22} />}
+        inactiveIcon={<OutlineMagnifyingGlassIcon height={22} />}
         label="search"
       />
       <NavBarItem
         path="/events"
-        icon={<TicketIcon height={22} />}
+        activeIcon={<SolidTicketIcon height={22} />}
+        inactiveIcon={<OutlineTicketIcon height={22} />}
         label="events"
         desktop
       />
       <NavBarItem
         path="/categories"
-        icon={<TagIcon height={22} />}
+        activeIcon={<SolidTagIcon height={22} />}
+        inactiveIcon={<OutlineTagIcon height={22} />}
         label="categories"
         desktop
       />
