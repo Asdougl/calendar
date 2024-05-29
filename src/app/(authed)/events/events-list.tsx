@@ -161,10 +161,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                       event: event.id,
                     }}
                     className={cn(
-                      'group flex items-center justify-between gap-1 overflow-hidden rounded-lg px-2 py-1 transition-colors lg:hover:bg-neutral-900',
-                      event.category?.color
-                        ? color('bg-dull')(event.category.color)
-                        : 'bg-neutral-800'
+                      'group flex items-center justify-between gap-1 overflow-hidden rounded-lg px-2 py-1 transition-colors lg:hover:bg-neutral-900'
                     )}
                   >
                     <div className="flex items-center justify-start gap-2 overflow-hidden">
@@ -188,8 +185,7 @@ export const EventsList = ({ notFound, direction }: EventsListProps) => {
                         </div>
                         <div
                           className={cn(
-                            'flex gap-1 whitespace-nowrap leading-tight',
-                            color('text')(event.category?.color)
+                            'flex gap-1 whitespace-nowrap leading-tight text-neutral-400'
                           )}
                         >
                           {format(event.datetime, 'EEEE, MMM d')}

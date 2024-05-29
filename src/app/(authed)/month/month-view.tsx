@@ -186,7 +186,10 @@ export const MonthView: FC = () => {
   return (
     <InnerPageLayout
       headerLeft={
-        <button onClick={() => setShowShared(!showShared)}>
+        <button
+          onClick={() => setShowShared(!showShared)}
+          className="rounded bg-neutral-900 px-2 py-1 lg:hover:bg-neutral-500"
+        >
           {showShared ? (
             <UserGroupIcon height={20} />
           ) : (
@@ -194,20 +197,24 @@ export const MonthView: FC = () => {
           )}
         </button>
       }
-      title={format(focusMonth.start, 'MMMM yyyy')}
+      title={
+        focusMonth.start.getFullYear() === new Date().getFullYear()
+          ? format(focusMonth.start, 'MMMM')
+          : format(focusMonth.start, 'MMM yyyy')
+      }
       headerRight={
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <PathLink
             path="/month"
             query={{ of: stdFormat(addMonths(focusMonth.start, -1)) }}
-            className="flex items-center justify-center"
+            className="flex items-center justify-center rounded bg-neutral-900 p-1 lg:hover:bg-neutral-500"
           >
             <ChevronLeftIcon height={20} className="" />
           </PathLink>
           <PathLink
             path="/month"
             query={{ of: stdFormat(addMonths(focusMonth.start, 1)) }}
-            className="flex items-center justify-center"
+            className="flex items-center justify-center rounded bg-neutral-900 p-1 lg:hover:bg-neutral-500"
           >
             <ChevronLeftIcon height={20} className="rotate-180" />
           </PathLink>

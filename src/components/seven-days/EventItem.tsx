@@ -51,6 +51,7 @@ export const EventItem = ({ event }: { event: EventableItem }) => {
       disabled: event.createdBy
         ? event.createdBy.id !== session.data?.user?.id
         : false,
+      data: event,
     })
 
   const [, setQueryParams] = useQueryParams()

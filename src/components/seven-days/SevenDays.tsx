@@ -27,7 +27,6 @@ export type SevenDaysProps = {
 }
 
 export type SevenDaysShellProps = SevenDaysProps & {
-  findEvent: (id: string) => RouterOutputs['event']['range'][number] | undefined
   updateEvent: (input: RouterInputs['event']['update']) => void
 }
 
@@ -38,7 +37,6 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
   loading,
   outlines,
   weekStart = 1,
-  findEvent,
   updateEvent,
   usedIn,
   week,
@@ -70,9 +68,10 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
 
       if (isNaN(yearInt) || isNaN(monthInt) || isNaN(dateInt)) return
 
-      const event = findEvent(e.active.id.toString())
+      const event = e.active.data
+        .current as RouterOutputs['event']['range'][number]
 
-      if (!event) return
+      if (!event || !('datetime' in event)) return
 
       if (
         event.datetime.getFullYear() === yearInt &&
@@ -90,7 +89,7 @@ export const SevenDaysShell: FC<SevenDaysShellProps> = ({
         }),
       })
     },
-    [findEvent, updateEvent]
+    [updateEvent]
   )
 
   return (
@@ -198,21 +197,5 @@ export const SevenDays = (props: SevenDaysProps) => {
     },
   })
 
-  const findEvent = useCallback(
-    (id: string) => {
-      const events = queryClient.event.range.getData({
-        start: props.start,
-        end: props.end,
-      })
-
-      if (!events) return
-
-      return events.find((event) => event.id === id)
-    },
-    [queryClient, props.end, props.start]
-  )
-
-  return (
-    <SevenDaysShell {...props} findEvent={findEvent} updateEvent={mutate} />
-  )
+  return <SevenDaysShell {...props} updateEvent={mutate} />
 }

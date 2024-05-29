@@ -16,7 +16,7 @@ const sizes = {
   sm: {
     dim: 40,
     title: 'text-xl',
-    subtitle: 'text-xs -mb-1',
+    subtitle: 'text-xs -mb-0.5',
   },
 }
 

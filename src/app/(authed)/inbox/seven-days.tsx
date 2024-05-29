@@ -6,7 +6,6 @@ import { UserGroupIcon, UserIcon } from '@heroicons/react/24/solid'
 import { InnerPageLayout } from '~/components/layout/PageLayout'
 import { api } from '~/trpc/react'
 import { Duration } from '~/utils/dates'
-import { Header1 } from '~/components/ui/headers'
 import { createClientDateRangeHook } from '~/utils/hooks'
 import { SevenDays } from '~/components/seven-days/SevenDays'
 import { createPeriodsByDaySorter, eventsByDay } from '~/utils/sort'
@@ -65,13 +64,12 @@ export const NextSevenDays: FC = () => {
           loading={isFetching}
         />
       }
-      title={
-        <div className="relative z-10">
-          <Header1 className="relative bg-neutral-950 text-2xl">Inbox</Header1>
-        </div>
-      }
+      title="Inbox"
       headerLeft={
-        <button onClick={() => setShowShared(!showShared)}>
+        <button
+          onClick={() => setShowShared(!showShared)}
+          className="rounded bg-neutral-900 px-2 py-1 lg:hover:bg-neutral-500"
+        >
           {showShared ? (
             <UserGroupIcon height={20} />
           ) : (

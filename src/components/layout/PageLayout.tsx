@@ -36,9 +36,9 @@ export const InnerPageLayout: FC<PropsWithChildren<PageLayoutProps>> = ({
 }) => {
   return (
     <div className="mx-auto flex w-full max-w-4xl grow flex-col overflow-auto px-2 lg:pb-4">
-      <header className="flex items-stretch justify-between px-4 py-4">
+      <header className="grid grid-cols-5 px-2 py-4">
         <div
-          className={cn('flex w-8', {
+          className={cn('flex justify-start', {
             'opacity-0': !headerLeft,
             'animate-pulse rounded-full bg-neutral-800': skeleton && headerLeft,
           })}
@@ -48,7 +48,7 @@ export const InnerPageLayout: FC<PropsWithChildren<PageLayoutProps>> = ({
         {typeof title === 'string' ? (
           <Header1
             skeleton={skeleton}
-            className="relative flex h-8 items-baseline gap-2 text-2xl"
+            className="relative col-span-3 flex h-8 items-baseline justify-center gap-2 text-2xl"
           >
             {title}
           </Header1>
@@ -56,7 +56,7 @@ export const InnerPageLayout: FC<PropsWithChildren<PageLayoutProps>> = ({
           title
         )}
         <div
-          className={cn('flex w-8', {
+          className={cn('flex justify-end', {
             'opacity-0': !headerRight,
             'animate-pulse rounded-full bg-neutral-800':
               skeleton && headerRight,

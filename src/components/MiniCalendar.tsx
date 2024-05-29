@@ -1,7 +1,7 @@
 import { endOfMonth, isSameDay, isSameMonth, set, startOfWeek } from 'date-fns'
 import { useMemo } from 'react'
 import { stdFormat } from './ui/dates/common'
-import { cn } from '~/utils/classnames'
+import { cmerge, cn } from '~/utils/classnames'
 import { weekDatesOfDateRange } from '~/utils/dates'
 import { PathLink } from '~/utils/nav/Link'
 
@@ -46,9 +46,9 @@ export const MiniCalendar = ({
           {week.map((date, j) => (
             <div
               key={j}
-              className={cn('flex-grow rounded-full py-1 text-center', {
-                'bg-neutral-500 text-neutral-50': isSameDay(date, new Date()),
+              className={cmerge('flex-grow rounded-full py-1 text-center', {
                 'text-neutral-500': !isSameMonth(date, focusDate),
+                'bg-neutral-500 text-neutral-50': isSameDay(date, new Date()),
               })}
             >
               {date.getDate()}

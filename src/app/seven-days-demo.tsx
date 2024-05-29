@@ -208,10 +208,6 @@ export const DemoSevenDays = () => {
     }
   }
 
-  const findEvent = (id: string) => {
-    return demoData.events.flat().find((event) => event.id === id)
-  }
-
   return (
     <SevenDaysShell
       start={demoData.dates.start}
@@ -221,7 +217,6 @@ export const DemoSevenDays = () => {
       loading={!demoData.init}
       weekStart={getDay(demoData.dates.start)}
       updateEvent={updateEvent}
-      findEvent={findEvent}
       usedIn="inbox"
     />
   )

@@ -62,7 +62,7 @@ export default async function ProfilePage() {
     <InnerPageLayout
       title={
         user.name ? (
-          <div className="flex flex-col items-center justify-center gap-2">
+          <div className="col-span-3 flex flex-col items-center justify-center gap-2">
             <Avatar size="xl" src={user.image} name={user.name} />{' '}
             <Header2>{user.name}</Header2>
           </div>

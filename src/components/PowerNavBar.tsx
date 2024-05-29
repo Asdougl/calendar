@@ -54,20 +54,20 @@ const NavCalendar = () => {
         <PathLink
           path="/month"
           query={{ of: stdFormat(focusDate) }}
-          className="flex items-center gap-1 rounded px-2 leading-tight lg:hover:bg-neutral-800 xl:gap-2"
+          className="flex items-center gap-1 rounded bg-neutral-900 px-2 leading-tight lg:hover:bg-neutral-800 xl:gap-2"
         >
           {format(focusDate, 'MMM yyyy')}
         </PathLink>
         <div className="flex gap-1">
           <button
             onClick={() => setFocusDate(subMonths(focusDate, 1))}
-            className="rounded bg-neutral-900 p-1 hover:bg-neutral-500"
+            className="rounded bg-neutral-900 p-1 lg:hover:bg-neutral-500"
           >
             <ChevronLeftIcon height={20} />
           </button>
           <button
             onClick={() => setFocusDate(subMonths(focusDate, -1))}
-            className="rounded bg-neutral-900 p-1 hover:bg-neutral-500"
+            className="rounded bg-neutral-900 p-1 lg:hover:bg-neutral-500"
           >
             <ChevronLeftIcon height={20} className="rotate-180 transform" />
           </button>
@@ -154,7 +154,7 @@ const CreateEventNavItem = () => {
 
 export const PowerNavBar = () => {
   return (
-    <nav className="mx-auto flex h-24 w-full max-w-4xl shrink-0 items-stretch justify-evenly gap-4 px-4 pb-6 lg:h-full lg:flex-col lg:pt-12">
+    <nav className="mx-auto flex h-24 w-full max-w-4xl shrink-0 items-stretch justify-evenly gap-4 px-4 pb-6 lg:h-full lg:flex-col lg:pt-6">
       <div className="hidden w-full items-center justify-start px-4 lg:flex">
         <Logo size="sm" />
       </div>
@@ -163,32 +163,32 @@ export const PowerNavBar = () => {
         path="/inbox"
         activeIcon={<SolidInboxIcon height={22} />}
         inactiveIcon={<OutlineInboxIcon height={22} />}
-        label="inbox"
+        label="Inbox"
       />
       <NavBarItem
         path="/month"
         activeIcon={<SolidCalendarDaysIcon height={22} />}
         inactiveIcon={<OutlineCalendarDaysIcon height={22} />}
-        label="month"
+        label="Month"
       />
       <NavBarItem
         path="/search/people"
         activeIcon={<SolidMagnifyingGlassIcon height={22} />}
         inactiveIcon={<OutlineMagnifyingGlassIcon height={22} />}
-        label="search"
+        label="Search"
       />
       <NavBarItem
         path="/events"
         activeIcon={<SolidTicketIcon height={22} />}
         inactiveIcon={<OutlineTicketIcon height={22} />}
-        label="events"
+        label="Events"
         desktop
       />
       <NavBarItem
         path="/categories"
         activeIcon={<SolidTagIcon height={22} />}
         inactiveIcon={<OutlineTagIcon height={22} />}
-        label="categories"
+        label="Categories"
         desktop
       />
       <div className="hidden grow lg:block"></div>
